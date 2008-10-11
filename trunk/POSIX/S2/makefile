@@ -3,6 +3,7 @@ Nom1 = ait-oumghar
 Nom2 = alahyane
 NumeroDeSemaine = 2
 
+
 MODELES = ../modeles
 RACINE = Semaine_${NumeroDeSemaine}
 
