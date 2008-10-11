@@ -1,0 +1,4 @@
+=== comment faire pour que une fois un membre porte un changement sur le projet tous les autres membres reçoivent un notification ? ===
+
+=== Solution : ===
+Je suis en pleine recherche 
