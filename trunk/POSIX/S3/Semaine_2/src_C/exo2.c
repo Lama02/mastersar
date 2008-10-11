@@ -29,7 +29,7 @@ int main(){
     tmp=wait(&status);
     if(i==0){
       printf("PERE:le fils %d termine, status : %d \n",tmp,WEXITSTATUS(status)); 
-}
+    }
 }
 
   return 0;
