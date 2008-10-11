@@ -1,4 +1,3 @@
-
 # Trois lignes a modifier:
 Nom1 = ait-oumghar
 Nom2 = alahyane
