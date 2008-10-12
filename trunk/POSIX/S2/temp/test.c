@@ -6,7 +6,6 @@
 void echange(char * dest, char * src, int taille){
   strncpy(dest, src, taille);
   dest[taille-1]='o';
-  printf("la valeur de argv[1]: %s\n",dest);
 }
 
 int main(int argc,char *argv[]){
