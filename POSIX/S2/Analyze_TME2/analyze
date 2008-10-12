@@ -1,7 +1,7 @@
 # Fichier: analyze
 
 SEMAINE=2
-PROJET=/users/nfs/Etu5/2309965/2008Oct/POSIX/S2/Analyze_TME2
+PROJET=~/mastersar/POSIX/S2/Analyze_TME2
 
 DATA=${PROJET}/Reference
 FILES=${PROJET}/Les_fichiers_livres

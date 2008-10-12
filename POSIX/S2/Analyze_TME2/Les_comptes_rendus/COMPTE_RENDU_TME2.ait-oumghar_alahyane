@@ -2,8 +2,4 @@ Etape: numero de semaine correct -> OK
 Etape: fichier d'extension correcte (tgz ou tar.gz) -> OK
 Etape: fichier compresse' -> OK
 Etape: arbre nettoye' -> OK
-Etape: seuls fichier(s) sous la racine: makefile et README -> OK
-Etape: repertoire(s) -> OK
-Etape: definition de la constante _POSIX_SOURCE -> OK
-Etape: compilation sans warning(s), sans erreur(s) -> OK
-!!! LE FICHIER compresse' EST LIVRABLE dans l'etat !!! Merci pour vos efforts !!!
+3 <- note/20 fichier(s) sous la racine autres que makefile et README
