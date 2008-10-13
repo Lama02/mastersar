@@ -1,0 +1,157 @@
+# Fichier: analyze
+
+SEMAINE=1
+PROJET=~/2008Oct/POSIX/S1/TME1/Analyze_TME${SEMAINE}
+LIB_USE=${PROJET}/Library_use
+DATA=${PROJET}/Reference
+BIN=${LIB_USE}/bin
+FILES=${PROJET}/Les_fichiers_livres
+DIRECTORIES=${PROJET}/Les_repertoires_traites
+CRs=${PROJET}/Les_comptes_rendus
+
+mkdir -p ${DIRECTORIES}
+
+# Fichier livre' d'extension tgz ou tar.gz
+for i in `ls ${FILES}`
+do
+  cd ${PROJET}
+  rm -f tmp/*
+  rm -f ${BIN}/*
+  unset OVER UNDER
+  LA_NOTE=1
+  NAME=$i
+  NUMERO_SEMAINE=`echo $i | sed "s/.*\.\([0-9]*\)\..*/\1/"`
+  EXT=`echo $i | sed "s/.*\.[0-9]*\.\(.*\)/\1/"`
+  BASE_NAME=`echo $i | sed "s/\(.*\)\.[0-9]*\..*/\1/"`
+echo "!!! $NUMERO_SEMAINE $EXT $BASE_NAME"
+export BASE_NAME
+mkdir ${DIRECTORIES}/${BASE_NAME}
+LIB_INSTALL=${DIRECTORIES}/${BASE_NAME}
+RESULTS=${LIB_INSTALL}/Results
+mkdir $RESULTS
+> ${LIB_INSTALL}/COMPTE_RENDU_TME${SEMAINE}.${BASE_NAME}
+CR=${LIB_INSTALL}/COMPTE_RENDU_TME${SEMAINE}.${BASE_NAME}
+
+# Numero de semaine correct
+if [ ${NUMERO_SEMAINE} != ${SEMAINE} ] ; then echo "$LA_NOTE <- note/20 numero de semaine incorrect" >> ${CR} ; continue ;fi
+
+LA_NOTE=`expr $LA_NOTE + 1`
+echo "Etape: numero de semaine correct -> OK" >> ${CR}
+
+# Extension tgz ou tar.gz correcte
+  if [ $EXT != tgz ]
+  then if [ $EXT != tar.gz ] ; then echo "$LA_NOTE <- note/20 fichier d'extension incorrecte (ni tgz, ni tar.gz)" >> ${CR} ; continue ;fi
+  fi
+
+LA_NOTE=`expr $LA_NOTE + 1`
+echo "Etape: fichier d'extension correcte (tgz ou tar.gz) -> OK" >> ${CR}
+
+# Fichier compresse' selon tar ou gzip
+tar tzf ${FILES}/$NAME > tmp/tar_results
+if [ $? -ne 0 ] ; then echo "$LA_NOTE <- note/20 fichier non compresse' selon tar ou gzip" >> ${CR}; continue ;fi
+
+LA_NOTE=`expr $LA_NOTE + 1`
+echo "Etape: fichier compresse' -> OK" >> ${CR}
+
+# Structure de l'arbre correcte
+sort tmp/tar_results > tmp/tartzf_file
+diff ${DATA}/tartzf_file tmp/tartzf_file > tmp/tartzf_files_diff
+if [ -s tmp/tartzf_files_diff ] ; then echo "$LA_NOTE <- note/20 arbre mal structure'" >> ${CR} ; continue ;fi
+
+LA_NOTE=`expr $LA_NOTE + 1`
+echo "Etape: arbre bien structure' -> OK" >> ${CR}
+
+cd ${LIB_INSTALL} ; tar xzf ${FILES}/$NAME ; cd ${PROJET}
+
+# Fichier des specifications intouche'
+diff ${DATA}/stack.h ${LIB_INSTALL}/include/stack.h > tmp/stack.h_files_diff
+if [ -s tmp/stack.h_files_diff ] ; then echo "$LA_NOTE <- note/20 fichier des specifications modifie'" >> ${CR} ; continue ;fi
+
+LA_NOTE=`expr $LA_NOTE + 1`
+echo "Etape: fichier des specifications respecte' -> OK" >> ${CR}
+
+# Definition de la constante _POSIX_SOURCE
+grep '^#define _POSIX_SOURCE' ${LIB_INSTALL}/src_C/stack.c
+if [ $? -ne 0 ] ; then echo "$LA_NOTE <- note/20 definir la constante _POSIX_SOURCE" >> ${CR}; continue ;fi
+
+LA_NOTE=`expr $LA_NOTE + 1`
+echo "Etape: definition de la constante _POSIX_SOURCE -> OK" >> ${CR}
+
+# Fichier lib/libstack.a reconstruit
+cd ${LIB_INSTALL} ; make archive 2> warnings_or_errors
+#if [ $? -ne 0 ] ; then cd ${PROJET} ;fi
+if [ -s warnings_or_errors ] ; then echo "$LA_NOTE <- note/20 warning(s) ou erreur(s) de compilation" >> ${CR}; continue ;fi
+
+LA_NOTE=`expr $LA_NOTE + 1`
+echo "Etape: compilation sans warning(s), sans erreur(s) -> OK" >> ${CR}
+
+if [ ! -f lib/libstack.a ] ; then echo "$LA_NOTE <- note/20 fichier archive non reconstruit'" >> ${CR} ; continue ;fi
+
+LA_NOTE=`expr $LA_NOTE + 1`
+echo "Etape: fichier archive reconstruit -> OK" >> ${CR}
+
+cd ${PROJET}
+
+export PROJET DIRECTORIES LIB_INSTALL LIB_USE CRs
+# REVOIR cas erreurs pour make
+make compilations
+
+${BIN}/stack_etape0 > ${RESULTS}/out_etape0 2> ${RESULTS}/err_etape0
+diff ${DATA}/out_etape0 ${RESULTS}/out_etape0 > ${RESULTS}/xxx_etape0
+if [ -s ${RESULTS}/xxx_etape0 ] ; then echo "$LA_NOTE <- note/20 revoir stack_new" >> ${CR} ; continue ; fi
+
+LA_NOTE=`expr $LA_NOTE + 1`
+echo "Etape: fonction stack_new -> OK" >> ${CR}
+
+${BIN}/stack_etape1 > ${RESULTS}/out_etape1 2> ${RESULTS}/err_etape1
+diff ${DATA}/out_etape1 ${RESULTS}/out_etape1 > ${RESULTS}/xxx_etape1
+if [ -s ${RESULTS}/xxx_etape1 ] ; then echo "$LA_NOTE <- note/20 revoir stack_list" >> ${CR} ; continue ; fi
+
+LA_NOTE=`expr $LA_NOTE + 1`
+echo "Etape: fonction stack_list -> OK" >> ${CR}
+
+${BIN}/stack_etape2 > ${RESULTS}/out_etape2 2> ${RESULTS}/err_etape2
+diff ${DATA}/out_etape2 ${RESULTS}/out_etape2 > ${RESULTS}/xxx_etape2
+if [ -s ${RESULTS}/xxx_etape2 ] ; then echo "$LA_NOTE <- note/20 revoir push, pop" >> ${CR} ; continue ; fi
+
+LA_NOTE=`expr $LA_NOTE + 2`
+echo "Etape: fonctions push et pop -> OK" >> ${CR}
+
+${BIN}/stack_etape3 > ${RESULTS}/out_etape3 2> ${RESULTS}/err_etape3
+diff ${DATA}/out_etape3 ${RESULTS}/out_etape3 > ${RESULTS}/xxx_etape3
+if [ -s ${RESULTS}/xxx_etape3 ] ; then echo "$LA_NOTE <- note/20 revoir SIZE numbers" >> ${CR} ; continue ; fi
+
+LA_NOTE=`expr $LA_NOTE + 1`
+echo "Etape: SIZE numbers empilables -> OK" >> ${CR}
+
+${BIN}/stack_etape4 > ${RESULTS}/out_etape4 2> ${RESULTS}/err_etape4 ; \
+OVER=$? ; if [ $OVER -ne 33 ] ; then echo "$LA_NOTE <- note/20 revoir overflow" >> ${CR} ; continue ; fi
+
+LA_NOTE=`expr $LA_NOTE + 1`
+echo "Etape: gestion de l'overflow (exit (33);) -> OK" >> ${CR}
+
+diff ${DATA}/err_etape4 ${RESULTS}/err_etape4 > ${RESULTS}/xxx_etape4
+if [ -s ${RESULTS}/xxx_etape4 ] ; then echo "$LA_NOTE <- note/20 revoir perror overflow" >> ${CR} ; continue ; fi
+
+LA_NOTE=`expr $LA_NOTE + 1`
+echo "Etape: gestion de l'overflow (flux stderr) -> OK" >> ${CR}
+
+${BIN}/stack_etape5 > ${RESULTS}/out_etape5 2> ${RESULTS}/err_etape5 ; \
+UNDER=$? ; if [ $UNDER -ne 55 ] ; then echo "$LA_NOTE <- note/20 revoir underflow" >> ${CR} ; continue ; fi
+
+LA_NOTE=`expr $LA_NOTE + 1`
+echo "Etape: gestion de l'underflow (exit (55);) -> OK" >> ${CR}
+
+diff ${DATA}/err_etape5 ${RESULTS}/err_etape5 > ${RESULTS}/xxx_etape5
+if [ -s ${RESULTS}/xxx_etape5 ] ; then echo "$LA_NOTE <- note/20 revoir perror underflow" >> ${CR} ; continue ; fi
+
+LA_NOTE=`expr $LA_NOTE + 2`
+echo "Etape: gestion de l'underflow (flux stderr) -> OK" >> ${CR}
+
+echo "$LA_NOTE <- note/20" >> ${CR}
+done
+
+mkdir -p ${CRs}
+cp ${DIRECTORIES}/*/COMPTE_RENDU_TME${SEMAINE}.* ${CRs}
+
+exit 0
