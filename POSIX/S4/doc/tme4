@@ -1,0 +1,21 @@
+Dans stdlib.h plusieurs constantes sont definies a savoir 
+- PATH_MAX 
+- MAXNAMELONG
+
+
+extern int erno; 
+erno contient le code d erreur apres UN APPEL SYSTEME
+
+
+-------------------------------------------------------
+c est pratique pour la Q 2-1
+
+truncate(desc, lseek(desc,0,SEEK_CUR))
+
+Les  appels  truncate()  et  ftruncate()  tronquent  le fichier 
+référencé par path ou par le descripteur fd à une longueur maximale de
+length octets.
+
+ Si le fichier était plus long, les données supplémentaires sont perdues.  
+Si le fichier était plus court, il est étendu, et la portion supplémentaire 
+est remplie d’octets nuls.
