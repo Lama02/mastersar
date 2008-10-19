@@ -1,3 +1,9 @@
+/*
+ * Ce programme ne marche que pour un seul fils, car 
+ * lorsque on masque un signal, SIGCHLD en l'occurrence, 
+ * si on recoie plusieurs instances de ce signal une seul 
+ * est retrnue, toutes les autres sont rejetees
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
