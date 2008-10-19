@@ -9,13 +9,13 @@
 
 
 void sig_hand(int sig){
-  printf("j ai bien recu le signal du fils \n");
+  printf("j ai bien recu le signal de mon fils, je me suicide...\n");
 }
 
 
 int main (int argc, char * argv[]){
   /* definir les signaux bloquees */
-  sigset_t sig_set;
+  sigset_t sig_set, old_sig_set;
   struct sigaction action;
   pid_t fils;
   
@@ -28,6 +28,14 @@ int main (int argc, char * argv[]){
   
   /* masquer les signaux definies dans l ensemble sig_set */
   sigprocmask(SIG_SETMASK, &sig_set,NULL);
+  
+  /* nous allons masquer SIGCHLD aussi */
+  sigaddset(&sig_set, SIGCHLD);
+  /* appliquer le masque en sauvegardant l'ancien           */
+  /* masque, cad celui ou SIGCHLD n'est pas masque, dans    */
+  /* old_sig_set. Ceci nous sera utile lorsque nous aurions */
+  /* besoin de demasquer SIGCHLD */
+  sigprocmask(SIG_SETMASK, &sig_set,&old_sig_set);
   
   /* changement de traitement */
   action.sa_mask = sig_set;
@@ -44,7 +52,16 @@ int main (int argc, char * argv[]){
   /* prendra compte de sa terminaison */
   sleep(NBSEC); 
 
+
+  /* nous allons attendre les signaux definies dans */
+  /* l'ensemble old_sig_set, cad le signal SIGCHLD*/
+  sigsuspend(&old_sig_set);
   
-  sigsuspend(&sig_set);
+  /* restauration du masque ou SIGCHLD n'est pas      */
+  /* masque. Application de ce masque pour le process */
+  /* courant: le pere */
+  sigprocmask(SIG_SETMASK, &old_sig_set, NULL);
+
+  
   return EXIT_SUCCESS;
 }
