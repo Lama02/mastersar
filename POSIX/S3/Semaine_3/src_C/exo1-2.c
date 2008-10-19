@@ -5,7 +5,7 @@
 #include <unistd.h>
 
 #define _POSIX_SOURCE 1
-
+#define NBSEC 20
 
 int main (int argc, char * argv[]){
   
@@ -22,7 +22,7 @@ int main (int argc, char * argv[]){
   /* avant de l ecraser avec la valeur de sig_set */
   sigprocmask(SIG_SETMASK, &sig_set, &old_sig_set);
   
-  sleep(5);
+  sleep(NBSEC);
   
   
   /* lister les signaux pendants */
