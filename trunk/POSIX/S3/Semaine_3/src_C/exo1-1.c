@@ -23,11 +23,12 @@ int main (int argc, char * argv[]){
   sleep(10);
   
   
-  /* lister les signaux pendants */
+  /** lister les signaux pendants **/
+  /* mettre les signaux pendants dans sig_set */
   if (sigpending (&sig_set) == -1)
     return EXIT_FAILURE;
-  
-
+  /* lister les signaux contenu dans sig_set */
+  /* cad les signaux pendants */
   for (i=0; i<NSIG ; i++){
     if (sigismember(&sig_set, i) == 1)
       if (i == SIGINT)
@@ -36,7 +37,5 @@ int main (int argc, char * argv[]){
 	if (i == SIGQUIT)
 	  printf("SIGQUIT\n");
   }
-
-   
   return EXIT_SUCCESS;
 }

@@ -1,6 +1,5 @@
 CC = gcc
-INCLUDE = ./include
-CFLAGS = -Wall -ansi -pedantic -O -I $(INCLUDE)
+CFLAGS = -Wall -ansi -pedantic -O
 SRC_D = ./src_C
 BIN_D = ./bin
 OBJ_D = ./obj
