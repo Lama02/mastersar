@@ -1,7 +1,7 @@
 /* exo2-2.c */
-/* Ce programme presente une solution de l'exo 2-2 en */
-/* utilisant sigprocmask                              */
-/* il suffit de masquer le signal SIGTERM             */
+/* Ce programme presente une solution de l'exo 2-2 en           */
+/* utilisant sigprocmask                                        */
+/* Solution proposee : il suffit de masquer le signal SIGTERM   */
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
@@ -31,7 +31,6 @@ int main (int argc, char * argv[]){
   /* definir les signaux bloquees */
   sigset_t sig_set, old_sig_set;
   struct sigaction action;
-
   
   /* Signaux a masquer */
 
@@ -46,31 +45,32 @@ int main (int argc, char * argv[]){
   /* masquer les signaux definies dans l ensemble sig_set */
   sigprocmask(SIG_SETMASK, &sig_set, &old_sig_set);
   
-  
   /* ici nous allons masquer le signal SIGTERM aussi */
   sigaddset(&sig_set, SIGTERM);
-  
-  /* changement de traitement */
-  action.sa_mask = sig_set;
-  action.sa_flags = 0;
-  action.sa_handler = sig_hand;
-
-  sigaction(SIGINT, &action, NULL);
-  sigaction(SIGALRM, &action, NULL);
-
   
   /* mettre a jour la liste des signaux masques */
   sigprocmask(SIG_SETMASK, &sig_set, &old_sig_set);
   
+  /* changement de traitement */
+  action.sa_flags = 0;
+  action.sa_handler = sig_hand;
+
+  /* le handler a executer dans le cas ou on */
+  /* receptionne SIGINT ou SIGALRM           */
+  sigaction(SIGINT, &action, NULL);
+  sigaction(SIGALRM, &action, NULL);
+
   /* normalement nous allons pas recevoir SIGTERM      */
-  /* car il est ignore, mais c'est une facon de tester */
-  /* notre code */ 
+  /* car il est masque, mais l'appel de la sigaction   */
+  /* suivante est une facon de tester notre code       */ 
   sigaction(SIGTERM, &action, NULL);
   
   alarm(SEC);
   while (1){
+    /* en attente des signaux non masques */
+    /* c'est a dire SIGINT et SIGALRM     */
     sigsuspend(&sig_set);
   }
-
+  
   return EXIT_SUCCESS;
 }

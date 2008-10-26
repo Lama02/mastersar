@@ -16,9 +16,9 @@ int n=0; /* nombre de SIGINT recu */
 void sig_hand(int sig){
   switch (sig) {
   case SIGALRM: printf("%ds se sont ecoulees.\n", SEC); exit(0);
-    /* lorsque SIGTERM est recu le process est reveille mais le signal est */
-    /* en quelque sortes ignore car on fait aucun traitement */
-  case SIGTERM: fprintf(stderr,"Je ne devrais pas voir ce message\n");return;
+    
+    /* on devrait pas appeller ce handler car le signal SIGTERM est ignore */
+  case SIGTERM: fprintf(stderr,"On ne devrait pas voir ce message\n");return;
   case SIGINT:  if (n<NMAX-1) n++; else exit(0); 
   default: return;
   }
@@ -28,7 +28,7 @@ void sig_hand(int sig){
 int main (int argc, char * argv[]){
   
   /* definir les signaux bloquees */
-  sigset_t sig_set, old_sig_set;
+  sigset_t sig_set;
   struct sigaction action;
   
   
@@ -43,7 +43,7 @@ int main (int argc, char * argv[]){
   sigdelset(&sig_set, SIGTERM);
   
   /* masquer les signaux definies dans l ensemble sig_set */
-  sigprocmask(SIG_SETMASK, &sig_set, &old_sig_set);
+  sigprocmask(SIG_SETMASK, &sig_set, NULL);
   
   
   /* changement de traitement */
@@ -66,6 +66,7 @@ int main (int argc, char * argv[]){
   
   alarm(SEC);
   while (1){
+    /* en attente d'un des trois signaux */
     sigsuspend(&sig_set);
   }
 
