@@ -68,7 +68,7 @@ ssize_t indread(int fd, void *buf, size_t nbytes){
 
 /* si la taille du buffer est petite */
   if (nbytes < sizeindex[fd]){
-      errno = EBADE;
+      errno = EBADF;
       return -1;
   }
   /* si tout va bien on se contente de lire */
@@ -88,7 +88,7 @@ ssize_t indwrite(int fd, const void *buf, size_t nbytes){
 
   /* si la taille du buffer est petite */
   if (nbytes < sizeindex[fd]){
-    errno = EBADE;
+    errno = EBADF;
     return -1;
   }
   /* si tout va bien on se contente de lire */

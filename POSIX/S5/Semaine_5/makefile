@@ -19,6 +19,6 @@ $(OBJ_D)/ficindex_enonce_tests.o : $(SRC_D)/ficindex_enonce_tests.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean :
-	rm -fr $(OBJ_D)/*.o $(BIN_D)/$(EXEC) $(LIB_D)/*.a $(BIN_D)
+	rm -fr $(OBJ_D)/*.o $(BIN_D)/$(EXEC) $(LIB_D)/*.a $(BIN_D) fic1
 
 .PHONY : clean all
