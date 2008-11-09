@@ -68,7 +68,7 @@ ssize_t indread(int fd, void *buf, size_t nbytes){
 
 /* si la taille du buffer est petite */
   if (nbytes < sizeindex[fd]){
-      errno = EBADF;
+      errno = EBADF; /* TODO: changer ce code d'erreur */
       return -1;
   }
   /* si tout va bien on se contente de lire */
@@ -110,10 +110,16 @@ off_t indlseek(int fd, off_t offset, int whence){
    * apres le premier champ contenant la taille de 
    * la structure index
    */
-  if(whence==SEEK_SET){
-    whence += sizeof(int); 
+  if(whence == SEEK_SET){
+    offset = ( offset * sizeindex[fd] ) + sizeof(int); 
+  }else{
+    offset = offset * sizeindex[fd] ;
   }
-  return lseek(fd, offset * sizeindex[fd], whence);
+  
+  /* TODO: traiter le cas ou la valeur de offset */
+  /* deplace le curseur vers le debut du fichier */
+  
+  return lseek(fd, offset, whence);
 }
 
 
@@ -129,19 +135,24 @@ void *indsearch(int fd, int (*cmp)(void *, void *), void *key){
   int i, nb_struct;
   struct stat st;
   void * buf = malloc(sizeindex[fd]);
-  
+
   /* nombre de structures */
   if (fstat(fd, &st) == -1) return NULL;
   nb_struct = (st.st_size - sizeof(int)) / sizeindex[fd];
 
   /* nous allons parcourir l'ensemble des enregistrements */
+  /* mais d'abord deplacons le curseur vers le debut du fichier */
+  if (indlseek(fd, 0, SEEK_SET) == -1){
+    return NULL;
+  }
+
   for (i=0; i< nb_struct; i++){
     indread(fd, buf, sizeindex[fd]);
-    if ( cmp(buf, key) == 1){
+    if ( cmp(buf, key) == 0){
       /* la structure match */
       return buf;
     }
-  }
+   }
   return NULL;
 }
 
