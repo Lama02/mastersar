@@ -18,6 +18,8 @@ $(OBJ_D)/ficindex_enonce.o : $(SRC_D)/ficindex_enonce.c
 $(OBJ_D)/ficindex_enonce_tests.o : $(SRC_D)/ficindex_enonce_tests.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
+run: 
+	$(BIN_D)/$(EXEC)
 clean :
 	rm -fr $(OBJ_D)/*.o $(BIN_D)/$(EXEC) $(LIB_D)/*.a $(BIN_D) fic1
 
