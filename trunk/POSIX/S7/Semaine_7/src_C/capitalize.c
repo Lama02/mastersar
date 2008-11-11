@@ -1,5 +1,6 @@
 #define _POSIX_SOURCE 1
 
+#include <errno.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <unistd.h>
@@ -9,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "string.h"
+#include <signal.h>
 
 #define ECRIRE 0
 #define LIRE 1
@@ -16,13 +18,15 @@
 #define TAILLE sizeof(char)
 
 struct sembuf operation;
+
 int sem_id;
+int shm_id;
 
 /* pour stocker les infos sur le segment de memoire partage */
-struct shmid_ds *buf_shm = (struct shmid_ds *) malloc(sizeof(struct shmid_ds));
+struct shmid_ds *buf_shm;
 /* pour stocker les infos sur le semaphore */
-struct semid_ds *buf_sem = (struct semid_ds *) malloc(sizeof(struct semid_ds));
-
+struct semid_ds *buf_sem_lire;
+struct semid_ds *buf_sem_ecrire;
 
 
 
@@ -32,8 +36,8 @@ void P (int sem){
   operation.sem_op = -1;
   operation.sem_flg = SEM_UNDO;
   if (semop (sem_id, &operation, 1) < 0){
-    perror("semop");
-    return ;
+    perror("semop P");
+    exit(1);
   }
 }
 
@@ -44,16 +48,33 @@ void V (int sem){
   operation.sem_op = 1;
   operation.sem_flg = SEM_UNDO;
   if (semop (sem_id, &operation, 1) < 0){
-    perror("semop");
-    return ;
+    perror("semop V");
+    exit(1);
+  }
+}
+
+void sig_hand(int sig){
+  if (sig == SIGINT){  
+    printf("LOLOLOLO\n");
+    /* detruire les semaphores */
+    semctl(sem_id, LIRE, IPC_RMID, buf_sem_lire);
+    semctl(sem_id, ECRIRE, IPC_RMID, buf_sem_ecrire);
+    
+    /* detruire le segment de memoire partage */
+    shmctl(shm_id, IPC_RMID,buf_shm);
   }
 }
 
 
 int main(int argc, char* argv[]){
-
+  struct sigaction action;
   
-  int shm_id;
+  /* pour stocker les infos sur le segment de memoire partage */
+  buf_shm = (struct shmid_ds *) malloc(sizeof(struct shmid_ds));
+  /* pour stocker les infos sur le semaphore */
+  buf_sem_lire = (struct semid_ds *) malloc(sizeof(struct semid_ds));
+  buf_sem_ecrire = (struct semid_ds *) malloc(sizeof(struct semid_ds));
+  
   /* struct shmid_ds *buf; */
   key_t cle; 
   char *adr_att; 
@@ -61,7 +82,6 @@ int main(int argc, char* argv[]){
   pid_t fils;
   char path[14]="mem_par";
   char code = 'M';
-
 
 
   cle=ftok(path,code);
@@ -72,7 +92,7 @@ int main(int argc, char* argv[]){
     return 1;
   }
     
-  
+  /* initialisation des deux semaphores */
   semctl(sem_id, ECRIRE, SETVAL, 1);
   semctl(sem_id, LIRE, SETVAL, 0);
 
@@ -84,8 +104,10 @@ int main(int argc, char* argv[]){
   
   if ( (adr_att = shmat(shm_id, 0, 0600)) == (char *)-1){
     perror("shmat");
-    /* detruire le semaphore */
-    semctl(sem_id, IPC_RMID,buf_sem);
+    /* detruire les semaphores */
+    semctl(sem_id, LIRE, IPC_RMID, buf_sem_lire);
+    semctl(sem_id, ECRIRE, IPC_RMID, buf_sem_ecrire);
+
     
     /* detruire le segment de memoire partage */
     shmctl(shm_id, IPC_RMID,buf_shm);
@@ -98,11 +120,21 @@ int main(int argc, char* argv[]){
   /* de memoire partagee dans buf_shm */
   shmctl(shm_id,IPC_STAT,buf_shm);
   /* mettre les info (du systeme) du semaphore */
-  /* dans buf_sem */
-  semctl(sem_id, IPC_STAT, buf_sem);
+  /* dans buf_sem_ecrire et buf_sem_lire */
+  semctl(sem_id, LIRE, IPC_STAT, buf_sem_lire);
+  semctl(sem_id, ECRIRE, IPC_STAT, buf_sem_ecrire);
 
   
-  
+
+  /* mise en place du nouveau comportement */
+  /* du processus lors de la recepetion du */
+  /* signal SIGINT */
+
+  /* changement de traitement */
+  action.sa_flags = 0;
+  action.sa_handler = sig_hand;
+  sigaction(SIGINT, &action, NULL);
+
   switch(fils=fork()){
     
   case 0:
@@ -122,7 +154,8 @@ int main(int argc, char* argv[]){
   }
 
   /* detruire le semaphore */
-  semctl(sem_id, IPC_RMID,buf_sem);
+  semctl(sem_id, LIRE, IPC_RMID, buf_sem_lire);
+  semctl(sem_id, ECRIRE, IPC_RMID, buf_sem_ecrire);
   
   /* detruire le segment de memoire partage */
   shmctl(shm_id, IPC_RMID,buf_shm);
