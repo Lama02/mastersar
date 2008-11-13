@@ -18,19 +18,23 @@ int nomstrcmp(void *ui, void *ch) {
 
 /* ouvre le fichier filename en lecture puis */
 /* affiche son contenu */
-int print_content(char * filename){
+int print_content(char * filename, int size_index){
   int des,n;
-  UnIndex buf[1];
+  UnIndex * buf = NULL;
   
   /* ouvrir le fichier en lecture */
-  if ( (des = indopen(filename, O_RDONLY , sizeof(UnIndex),S_IRWXU | S_IRGRP | S_IXGRP | S_IXOTH )) == -1 ){
+  if ( (des = indopen(filename, O_RDONLY , size_index,S_IRWXU | S_IRGRP | S_IXGRP | S_IXOTH )) == -1 ){
     perror("indopen");
     return -1;
   }
   
+  if ((buf = malloc(size_index)) == NULL){
+    perror("malloc");
+    return -1;
+  }
   printf("-- debut du fichier --\n");
   /* tant que y a qqc a afficher on l'affiche */
-  while ((n = indread(des, buf, sizeof(UnIndex))) > 0){
+  while ((n = indread(des, buf, size_index)) > 0){
     printf("--------\n");
     printf("\tnom: %s\n",buf[0].nom);
     printf("\tprenom: %s\n",buf[0].prenom);
@@ -62,7 +66,7 @@ int main(){
   
 
   printf("+ afficher le contenu du fichier \"fic1\"\n");
-  if (print_content("fic1") == -1){
+  if (print_content("fic1",sizeof(UnIndex)) == -1){
     return 1;
   }
 
@@ -78,7 +82,7 @@ int main(){
   
   
   printf("+ afficher le contenu du fichier \"fic1\"\n");
-  if (print_content("fic1") == -1){
+  if (print_content("fic1",sizeof(UnIndex)) == -1){
     return 1;
   }
 
@@ -96,7 +100,7 @@ int main(){
   
 
   printf("+ afficher le contenu du fichier \"fic1\"\n");
-  if (print_content("fic1") == -1){
+  if (print_content("fic1",sizeof(UnIndex)) == -1){
     return 1;
   }
 
@@ -209,7 +213,7 @@ int main(){
   printf("\n====== TEST DE indxchg ======\n");
   printf("+ changer la taille de l'index du fichier \"fic1\". Recopier les donnees de ce fichier dans le nouveau fichier \"newfic1\" \n");
   printf("+ afficher le contenu du fichier \"fic1\"\n");
-  if (print_content("fic1") == -1){
+  if (print_content("fic1",sizeof(UnIndex)) == -1){
     return 1;
   }
   printf("+ changer la taille d'index du fichier \"fic1\". La nouvelle taille est egale a l'ancienne taille\n");
@@ -218,9 +222,26 @@ int main(){
     return 1;
   }
   printf("+ afficher le contenu du fichier \"fic2\"\n");
-  if (print_content("fic2") == -1){
+  if (print_content("fic2",sizeof(UnIndex)) == -1){
     return 1;
   }
+ 
+  
+  printf("+ changer la taille de l'index du fichier \"fic1\". Recopier les donnees de ce fichier dans le nouveau fichier \"newfic1\" \n");
+  printf("+ afficher le contenu du fichier \"fic1\"\n");
+  if (print_content("fic1",sizeof(UnIndex)) == -1){
+    return 1;
+  }
+  printf("+ changer la taille d'index du fichier \"fic1\". La nouvelle taille est SUPERIEURE a l'ancienne taille\n");
+  if (indxchg("fic1", "fic_sup", 2*sizeof(UnIndex) ) == -1){
+    perror("indxchg");
+    return 1;
+  }
+  printf("+ afficher le contenu du fichier \"fic_sup\"\n");
+  if (print_content("fic_sup",2*sizeof(UnIndex)) == -1){
+    return 1;
+  }
+ 
   
   indclose(des1);
   return 0;
