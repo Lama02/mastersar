@@ -2,7 +2,7 @@
 
 #include "ficindex_enonce.h"
 
-#define TAILLE_BUF 1000
+
 /* nombre maximum de fichier qu un processus peut ouvrir */
 #define OPEN_MAX 100
 
@@ -35,9 +35,10 @@ int indopen(const char *path, int flags, int ind, mode_t mode){
   if(tocreate){
     write(fd, &ind, sizeof(int));
   }
-  else
+  else{
     read(fd, &ind, sizeof(int));
-   
+  }
+  
   sizeindex[fd] = ind;
   return fd;
 }
@@ -65,11 +66,14 @@ int indclose(int fd){
  * Renvoie le nb d'octets lus, 0 si fin de fichier, -1 en cas de pb.
  */
 ssize_t indread(int fd, void *buf, size_t nbytes){
-
-/* si la taille du buffer est petite */
+  
+  /* si la taille du buffer est petite */
   if (nbytes < sizeindex[fd]){
-      errno = EBADF; /* TODO: changer ce code d'erreur */
-      return -1;
+    /* TODO: changer ce code d'erreur */
+    /*
+      errno = EBADF; 
+    */
+    return -1;
   }
   /* si tout va bien on se contente de lire */
   return (read(fd, buf, sizeindex[fd]));
@@ -108,7 +112,7 @@ off_t indlseek(int fd, off_t offset, int whence){
   
   /* le debut de notre fichier est situe juste 
    * apres le premier champ contenant la taille de 
-   * la structure index
+   * la structure indexee
    */
   if(whence == SEEK_SET){
     offset = ( offset * sizeindex[fd] ) + sizeof(int); 
@@ -177,14 +181,13 @@ int indxchg(char *oldfic, char *newfic, unsigned int newind){
   int * buf_oldfic = malloc(sizeof(int));
   struct stat st; /* pour recuperer les droits d'acces */
 
-  /* comparaison des tailles d'index */
+  /** comparaison des tailles d'index **/
   if ( (fd_oldfic = open(oldfic, O_RDONLY)) == -1){
     return -1;
   }
   if (read(fd_oldfic, buf_oldfic, sizeof(int)) == -1){
     return -1;
   }
-  
   /* comparer la taille d'index du fichier oldfic a la nouvelle taille newind */
   if ( newind == *buf_oldfic ){
     /* recuperer les droits d'acces du fichier oldfic */
@@ -196,13 +199,17 @@ int indxchg(char *oldfic, char *newfic, unsigned int newind){
     /* tant que le fichier oldfic contient des donnees */
     /* on les recopie */
     free(buf_oldfic);
-    buf_oldfic = malloc(TAILLE_BUF * sizeof(int));
+    buf_oldfic = malloc(sizeindex[fd_oldfic] * sizeof(int));
     /* on lit le contenu du fichier oldfic a partir de la 1ere struct */
-    while ((n = read(fd_oldfic, buf_oldfic, TAILLE_BUF)) != -1){
+    while ((n = read(fd_oldfic, buf_oldfic, sizeindex[fd_oldfic])) > 0){
       /* on ecrit dans le fichier newfic */
-      if (write (fd_newfic, buf_oldfic, TAILLE_BUF) == -1 ){
+      if (write (fd_newfic, buf_oldfic, sizeindex[fd_newfic]) == -1 ){
 	return -1;
       }
+    }
+    if (n == 0){
+      /* fin de la copie */
+      return 0;
     }
     if (n == -1){
       /* on a rencontre un probleme pendant la lecture */
