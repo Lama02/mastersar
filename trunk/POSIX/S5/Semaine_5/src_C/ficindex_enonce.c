@@ -70,9 +70,7 @@ ssize_t indread(int fd, void *buf, size_t nbytes){
   /* si la taille du buffer est petite */
   if (nbytes < sizeindex[fd]){
     /* TODO: changer ce code d'erreur */
-    /*
-      errno = EBADF; 
-    */
+    errno = EBADF; 
     return -1;
   }
   /* si tout va bien on se contente de lire */
@@ -188,18 +186,24 @@ int indxchg(char *oldfic, char *newfic, unsigned int newind){
   if (read(fd_oldfic, buf_oldfic, sizeof(int)) == -1){
     return -1;
   }
+  
+  /* recuperer les droits d'acces du fichier oldfic */
+  if (fstat(fd_oldfic, &st) == -1) return -1;
+  /* on recopie le fichier oldfic dans newfic */
+  if ( (fd_newfic = indopen(newfic, O_WRONLY | O_CREAT| O_EXCL, newind, st.st_uid |st.st_gid )) == -1){
+    return -1;
+  }
+  
+  
   /* comparer la taille d'index du fichier oldfic a la nouvelle taille newind */
   if ( newind == *buf_oldfic ){
-    /* recuperer les droits d'acces du fichier oldfic */
-    if (fstat(fd_oldfic, &st) == -1) return -1;
-    /* on recopie le fichier oldfic dans newfic */
-    if ( (fd_newfic = indopen(newfic, O_WRONLY | O_CREAT| O_EXCL, newind, st.st_uid |st.st_gid )) == -1){
-      return -1;
-    }
     /* tant que le fichier oldfic contient des donnees */
     /* on les recopie */
     free(buf_oldfic);
-    buf_oldfic = malloc(sizeindex[fd_oldfic] * sizeof(int));
+    buf_oldfic = malloc(sizeindex[fd_newfic]);
+    if (buf_oldfic == NULL){
+      return -1;
+    }
     /* on lit le contenu du fichier oldfic a partir de la 1ere struct */
     while ((n = read(fd_oldfic, buf_oldfic, sizeindex[fd_oldfic])) > 0){
       /* on ecrit dans le fichier newfic */
@@ -208,7 +212,7 @@ int indxchg(char *oldfic, char *newfic, unsigned int newind){
       }
     }
     if (n == 0){
-      /* fin de la copie */
+      /* fin de la copie cad EOF */
       return 0;
     }
     if (n == -1){
@@ -217,15 +221,40 @@ int indxchg(char *oldfic, char *newfic, unsigned int newind){
     }
   }
   
-  if (1){
+  if ( newind < *buf_oldfic ){
     /* si la taille d'index du fichier oldfic est plus grande que newind */
     /* TODO */
+    
     return 0;
   }
-  if (1){
+
+  
+  if ( newind > *buf_oldfic ){
     /* si la taille d'index du fichier oldfic est plus petite que newind */
-    /* TODO */
-    return 0;
+  
+    /* tant que le fichier oldfic contient des donnees */
+    /* on les recopie */
+    free(buf_oldfic);
+    buf_oldfic = malloc(sizeindex[fd_newfic]);
+    if (buf_oldfic == NULL){
+      return -1;
+    }
+    /* on lit le contenu du fichier oldfic a partir de la 1ere struct */
+    while ((n = read(fd_oldfic, buf_oldfic, sizeindex[fd_oldfic])) > 0){
+      /* on ecrit dans le fichier newfic */
+      if (write (fd_newfic, buf_oldfic, sizeindex[fd_newfic]) == -1 ){
+	return -1;
+      }
+    }
+    if (n == 0){
+      /* fin de la copie cad EOF */
+      return 0;
+    }
+    if (n == -1){
+      /* on a rencontre un probleme pendant la lecture */
+      return -1;
+    }
   }
+  return 0;
 }
 
