@@ -242,6 +242,22 @@ int main(){
     return 1;
   }
  
+
+  
+  printf("+ changer la taille de l'index du fichier \"fic1\". Recopier les donnees de ce fichier dans le nouveau fichier \"newfic1\" \n");
+  printf("+ afficher le contenu du fichier \"fic1\"\n");
+  if (print_content("fic1",sizeof(UnIndex)) == -1){
+    return 1;
+  }
+  printf("+ changer la taille d'index du fichier \"fic1\". La nouvelle taille est INFERIEUR a l'ancienne taille\n");
+  if (indxchg("fic1", "fic_inf", sizeof(UnIndex) /2 ) == -1){
+    perror("indxchg");
+    return 1;
+  }
+  printf("+ afficher le contenu du fichier \"fic_inf\"\n");
+  if (print_content("fic_inf",sizeof(UnIndex)/2) == -1){
+    return 1;
+  }
   
   indclose(des1);
   return 0;
