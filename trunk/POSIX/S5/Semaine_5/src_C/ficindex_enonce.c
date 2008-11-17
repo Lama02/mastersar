@@ -221,8 +221,34 @@ int indxchg(char *oldfic, char *newfic, unsigned int newind){
     }
   }
   
+  
   if ( newind < *buf_oldfic ){
     /* si la taille d'index du fichier oldfic est plus grande que newind */
+<<<<<<< .mine
+
+    /* tant que le fichier oldfic contient des donnees */
+    /* on fait la recopie adequate */
+    free(buf_oldfic);
+    buf_oldfic = malloc(sizeindex[fd_newfic]);
+    if (buf_oldfic == NULL){
+      return -1;
+    }
+    /* on lit le contenu du fichier oldfic a partir de la 1ere struct */
+    while ((n = read(fd_oldfic, buf_oldfic, sizeindex[fd_oldfic])) > 0){
+      /* on ecrit dans le fichier newfic */
+      if (write (fd_newfic, buf_oldfic, sizeindex[fd_newfic]) == -1 ){
+	return -1;
+      }
+    }
+    if (n == 0){
+      /* fin de la copie cad EOF */
+      return 0;
+    }
+    if (n == -1){
+      /* on a rencontre un probleme pendant la lecture */
+      return -1;
+    }  
+=======
 
      /* tant que le fichier oldfic contient des donnees */
     /* on les recopie */
@@ -249,6 +275,7 @@ int indxchg(char *oldfic, char *newfic, unsigned int newind){
   
     
     return 0;
+>>>>>>> .r48
   }
 
   
