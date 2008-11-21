@@ -29,6 +29,10 @@ int main(int argc, char * argv[]){
   /* Nombre d arguments */
   if (argc != 3){
     fprintf(stderr, "Erreur: nombre d'argument invalid.\n");
+    fprintf(stderr, "Exp: \n");
+    fprintf(stderr, "%s CNY \"100.0\"\n", argv[0]);
+    
+    
     exit(1);
   }
   
@@ -68,9 +72,10 @@ int main(int argc, char * argv[]){
     exit (1);
   }else{
     display_results(req, buffer);
-    
   }
   
+  close(tubDesc[0]);
+
   return 0;
 }
 
