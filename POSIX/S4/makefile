@@ -1,8 +1,8 @@
-
 # Trois lignes a modifier:
 Nom1 = ait-oumghar
 Nom2 = alahyane
 NumeroDeSemaine = 4
+
 
 MODELES = ../modeles
 RACINE = Semaine_${NumeroDeSemaine}
@@ -18,7 +18,7 @@ voir:
 # faire le menage dans cet arbre (avec rm) pour tous les fichiers de noms generiques:
 #	*~, #*#, .*, bin/*, obj/*, lib/*, *.tgz (sauf si explicitement necessaire)
 menage: 
-	@find $(RACINE) -name '.*' -exec rm {} \;
+	-@find $(RACINE) -name '.*' -exec rm {} \;
 	@find $(RACINE) -name '*~' -exec rm {} \;
 	@find $(RACINE) -name '#*#' -exec rm {} \;
 	@find $(RACINE) -name '*.tgz' -exec rm {} \;
@@ -37,9 +37,13 @@ create-env:
 
 # pour construire le fichier compresse' apres menage:
 tarczf: menage clean
-	@(cd ${RACINE} ; tar czf ../${Nom1}_${Nom2}.${NumeroDeSemaine}.tgz .)
+	-@(cp -r $(RACINE) $(RACINE).tmp && find $(RACINE).tmp -name '*.svn' -exec rm -fr {} \; )
+	@echo "la copie est faite"
+	@(cd ${RACINE}.tmp ; tar czf ../${Nom1}_${Nom2}.${NumeroDeSemaine}.tgz .)
+	@(rm -fr $(RACINE).tmp)
 	@( test -f ${Nom1}_${Nom2}.${NumeroDeSemaine}.tgz && echo "-- Le tar ${Nom1}_${Nom2}.${NumeroDeSemaine}.tgz est cree.")
- 
+	@rm -fr $(RACINE).tmp
+
 # pour verifier:
 tartzf:
 	@(tar tzf ${Nom1}_${Nom2}.${NumeroDeSemaine}.tgz)
