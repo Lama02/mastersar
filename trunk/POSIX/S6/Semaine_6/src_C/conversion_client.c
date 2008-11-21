@@ -15,28 +15,27 @@ int main(int argc, char * argv[]){
   conversion_message req;
   int num_conveters, n;
   results_array tab_res;
+  int tube_requete, tube_reponses;
   
   char buffer[BUFMAX];
   
-  /* Creation du pipe*/
-  int tubDesc[2];
-  if(pipe(tubDesc) == -1){
-    fprintf(stderr,"Erreur : pipe\n");
-    exit (1);
-  }
-  
+  /* le pipe est suppose cree par le serveur */
   
   /* Nombre d arguments */
-  if (argc != 3){
+  if (argc != 5){
     fprintf(stderr, "Erreur: nombre d'argument invalid.\n");
+    fprintf(stderr, "usage:\n");
+    fprintf(stderr, "conversion_client <nom_tube_requete> <nom_tube_reponse> <devise> <montant>\n");
     exit(1);
   }
   
-  /* la requete a envoye au fils*/
+  /* la requete a envoye au serveur */
   req.pid_sender = getpid();
-  strcpy(req.currency, argv[1]);
-  req.amount = (double)atoi(argv[2]);
+  strcpy(req.currency, argv[3]);
+  req.amount = (double)atoi(argv[4]);
   
+  /* le chemin du tube par lequel transitent les requêtes*/
+  tube_requete = argv[1];
   
   
   /* le pere envoie la requete a un process fils */
