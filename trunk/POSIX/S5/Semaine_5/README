@@ -1,0 +1,6 @@
+project : POSIX-TME5
+Authors : Ait oumghar and Alahyane
+
+Notes: 
+- Problemes avec le prog de test
+- Le test de la fonction indxchg n'est pas effectue 
