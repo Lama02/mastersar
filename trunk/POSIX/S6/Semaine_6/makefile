@@ -7,6 +7,8 @@ OBJ_D = ./obj
 LIB_D = ./lib
 
 
+all :
+	@echo "single_converter | exo2-1 | exo3-1 | clean"
 
 single_converter : $(OBJ_D)/single_converter.o $(OBJ_D)/converters.o
 	mkdir -p $(BIN_D) && $(CC) $(CFLAGS) $^ -o $(BIN_D)/$@
