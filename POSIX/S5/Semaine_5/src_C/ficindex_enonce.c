@@ -224,8 +224,6 @@ int indxchg(char *oldfic, char *newfic, unsigned int newind){
   
   if ( newind < *buf_oldfic ){
     /* si la taille d'index du fichier oldfic est plus grande que newind */
-<<<<<<< .mine
-
     /* tant que le fichier oldfic contient des donnees */
     /* on fait la recopie adequate */
     free(buf_oldfic);
@@ -248,7 +246,6 @@ int indxchg(char *oldfic, char *newfic, unsigned int newind){
       /* on a rencontre un probleme pendant la lecture */
       return -1;
     }  
-=======
 
      /* tant que le fichier oldfic contient des donnees */
     /* on les recopie */
@@ -275,7 +272,6 @@ int indxchg(char *oldfic, char *newfic, unsigned int newind){
   
     
     return 0;
->>>>>>> .r48
   }
 
   
