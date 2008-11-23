@@ -55,7 +55,7 @@ int main(int argc, char * argv[]){
     }
     
     /* le fils ecrit le resultat dans le pipe */
-    if ( (write(tubDesc[1],tab_res,sizeof(conversion_message)*NB_CONVERTERS)) == -1 ){
+    if ( (write(tubDesc[1],tab_res,BUFMAX)) == -1 ){
       fprintf(stderr,"Erreur : write\n");
       exit (1);
     }
@@ -67,7 +67,7 @@ int main(int argc, char * argv[]){
   
   /* le pere attend le resultat en lecture dans le tube */
   /* le resultat sera ecrit par le fils */
-  if ( (n=read(tubDesc[0], buffer, sizeof(conversion_message)*NB_CONVERTERS))==-1){
+  if ( (n=read(tubDesc[0], buffer,BUFMAX))==-1){
     fprintf(stderr,"Erreur : read\n");
     exit (1);
   }else{
