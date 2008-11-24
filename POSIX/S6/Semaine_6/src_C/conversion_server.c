@@ -13,7 +13,7 @@
 
 #define BUFMAX sizeof(conversion_message)*NB_CONVERTERS
 
- int  fd_read, fd_write;
+ int fd_read, fd_write;
 
 void sig_hand(int sig){
   
@@ -21,8 +21,6 @@ void sig_hand(int sig){
     printf("Je ferme et je dettruit les tubes \n \n");
     close(fd_read);
     close(fd_write);
-    /* unlik(argv[1]);*/
-    /* unlik(argv[2]);*/
   }
   exit(3);
 }
@@ -76,7 +74,6 @@ int main(int argc, char * argv[]){
 
   printf("tube1 : %s, tube2 : %s \n",argv[1],argv[2]);
 
-  sleep(4);
   /* ICI SURVIENT L'ERREUR*/  
   /* ouvrir en lecture */
   if ((fd_read = open(argv[1], O_RDONLY)) == -1) {
