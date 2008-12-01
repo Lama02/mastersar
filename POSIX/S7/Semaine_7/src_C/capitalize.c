@@ -55,7 +55,6 @@ void V (int sem){
 
 void sig_hand(int sig){
   if (sig == SIGINT){  
-    printf("LOLOLOLO\n");
     /* detruire les semaphores */
     semctl(sem_id, LIRE, IPC_RMID, buf_sem_lire);
     semctl(sem_id, ECRIRE, IPC_RMID, buf_sem_ecrire);
