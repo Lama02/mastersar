@@ -1,6 +1,5 @@
 /*  */
 #define _POSIX_SOURCE 1
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -11,47 +10,42 @@
 #include "converters.h"
 #include "string.h"
 
-#define BUFMAX sizeof(conversion_message)*NB_CONVERTERS
+#define BUFMAX sizeof(results_array) 
 
- int fd_read, fd_write;
+int fd_read, fd_write;
+char * tube1, *tube2;
 
-void sig_hand(int sig){
+/* arrete le serveur et detruit les tubes crees */
+void fin_serveur(){  
+  fprintf(stderr, "Stopping server...");
+  close(fd_read);
+  close(fd_write);
+  unlink(tube1);
+  unlink(tube2);
+  fprintf(stderr, "OK\n");
   
-  if(sig==SIGINT){
-    printf("Je ferme et je dettruit les tubes \n \n");
-    close(fd_read);
-    close(fd_write);
-  }
   exit(3);
 }
 
 
 int main(int argc, char * argv[]){
+  int sig;
   conversion_message req[1];
   int num_conveters, n;
   results_array tab_res;
   struct sigaction action;
   sigset_t sig_set;
 
-  
-  /* Signaux a masquee */
-  /* Tous*/
-  sigfillset(&sig_set);
-  /* sauf SIGINT */
-  sigdelset(&sig_set, SIGINT);
-
+  /* a la reception de n importe quel signal */
+  /* on supprime les tubes puis on arrete le serveur */
+  sigemptyset(&sig_set);
   sigprocmask(SIG_SETMASK, &sig_set, NULL);
-
+  
   /* changement de traitement */
   action.sa_mask = sig_set;
   action.sa_flags = 0;
-  action.sa_handler = sig_hand;
-
-  /* pour les signaux SIGINT */
-  /* on applique le traitement definie par */
-  /* la fonction sig_hand */
-  sigaction(SIGINT, &action, NULL);
-
+  action.sa_handler = fin_serveur;
+  for (sig=1; sig<= _NSIG; sig++) sigaction(sig, &action, NULL);
 
   /* Nombre d arguments */
   if (argc != 3){
@@ -59,70 +53,75 @@ int main(int argc, char * argv[]){
     exit(1);
   }
 
+  /* stocker les nom des tubes */
+  tube1 = argv[1];
+  tube2 = argv[2];
+
+  fprintf(stderr, "Starting server...");
   
   /* Creation du premier tube nomme */
+  /* pour la lecture */
   if (mkfifo(argv[1],S_IRUSR|S_IWUSR) == -1 ){
     fprintf(stderr,"Erreur : mkfifo\n");
     exit(1);
   }
+
   
-  /* Creation du deuxieme tube nomme */
+  /* Creation du second tube nomme */
+  /* pour ecrire */
   if (mkfifo(argv[2],S_IRUSR|S_IWUSR) == -1 ){
     fprintf(stderr,"Erreur : mkfifo\n");
     exit(1);
   }
 
-  printf("tube1 : %s, tube2 : %s \n",argv[1],argv[2]);
 
-  /* ICI SURVIENT L'ERREUR*/  
+  fprintf(stderr, "OK\n");
+    
   /* ouvrir en lecture */
   if ((fd_read = open(argv[1], O_RDONLY)) == -1) {
     fprintf(stderr,"Erreur : open\n");
     exit(2);
   }
 
-  printf(" SERVER : apres ouverture du tube req en lecture \n \n");
+  /* ouverture en ecriture */
+  if ((fd_write = open(argv[2], O_WRONLY)) == -1) {
+    fprintf(stderr,"Erreur : open du write\n");
+    exit(1);
+  }
+
   
   /* nous allons attendre qu'un client nous envoie une requete */
   while (1){
-
-  printf("SER ds la boucle \n");    
-
     if((n=read(fd_read,&req,sizeof(conversion_message)))==-1){
       fprintf(stderr,"Erreur : read \n");
       exit(2);
     }
+    
+
     /* on test si il n'y a pas d'ecrivain */
-    
-    /* if(n==0){
-      close(fd_read);
-      open(argv[1], O_RDONLY);
+     if(n==0){
+       /* lorsque il n'y a pas de client on attend */
+       close(fd_read);
+       /* ouvrir en lecture */
+       if ((fd_read = open(argv[1], O_RDONLY)) == -1) {
+	 fprintf(stderr,"Erreur : open\n");
+	 exit(2);
+       }
       continue; 
-      }*/
+      }
+
     
-    /* ici on convertit la requete */
-    
-    for (num_conveters=0 ; num_conveters < NB_CONVERTERS ; num_conveters++){
-  
-      /* on lance une requete de conversion pour chaque Devise cible (num_conveters) */
-      /* le resultat est stocker dans le tableau results_array definie dans la biblio */
+     /* ici on convertit la requete */
+     for (num_conveters=0 ; num_conveters < NB_CONVERTERS ; num_conveters++){
+       
+       /* on lance une requete de conversion pour chaque Devise cible (num_conveters) */
+       /* le resultat est stocker dans le tableau results_array definie dans la biblio */
+       
+       handle_conversion_request(req[0], &tab_res[num_conveters], num_conveters);
+     }
      
-      handle_conversion_request(req[0], &tab_res[num_conveters], num_conveters);
-    }
-   
-    /* ouverture en ecriture */
-
-    if ((fd_write = open(argv[2], O_WRONLY)) == -1) {
-      fprintf(stderr,"Erreur : open du write\n");
-      exit(1);
-    }
-   
     write(fd_write,tab_res,BUFMAX);
-
-    close(fd_write);
   }
-  unlik(argv[1]);
-  unlik(argv[2]);
   return 0;
 }
 

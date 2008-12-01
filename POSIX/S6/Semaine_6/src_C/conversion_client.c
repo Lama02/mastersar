@@ -4,22 +4,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include "converters.h"
 #include "string.h"
 
-#define BUFMAX sizeof(conversion_message)*NB_CONVERTERS
+#define BUFMAX sizeof(results_array) 
+
 
 int main(int argc, char * argv[]){
-  pid_t fils;
-  conversion_message req;
-  int num_conveters, n;
-  results_array tab_res;
   
-  char buffer[BUFMAX];
+  conversion_message req;
+  int n;
+  int fd_write, fd_read;
+  results_array buffer;
   
   /* le pipe est suppose cree par le serveur */
-  
   /* Nombre d arguments */
   if (argc != 5){
     fprintf(stderr, "Erreur: Client  nombre d'argument invalid.\n");
@@ -28,44 +29,42 @@ int main(int argc, char * argv[]){
     exit(1);
   }
 
-  printf("apres test nb arg \n \n ");
   
   /* la requete a envoye au serveur */
   req.pid_sender = getpid();
-  strcpy(req.currency, argv[4]);
-  req.amount = (double)atoi(argv[5]);
-  
-  
-  /* ouverture du tube requete en ecriture */
+  strcpy(req.currency, argv[3]);
+  req.amount = (double)atoi(argv[4]);
 
-  if((fd_write=open(argv[1],WR_ONLY)) == -1){
-    fprintf(stderr,"Erreur : write\n");
-    exit (1);
+    
+  /* ouverture du tube requete en ecriture */
+  if((fd_write=open(argv[1],O_WRONLY)) == -1){
+    fprintf(stderr,"Erreur : open\n");
+    exit(1);
   }
   
-  /* ecriture de la requete dans le tube requete*/
-
-  write(argv[1],req,sizeof(conversion_message));
-
-  close(fd_write);
-
   /* ouverture du tube reponse en lecture */
-  
-  if((fd_read=open(argv[2],RD_ONLY)) == -1){
-    fprintf(stderr,"Erreur : write\n");
+  if((fd_read=open(argv[2],O_RDONLY)) == -1){
+    fprintf(stderr,"Erreur : open\n");
     exit (2);
   }
   
-  /* lesture de la reponse dans le tube reponse*/
-  
-  if ( (n=read(argv[2], buffer, sizeof(conversion_message)*NB_CONVERTERS))==-1){
+  /* ecriture de la requete dans le tube requete*/
+  write(fd_write,&req,sizeof(conversion_message));
+    
+  /* lecture de la reponse dans le tube reponse*/
+  if ((n=read(fd_read,buffer,BUFMAX))==-1){
+    
     fprintf(stderr,"Erreur : read\n");
     exit (1);
-  }else{
-    display_results(req, buffer);
     
+  }else{
+    
+    display_results(req, buffer);
   }
+  
+  close(fd_write);
   close(fd_read);
+  
   return 0;
 }
 

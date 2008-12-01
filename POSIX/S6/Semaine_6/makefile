@@ -6,7 +6,6 @@ BIN_D = ./bin
 OBJ_D = ./obj
 LIB_D = ./lib
 
-
 all :
 	@echo "single_converter |conversion_server |conversion_client | exo2-1 | exo3-1 | clean"
 
@@ -16,7 +15,7 @@ single_converter : $(OBJ_D)/single_converter.o $(OBJ_D)/converters.o
 conversion_server : $(OBJ_D)/conversion_server.o $(OBJ_D)/converters.o
 	mkdir -p $(BIN_D) && $(CC)  $(CFLAGS) $^ -o $(BIN_D)/$@
 
-conversion_client :  $(OBJ_D)/conversion_server.o $(OBJ_D)/converters.o
+conversion_client :  $(OBJ_D)/conversion_client.o $(OBJ_D)/converters.o
 	mkdir -p  $(BIN_D) && $(CC)  $(CFLAGS) $^ -o $(BIN_D)/$@
 
 $(OBJ_D)/single_converter.o : $(SRC_D)/single_converter.c

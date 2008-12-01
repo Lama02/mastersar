@@ -8,7 +8,7 @@
 #include "converters.h"
 #include "string.h"
 
-#define BUFMAX sizeof(conversion_message)*NB_CONVERTERS
+#define BUFMAX sizeof(conversion_message) * NB_CONVERTERS
 
 int main(int argc, char * argv[]){
   pid_t fils;
@@ -16,7 +16,7 @@ int main(int argc, char * argv[]){
   int num_conveters, n;
   results_array tab_res;
   
-  char buffer[BUFMAX];
+  results_array buffer;
   
   /* Creation du pipe*/
   int tubDesc[2];
@@ -25,14 +25,12 @@ int main(int argc, char * argv[]){
     exit (1);
   }
   
-  
   /* Nombre d arguments */
   if (argc != 3){
     fprintf(stderr, "Erreur: nombre d'argument invalid.\n");
     fprintf(stderr, "Exp: \n");
     fprintf(stderr, "%s CNY \"100.0\"\n", argv[0]);
-    
-    
+        
     exit(1);
   }
   
@@ -40,8 +38,6 @@ int main(int argc, char * argv[]){
   req.pid_sender = getpid();
   strcpy(req.currency, argv[1]);
   req.amount = (double)atoi(argv[2]);
-  
-  
   
   /* le pere envoie la requete a un process fils */
   if ( (fils=fork()) == 0 ){
@@ -54,12 +50,13 @@ int main(int argc, char * argv[]){
       handle_conversion_request(req, &tab_res[num_conveters], num_conveters);
     }
     
-    /* le fils ecrit le resultat dans le pipe */
-    if ( (write(tubDesc[1],tab_res,BUFMAX)) == -1 ){
+    /* le fils ecrit le resultat dans le pipe */    
+    if ( (write(tubDesc[1], tab_res, BUFMAX)) == -1 ){
+      
       fprintf(stderr,"Erreur : write\n");
       exit (1);
     }
-
+    
     close(tubDesc[1]);
     exit(0);
     
@@ -67,15 +64,19 @@ int main(int argc, char * argv[]){
   
   /* le pere attend le resultat en lecture dans le tube */
   /* le resultat sera ecrit par le fils */
-  if ( (n=read(tubDesc[0], buffer,BUFMAX))==-1){
+  
+  if ( (n=read(tubDesc[0], buffer, BUFMAX))==-1){
+    
     fprintf(stderr,"Erreur : read\n");
     exit (1);
+
   }else{
+    
     display_results(req, buffer);
   }
   
   close(tubDesc[0]);
-
+  
   return 0;
 }
 

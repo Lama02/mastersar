@@ -40,9 +40,9 @@
 		- la devise cible
 		- le montant apres conversion */
 typedef struct conv_msg {
-	pid_t pid_sender;		/* pid du processus emetteur */
-	char currency[3];		/* devise */
-	double amount;			/* montant */
+  pid_t pid_sender;		/* pid du processus emetteur */
+  char currency[3];		/* devise */
+  double amount;			/* montant */
 } conversion_message;
 
 /* Tableau de resultats de conversion (exos 2 et 3) */
