@@ -14,7 +14,13 @@ LIB_D = ./lib
 exo1-1 : $(OBJ_D)/exo1-1.o
 	mkdir -p $(BIN_D) && $(CC) $(CFLAGS) $(LINK) $^ -o $(BIN_D)/$@
 
+test :  $(OBJ_D)/test.o
+	mkdir -p $(BIN_D) && $(CC) $(CFLAGS) $(LINK) $^ -o $(BIN_D)/$@
+
 $(OBJ_D)/exo1-1.o : $(SRC_D)/exo1-1.c
+	$(CC) -o $@ $(CFLAGS) -c $< 
+
+$(OBJ_D)/test.o : $(SRC_D)/test.c
 	$(CC) -o $@ $(CFLAGS) -c $< 
 
 exo2-1 : $(OBJ_D)/exo2-1.o
@@ -25,41 +31,49 @@ $(OBJ_D)/exo2-1.o : $(SRC_D)/exo2-1.c
 
 exo3-1 : $(OBJ_D)/exo3-1.o
 	mkdir -p $(BIN_D) && $(CC) $(CFLAGS) $(LINK) $^ -o $(BIN_D)/$@
+
 $(OBJ_D)/exo3-1.o : $(SRC_D)/exo3-1.c
 	$(CC) -o $@ $(CFLAGS)  -c $< 
 
 exo4-1 : $(OBJ_D)/exo4-1.o
 	mkdir -p $(BIN_D) && $(CC) $(CFLAGS) $(LINK) $^ -o $(BIN_D)/$@
+
 $(OBJ_D)/exo4-1.o : $(SRC_D)/exo4-1.c
 	$(CC) -o $@ $(CFLAGS)  -c $< 
 
 exo4-2 : $(OBJ_D)/exo4-2.o
 	mkdir -p $(BIN_D) && $(CC) $(CFLAGS) $(LINK) $^ -o $(BIN_D)/$@
+
 $(OBJ_D)/exo4-2.o : $(SRC_D)/exo4-2.c
 	$(CC) -o $@ $(CFLAGS)  -c $< 
 
 exo5-1 : $(OBJ_D)/exo5-1.o
 	mkdir -p $(BIN_D) && $(CC) $(CFLAGS) $(LINK) $^ -o $(BIN_D)/$@
+
 $(OBJ_D)/exo5-1.o : $(SRC_D)/exo5-1.c
 	$(CC) -o $@ $(CFLAGS)  -c $< 
 
 exo6-1 : $(OBJ_D)/exo6-1.o
 	mkdir -p $(BIN_D) && $(CC) $(CFLAGS) $(LINK) $^ -o $(BIN_D)/$@
+
 $(OBJ_D)/exo6-1.o : $(SRC_D)/exo6-1.c
 	$(CC) -o $@ $(CFLAGS)  -c $< 
 
 exo6-2 : $(OBJ_D)/exo6-2.o
 	mkdir -p $(BIN_D) && $(CC) $(CFLAGS) $(LINK) $^ -o $(BIN_D)/$@
+
 $(OBJ_D)/exo6-2.o : $(SRC_D)/exo6-2.c
 	$(CC) -o $@ $(CFLAGS)  -c $< 
 
 exo7-1 : $(OBJ_D)/exo7-1.o
 	mkdir -p $(BIN_D) && $(CC) $(CFLAGS) $(LINK) $^ -o $(BIN_D)/$@
+
 $(OBJ_D)/exo7-1.o : $(SRC_D)/exo7-1.c
 	$(CC) -o $@ $(CFLAGS)  -c $< 
 
 exo7-2 : $(OBJ_D)/exo7-2.o
 	mkdir -p $(BIN_D) && $(CC) $(CFLAGS) $(LINK) $^ -o $(BIN_D)/$@
+
 $(OBJ_D)/exo7-2.o : $(SRC_D)/exo7-2.c
 	$(CC) -o $@ $(CFLAGS)  -c $< 
 
