@@ -37,7 +37,7 @@ int main(int argc, char * argv[]){
   
   /* attendre la fin de toutes les threads creees */
   for(i=0; i<N; i++){
-    if(pthread_join(tid[i],(void**) &status) != 0){
+   if(pthread_join(tid[i],(void**) &status) != 0){
       perror("pthread_join"); 
       exit(1);
     }
