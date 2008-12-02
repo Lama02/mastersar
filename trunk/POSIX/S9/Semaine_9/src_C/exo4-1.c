@@ -8,26 +8,29 @@
 #include "string.h"
 #include <pthread.h>
 
-
 #define N 5
 
 /* chaque thread ajoutera a cette variable la */
 /* valeur generee aleatoirement */
 int somme_alea;
+
 /* nombre de threads executees */
 int cpt;
 
 /* mutex pour proteger la var globale somme_alea */
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER; 
+
 /* pour attendre l'exec de toutes les threads */
 pthread_mutex_t mutex_cpt = PTHREAD_MUTEX_INITIALIZER; 
 pthread_cond_t cond_cpt = PTHREAD_COND_INITIALIZER; 
+
 /* attendre l'affichage du resultat */
 pthread_mutex_t mutex_print = PTHREAD_MUTEX_INITIALIZER; 
 pthread_cond_t cond_print = PTHREAD_COND_INITIALIZER; 
 
 /* fonction lancee par chaque thread */
 void* thread_rand(void * arg){
+
   /* generer la valeur aleatoire */
   int random_val = (int) ((float) 10 * rand() /(RAND_MAX + 1.0));
 
@@ -36,16 +39,20 @@ void* thread_rand(void * arg){
   
   /* poser un verrou */
   pthread_mutex_lock(&mutex);
+
   /* ajouter la valeur generee a somme_alea */
   somme_alea += random_val;
+
   /* enlever le verrou */
   pthread_mutex_unlock(&mutex);
   
   /* pour connaitre la derniere thread */
   pthread_mutex_lock(&mutex_cpt);
   cpt++;
+
   /* si je suis la derniere thread */
   if (cpt == N){
+
     /* je reveille la thread d'affichage */
     pthread_cond_signal(&cond_cpt);
   }
@@ -59,12 +66,14 @@ void* thread_rand(void * arg){
 /* somme des valeurs generees */
 void * print_thread(void * arg){
   pthread_mutex_lock(&mutex_cpt);
+
   /* attente de l'exec de toutes les threads */
   pthread_cond_wait(&cond_cpt, &mutex_cpt);
   pthread_mutex_unlock(&mutex_cpt);
+
   /* afficher la somme des valeurs generees par les threads creees */
   printf("La somme des valeurs generees par les threads est : %d \n", somme_alea);
-    
+
   /* dire a la thread main qu on a fini l'affichage */  
   pthread_mutex_lock(&mutex_print);
   pthread_cond_signal(&cond_print);
@@ -73,11 +82,9 @@ void * print_thread(void * arg){
   pthread_exit((void *)0);
 }
 
-
-
 int main(int argc, char * argv[]){
   
-  int i, p, status;
+  int i, p;
   /* pour regler le probleme du pointeur vers la */
   /* meme case memoire &i */
   int tab[N];
@@ -104,31 +111,18 @@ int main(int argc, char * argv[]){
       perror("pthread_create");
       exit(1);
     }
-    printf("DEBUG je suis la\n");
+
     if(pthread_detach(tid[i]) != 0){
       perror("pthread_create");
       exit(1);
     }
   }
   
-  
-
   /* attendre l'affichage du resultat */
+  
   pthread_mutex_lock(&mutex_print);
   pthread_cond_wait(&cond_print, &mutex_print);
   pthread_mutex_unlock(&mutex_print);
   
-  printf("DEBUG fin du prog\n");
-  sleep(1);
-  /* attendre la fin de toutes les threads creees */
-  /*
-  for(i=0; i<N; i++){
-    if(pthread_join(tid[i],(void**) &status) != 0){
-      perror("pthread_join"); 
-      exit(1);
-    }
-    }
-  */
-
   return EXIT_SUCCESS;
 }
