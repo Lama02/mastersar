@@ -8,19 +8,10 @@ OBJ_D = ./obj
 LIB_D = ./lib
 
 
-
-
-
 exo1-1 : $(OBJ_D)/exo1-1.o
 	mkdir -p $(BIN_D) && $(CC) $(CFLAGS) $(LINK) $^ -o $(BIN_D)/$@
 
-test :  $(OBJ_D)/test.o
-	mkdir -p $(BIN_D) && $(CC) $(CFLAGS) $(LINK) $^ -o $(BIN_D)/$@
-
 $(OBJ_D)/exo1-1.o : $(SRC_D)/exo1-1.c
-	$(CC) -o $@ $(CFLAGS) -c $< 
-
-$(OBJ_D)/test.o : $(SRC_D)/test.c
 	$(CC) -o $@ $(CFLAGS) -c $< 
 
 exo2-1 : $(OBJ_D)/exo2-1.o
