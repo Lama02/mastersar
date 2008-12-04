@@ -24,9 +24,6 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex_cpt = PTHREAD_MUTEX_INITIALIZER; 
 pthread_cond_t cond_cpt = PTHREAD_COND_INITIALIZER; 
 
-/* attendre l'affichage du resultat */
-pthread_mutex_t mutex_print = PTHREAD_MUTEX_INITIALIZER; 
-pthread_cond_t cond_print = PTHREAD_COND_INITIALIZER; 
 
 /* fonction lancee par chaque thread */
 void* thread_rand(void * arg){
@@ -74,17 +71,12 @@ void * print_thread(void * arg){
   /* afficher la somme des valeurs generees par les threads creees */
   printf("La somme des valeurs generees par les threads est : %d \n", somme_alea);
 
-  /* dire a la thread main qu on a fini l'affichage */  
-  pthread_mutex_lock(&mutex_print);
-  pthread_cond_signal(&cond_print);
-  pthread_mutex_unlock(&mutex_print);
-
   pthread_exit((void *)0);
 }
 
 int main(int argc, char * argv[]){
   
-  int i, p;
+  int i, p,status;
   /* pour regler le probleme du pointeur vers la */
   /* meme case memoire &i */
   int tab[N];
@@ -119,10 +111,11 @@ int main(int argc, char * argv[]){
   }
   
   /* attendre l'affichage du resultat */
+  if(pthread_join( pt_print_tid,(void**) &status) != 0){
+    perror("pthread_join");
+    exit(1);
+  }
   
-  pthread_mutex_lock(&mutex_print);
-  pthread_cond_wait(&cond_print, &mutex_print);
-  pthread_mutex_unlock(&mutex_print);
   
   return EXIT_SUCCESS;
 }
