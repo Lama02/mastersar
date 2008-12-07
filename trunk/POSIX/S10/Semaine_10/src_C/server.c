@@ -8,8 +8,10 @@
 #include "string.h"
 #include <pthread.h>
 #include <arpa/inet.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 
-
+#include <sys/>
 
 /* taille de la file d'attente */
 #define TAILLE_FILE 10
@@ -25,8 +27,6 @@
 
 /* taille d'un message */
 #define MAX_MSG 1000
-
-
 
 
 /* la struct des messages echanges */
