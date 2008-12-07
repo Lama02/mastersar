@@ -8,40 +8,26 @@ LIB_D = ./lib
 
 
 
+all: server client
 
-
-exo1-1 : $(OBJ_D)/exo1-1.o
+server : $(OBJ_D)/server.o
 	mkdir -p $(BIN_D) && $(CC) $(CFLAGS) $^ -o $(BIN_D)/$@
-$(OBJ_D)/exo1-1.o : $(SRC_D)/exo1-1.c
+$(OBJ_D)/server.o : $(SRC_D)/server.c
 	$(CC) -o $@ $(CFLAGS)  -c $< 
 
-exo2-1 : $(OBJ_D)/exo2-1.o
+client : $(OBJ_D)/client.o
 	mkdir -p $(BIN_D) && $(CC) $(CFLAGS) $^ -o $(BIN_D)/$@
-$(OBJ_D)/exo2-1.o : $(SRC_D)/exo2-1.c
+$(OBJ_D)/client.o : $(SRC_D)/client.c
 	$(CC) -o $@ $(CFLAGS)  -c $< 
-
-exo2-2 : $(OBJ_D)/exo2-2.o
-	mkdir -p $(BIN_D) && $(CC) $(CFLAGS) $^ -o $(BIN_D)/$@
-$(OBJ_D)/exo2-2.o : $(SRC_D)/exo2-2.c
-	$(CC) -o $@ $(CFLAGS)  -c $< 
-
-
-exo3-1 : $(OBJ_D)/exo3-1.o
-	mkdir -p $(BIN_D) && $(CC) $(CFLAGS) $^ -o $(BIN_D)/$@
-$(OBJ_D)/exo3-1.o : $(SRC_D)/exo3-1.c
-	$(CC) -o $@ $(CFLAGS)  -c $< 
-
-exo3-2 : $(OBJ_D)/exo3-2.o
-	mkdir -p $(BIN_D) && $(CC) $(CFLAGS) $^ -o $(BIN_D)/$@
-$(OBJ_D)/exo3-2.o : $(SRC_D)/exo3-2.c
-	$(CC) -o $@ $(CFLAGS)  -c $< 
-
 
 
 clean :
 	@rm -fr $(OBJ_D)/*.o $(BIN_D)/$(EXEC) $(LIB_D)/*.a $(BIN_D)
 
-run:
-	$(BIN_D)/$(EXEC)
+run server:
+	$(BIN_D)/$(EXEC)/server
+
+run client:
+	$(BIN_D)/$(EXEC)/client
 
 .PHONY : clean all
