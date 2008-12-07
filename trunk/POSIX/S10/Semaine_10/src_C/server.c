@@ -82,7 +82,7 @@ void * traitement_req(void * scom){
 
   /*-- traitement du message envoye par le client --*/
   /* le message correspond a JOIN */
-  if ( (strcmp(req_from_cli.msg;"JOIN")) == 0 ) {
+  if ( (strcmp(req_from_cli.msg, "JOIN")) == 0 ) {
     
     /* verifier si le nombre maxi de connectes n'est pas atteint */
     /* poser un verro */
@@ -135,7 +135,7 @@ void * traitement_req(void * scom){
   /* la thread s'occupera de toutes le requetes de notre client */
   while (1){
     /* le message correspond a QUIT */
-    if ( (strcmp(req_from_cli.msg;"QUIT")) == 0 ) {
+    if ( (strcmp(req_from_cli.msg, "QUIT")) == 0 ) {
       
       /* supprimer le client de la liste des participants */
       for (i=0; i< MAX_CONNECTES; i++){
