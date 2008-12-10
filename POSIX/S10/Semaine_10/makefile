@@ -1,7 +1,7 @@
 CC = gcc
 INCLUDE = ./include
 CFLAGS = -Wall -ansi -pedantic -O -I $(INCLUDE)
-LINK =  -lpthread
+LINK =  -lrt -lpthread
 SRC_D = ./src_C
 BIN_D = ./bin
 OBJ_D = ./obj

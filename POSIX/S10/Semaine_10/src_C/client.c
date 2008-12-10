@@ -31,55 +31,48 @@ typedef struct req {
 
 /* socket de communicaton */
 int sock; 
+/* threads d'envoie et de reception */
+pthread_t thread_reception, thread_envoie;
 
-/* la requete a envoyer au server */
-chat_request req; 
-/* la reponse du serveur */
-chat_request reponse;
 
- 
+
+
+char pseudo [MAX_PSEUDO];
 
 /* afficher la reponse du serveur */
-void print_reponse(chat_request message){
-  /* messages en provenance du systeme */ 
-  if ( strcmp( message.pseudo, "SYSTEM") == 0){ 
-    if ( strcmp( message.msg   , "JOIN_ACK"  ) == 0){
-      printf("%s : Hi <%s>, soit le bienvenue.\n", 
-	     message.pseudo, req.pseudo);
-      return;
-    }
-  }
-  
-  /* messages en provenance des participants */
-  printf("%s : %s\n", message.pseudo, message.msg);
+void print_reponse(chat_request * message){
+  printf("\n> %s : %s\n", message->pseudo, message->msg);
+  return;
 }
 
-/*
-  while (1)
-    select{
 
-      if ( FD_ISSET ())
-	scanf(); write();
-      if ( FD_ISSET ())
-	read(); printf();}
-*/
+void welcome (chat_request * message){
+  printf("Hi %s. Bienvenue dans le chat\n", message->pseudo);
+}
 
 
 /* arret du client mais avant il faut  */
 /* envoyer un message QUIT au serveur */
 /* et attendre un ack */
 void stop_client(){
-  
+  chat_request req_quit;
+  chat_request reponse_quit;
+ 
   fprintf(stderr, "Stopping client...");
+ 
+  /* arreter les threads d'envoie et de reception */
+  pthread_cancel(thread_envoie);
+  pthread_cancel(thread_reception);
   
   /* formuler le messag */
   /* si on estla cela veut dire    */
   /* que le pseudo est deja dans   */
   /* le champ pseudo de la requete */
-  strcpy(req.msg, "QUIT");
+  strcpy(req_quit.msg, "QUIT");
+  strcpy(req_quit.pseudo, pseudo);
   
   /* envoyer le msg au serveur */
-  if (write(sock, &req, sizeof(req)) == -1) { 
+  if (write(sock, &req_quit, sizeof(req_quit)) == -1) { 
     perror("write 00"); 
     /* Fermer la connexion */  
     shutdown(sock,2); 
@@ -87,28 +80,18 @@ void stop_client(){
     exit(2);
   }
   
-  /* attendre l'acquittement du serveur */
-  if (read(sock, &reponse, sizeof(reponse)) == -1) { 
-    perror("read 00"); 
-    /* Fermer la connexion */  
-    shutdown(sock,2); 
-    close(sock); 
-    exit(2);
-  }
-  
-
-  /* on boucle tant que l on a pas recut l acquittement */
-  while( (strcmp(reponse.msg, "QUIT_ACK")   != 0 ) || 
-	 (strcmp (reponse.pseudo, "SYSTEM") != 0 ) ){ 
-    
-    if (read(sock, &reponse, sizeof(reponse)) == -1) { 
-      perror("read 11"); 
+  do{
+    /* attendre l'acquittement du serveur */
+    if (read(sock, &reponse_quit, sizeof(reponse_quit)) == -1) { 
+      perror("read 00"); 
       /* Fermer la connexion */  
       shutdown(sock,2); 
       close(sock); 
       exit(2);
     }
-  }
+  } while( (strcmp(reponse_quit.msg, "QUIT_ACK")   != 0 ) || 
+	   (strcmp (reponse_quit.pseudo, "SYSTEM") != 0 ) );
+  
   
   /* Fermer la connexion */  
   shutdown(sock,2); 
@@ -118,29 +101,16 @@ void stop_client(){
 }
 
 
+/* A la reception de n'importe quel signal (sauf SIGSTOP) */
+/* et avant de tuer le client, la routine stop_client est */
+/* lancee, ceci permet d'arreter proprement le client     */
+void set_sigaction(){
 
-
-int main(int argc, char *argv[]) 
-{ 
-  struct sockaddr_in dest; /* Nom du serveur */ 
-  struct hostent *hp; 
-  
   int i;
 
   /* pour le deroutement */
   sigset_t sig_set;
   struct sigaction action;
-  
-  
-  
-    
-  if (argc != 3) { 
-    fprintf(stderr, "Usage : %s machine pseudo\n", argv[0]); 
-    exit(1); 
-  } 
-  
-  /* le pseudo du client */
-  strcpy(req.pseudo, argv[2]);
   
   /* on ne masque aucun signal */
   sigemptyset(&sig_set);
@@ -154,8 +124,87 @@ int main(int argc, char *argv[])
   /* supprimer toutes les sockets creee */
   /* avant de se suicider ;)*/
   for (i=0; i< _NSIG; i++){
-    sigaction(i, &action, NULL);
+      sigaction(i, &action, NULL);
+  }  
+}
+
+
+/************************************/
+/* envoyer le message msg au seveur */
+void envoyer_message(chat_request msg){
+  fprintf(stderr, "DEBUG envoyer_message: %s\n", msg.msg);
+  if (write(sock, (chat_request *)&msg, 
+	    sizeof(chat_request)) == -1) { 
+    perror("write 0"); 
+    exit(1); 
+  } 
+}
+
+
+/*********************************************************/
+/* envoyer le message saisi par l'utilisateur au serveur */
+void * envoie_message(){
+  chat_request msg;
+  strcpy(msg.pseudo, pseudo);
+  while(1){
+    printf("%s : ", pseudo); 
+    if (fgets(msg.msg, MAX_MSG, stdin) == NULL){
+      perror("fgets");
+      stop_client();
+    }
+    envoyer_message(msg);
   }
+}
+
+ 
+/*********************************************/
+/* retourne le message envoye par le serveur */
+void msg_recu (chat_request * msg_recu){
+  if (read(sock, msg_recu, sizeof(chat_request)) == -1) { 
+    perror("read 0"); 
+    exit(1); 
+  }
+  fprintf(stderr,"DEBUG msg_recu: %s\n", msg_recu->msg);
+
+}
+
+
+/*********************************************/
+/* afficher le message envoye par le serveur */
+void * reception_message(){
+  chat_request req_recu;
+  while(1){
+    msg_recu(&req_recu);
+    print_reponse(&req_recu);
+  }
+}
+
+
+/*********************************************/
+/* entre du programme                        */
+int main(int argc, char *argv[]) 
+{ 
+  struct sockaddr_in dest; /* Nom du serveur */ 
+  struct hostent *hp; 
+  
+  /* la requete a envoyer au server */
+  chat_request req; 
+  /* la reponse du serveur */
+  chat_request reponse;
+  
+  
+  if (argc != 3) { 
+    fprintf(stderr, "Usage : %s machine pseudo\n", argv[0]); 
+    exit(1); 
+  } 
+  
+  /* mettre en place le deroutement definie */
+  /* precedement a la reception des signaux */
+  set_sigaction();
+  
+  fprintf(stderr, "[INFO] Connecting to the server...");
+  /* le pseudo du client */
+  strcpy(pseudo, argv[2]);
   
   /* creation de la socket de communication  */
   if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1) { 
@@ -187,27 +236,55 @@ int main(int argc, char *argv[])
     exit(1); 
   } 
   
+  fprintf(stderr, "OK\n");
+  
   /* construire le message a envoyer */
   strcpy(req.msg, "JOIN");
-
+  strcpy(req.pseudo, pseudo);
   
-  while (1){
-    /* Envoyer la requete au serveur */ 
-    if (write(sock, &req, sizeof(req)) == -1) { 
-      perror("write 0"); 
-      exit(1); 
-    } 
+  /* joindre le serveur       */
+  /* envoyer la commande JOIN */
+  fprintf(stderr, "[INFO] joining server...");
+  envoyer_message(req);
+  /* attendre la reception d'un acquittement */
+  msg_recu(&reponse);
+  
     
-    /* Recevoir la reponse */ 
-    if (read(sock, &reponse, sizeof(reponse)) == -1) { 
-      perror("read 0"); 
-      exit(1); 
-    } 
-    
-    /* afficher la reponse du serveur */
-    print_reponse(reponse);
-    
-    printf("%s : ", req.pseudo); scanf("%s", req.msg);
+  if ( (strcmp(reponse.pseudo, "SYSTEM") != 0 ) ||
+       (strcmp(reponse.msg, "JOIN_ACK") != 0)){
+    /* si l'aquitement n'est pas bon */
+    /* on arrete le client */
+    fprintf(stderr,"Error\n");
+    stop_client();
+  }
+
+  fprintf(stderr, "OK\n");
+  
+  /* le client a bien rejoint le chat, nous allons creer deux threads  */
+  /* une pour envoyer les messages au serveur et l'autre pour recevoir */
+  /* les messages du serveur */
+
+  welcome(&req);
+
+  if  (pthread_create ((pthread_t *)&thread_reception, NULL, reception_message, (void *)&reponse) != 0) {
+    fprintf(stderr,"pthread_create a rencontre un probleme\n");
+    stop_client();
+    exit(5);
+  }
+  
+  
+  if  (pthread_create ((pthread_t *)&thread_envoie, NULL, envoie_message, (void *) &req) != 0) {
+    fprintf(stderr,"pthread_create a rencontre un probleme\n");
+    stop_client();
+    exit(5);
+  }
+  
+  if (pthread_join (thread_reception,NULL) !=0) {
+    printf ("pthread_join"); exit (1);
+  }
+  
+  if (pthread_join (thread_envoie,NULL) !=0) {
+    printf ("pthread_join"); exit (1);
   }
   
   return(0); 
