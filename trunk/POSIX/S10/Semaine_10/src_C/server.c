@@ -12,8 +12,8 @@
 #include <netinet/in.h>
 #include <netdb.h>  
 #include <signal.h>
-
-
+#include <mqueue.h>
+#include <sys/stat.h>
 
 /* taille de la file d'attente */
 #define TAILLE_FILE 10
@@ -57,6 +57,8 @@ int nb_connectes = 0;
 /* la socket de connexion */
 int socket_connexion ;
 
+/* identifiant de la file de message */
+mqd_t fil;
 
 
 /* stoper la communication */
@@ -78,6 +80,7 @@ void stop_server(){
   /* on creera plus de socket de communication */
   close(socket_connexion);
   
+  
 
   /* fermons les sockets de communications */
   /* todo posons un verrou sur la liste */
@@ -87,8 +90,20 @@ void stop_server(){
     }
   }
   /* todo enlever le verrou sur la lise */
+  
+  /* fermer et supprimer la file de messages */
+  mq_unlink("/file");
+  close(fil);
+  
   fprintf(stderr, "OK\n");
   exit(0);
+}
+
+
+
+/* gestion des logs */
+void add_log(char * log){
+  fprintf(stderr,"[INFO] %s\n",log);
 }
 
 
@@ -104,18 +119,19 @@ void * traitement_req(void * scom){
   
   /* le reponse a envoyer au client  */
   chat_request resp_to_cli;
-  
+
   /* attendre que le client nous envoie une reqete */
   if ((read(*(int *) scom, &req_from_cli, sizeof(req_from_cli))) == -1){ 
     perror("read 33");
     stop_communication(scom);
     pthread_exit((void *)1);      
   }
-
+  
   /*-- traitement du message envoye par le client --*/
   /* le message correspond a JOIN */
   if ( (strcmp(req_from_cli.msg, "JOIN")) == 0 ) {
     
+    fprintf(stderr, "[INFO] Le client %s veut joindre le serveur\n",req_from_cli.pseudo);
     /* verifier si le nombre maxi de connectes n'est pas atteint */
     /* poser un verro */
     if (nb_connectes >= MAX_CONNECTES) {
@@ -125,7 +141,7 @@ void * traitement_req(void * scom){
       strcpy (resp_to_cli.pseudo, "SYSTEM");
       strcpy (resp_to_cli.msg, "JOIN_MAX_CONNECTIONS");
       write(*(int *)scom, &resp_to_cli, sizeof(resp_to_cli));
-      
+      fprintf(stderr, "[INFO] Rejet du client %s. plus de place sur le serveur\n",req_from_cli.pseudo);
       /* deconnexion : arreter les envoies/receptions */
       stop_communication(scom);
       pthread_exit((void *)1);      
@@ -138,14 +154,22 @@ void * traitement_req(void * scom){
     
     /* avertir tout le monde que le chatteur pseudo */
     /* a rejoint le chat */
-    strcpy(resp_to_cli.pseudo,"SYSTEM");
+    /* strcpy(resp_to_cli.pseudo,"SYSTEM");
     sprintf(resp_to_cli.msg,"%s a rejoint le chat",req_from_cli.pseudo);
     for (i=0; i< MAX_CONNECTES; i++){
       if (tab_connectes[i].valid == 1){ 
 	write (tab_connectes[i].scom, &resp_to_cli, sizeof(resp_to_cli));
       }
+      }*/
+    
+    strcpy(resp_to_cli.pseudo,"SYSTEM");
+    sprintf(resp_to_cli.msg,"%s a rejoint le chat",req_from_cli.pseudo);
+    /* ajout du message dans la file de message*/
+    if(mq_send(fil, (char *) &resp_to_cli , MAX_MSG, 0) == -1){
+      perror("mq_send");
+      exit(1);
     }
-
+    
     /* ajouter le client dans la liste des participants */
     /* on a deja reserve notre place messieurs :) */
     /* a la recherche d'une place dans la liste des connectes */
@@ -162,11 +186,19 @@ void * traitement_req(void * scom){
     /* envoyer un acquittement pour la connexion au client */
     strcpy(resp_to_cli.pseudo, "SYSTEM");
     strcpy(resp_to_cli.msg, "JOIN_ACK");
-    write(*(int *) scom, &resp_to_cli, sizeof(resp_to_cli));
+    if (write(*(int *) scom, &resp_to_cli, sizeof(resp_to_cli)) == -1){
+      perror("write44");
+      stop_communication(scom);
+      pthread_exit((void *)1);      
+    }
+    
+    add_log("le client peut joindre le serveur");
+    
   }else{
     /* le message recu n est pas un join */
     /* ce n'est pas possible a ce niveau */
-   
+    fprintf(stderr, "[ERROR] Le client %s ne peut pas joindre le serveur\n", 
+	    req_from_cli.pseudo);
     /* deconnexion : arreter les envoies/receptions */
       stop_communication(scom);
       pthread_exit((void *)1);      
@@ -177,16 +209,18 @@ void * traitement_req(void * scom){
   while (1){
     /* scenario normal: soit message normal, soit un quit */
     
-    /* attendre que le client nous envoie une reqete */
+    /* attendre que le client nous envoie une requete */
     if (read(*(int *) scom, &req_from_cli, sizeof(req_from_cli)) == -1){  
       perror("read 44");
       stop_communication(scom);
       pthread_exit((void *)1);      
     }
-
+    
+    
     /* le message correspond a QUIT */
     if ( (strcmp(req_from_cli.msg, "QUIT")) == 0 ) {
-      
+
+      add_log("le client veut quitter le chat");
       /* supprimer le client de la liste des participants */
       for (i=0; i< MAX_CONNECTES; i++){
 	if (tab_connectes[i].scom == *(int *)scom){
@@ -204,26 +238,31 @@ void * traitement_req(void * scom){
       /* a quitte le chat */
       strcpy(resp_to_cli.pseudo, "SYSTEM");
       sprintf(resp_to_cli.msg,"%s a quitte le chat",req_from_cli.pseudo);
-
+      /* mettre le message dans la file */
+      if(mq_send(fil, (char *) &resp_to_cli, sizeof(chat_request),0) == -1){
+	perror("mq_send");
+	exit(1);
+      }
+      
+      
       /* ici on envoie un acquittement pour la deconnexion au client */
       strcpy(resp_to_cli.pseudo, "SYSTEM");
       strcpy(resp_to_cli.msg, "QUIT_ACK");
       write(*(int *) scom, &resp_to_cli, sizeof(resp_to_cli));
       
+      add_log("arreter la communication avec le client");
       /* deconnexion : arreter les envoies/receptions */
       stop_communication(scom);
       pthread_exit((void *)0);
-    
+      
     }else{
       
       /* Message normal a diffuser a tous les autres clients */
-      /* poser un verrou sur la liste des connecte */
-      for(i=0; i < MAX_CONNECTES; i++){
-	if(tab_connectes[i].valid == 1){
-	  write(tab_connectes[i].scom, &req_from_cli, sizeof(req_from_cli));
-	}
+      if(mq_send(fil, (char *) &req_from_cli, sizeof(chat_request),0) == -1){
+	perror("mq_send");
+	exit(1);
       }
-      /* enlever le verrou pose */
+      
     }
   } 
 }
@@ -249,8 +288,9 @@ int main(int argc, char * argv[]){
   /* pour le deroutement */
   sigset_t sig_set;
   struct sigaction action;
+ 
 
-
+  
   /*--------- initialisations ---------*/
   
   /* nettre a zero les octets de socket_in */
@@ -283,17 +323,26 @@ int main(int argc, char * argv[]){
   for (i=0; i< _NSIG; i++){
     sigaction(i, &action, NULL);
   }
+
+
+  /* creation de la file de message */
   
+  if( (fil = mq_open("/file",O_RDWR | O_CREAT, 0600, NULL)) == (mqd_t) -1){
+    perror("mq_open"); 
+    exit(1);
+}
   
   /* creation de socket de connexion */
   if ((socket_connexion = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1){
     perror("socket");
+    close(fil);
     exit(1);
   }
   
   /* nommer la socket de connexion */
   if ((bind(socket_connexion, (struct sockaddr *) &socket_in, sizeof(socket_in))) == -1){
     perror("bind");
+    close(fil);
     exit(2);
   }
   
@@ -302,13 +351,17 @@ int main(int argc, char * argv[]){
   if ((listen (socket_connexion, TAILLE_FILE)) == -1){
     perror("listen");
     close (socket_connexion);
+    close(fil);
     exit(3);
   }
 
   /* le serveur est up */ 
   fprintf(stderr, "OK\n");
+
+  /* le transfomer en demon */
+  if (fork() != 0) exit (0);
+
   /* attente des requetes des clients */
-  
   while(1){ 
     /* creation de socket de communication */
     /* nous allons creer une thread pour chaque client */
@@ -316,6 +369,7 @@ int main(int argc, char * argv[]){
     if ((socket_communication = accept(socket_connexion, (struct sockaddr *)&src, (socklen_t *)&fromlen )) == -1){
       perror("accept");
       close (socket_connexion);
+      close(fil);
       exit(4);
     }
     
@@ -324,6 +378,7 @@ int main(int argc, char * argv[]){
     if  (pthread_create ((pthread_t *)&tid[i], NULL, traitement_req, (void *)&socket_communication) != 0) {
       fprintf(stderr,"pthread_create a rencontre un probleme\n");
       close (socket_connexion);
+      close(fil);
       exit(5);
     }
     
@@ -333,13 +388,14 @@ int main(int argc, char * argv[]){
     if(pthread_detach(tid[i]) != 0){
       perror("pthread_detach");
       close (socket_connexion);
+      close(fil);
       exit(1);
     }
     /* pour stocker le tid de la prochaine thread */
     i++;
   }
   
-  
+
   return 0;    
 }
 
