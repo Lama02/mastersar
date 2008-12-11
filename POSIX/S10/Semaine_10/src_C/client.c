@@ -1,41 +1,13 @@
 /* client.c */
-#define _POSIX_SOURCE 1
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include "string.h"
-#include <pthread.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>  
-#include <signal.h>
-
-/* taille d'un pseudo */
-#define MAX_PSEUDO 24
-
-/* taille d'un message */
-#define MAX_MSG 1000
+#include "chat.h"
 
 
-/* port a connecter */
-#define PORTSERV 9901
 
-/* la struct des messages echanges */
-typedef struct req {
-  char pseudo [MAX_PSEUDO];
-  char msg[MAX_MSG];
-} chat_request;
 
 /* socket de communicaton */
 int sock; 
 /* threads d'envoie et de reception */
 pthread_t thread_reception, thread_envoie;
-
-
-
 
 char pseudo [MAX_PSEUDO];
 
@@ -46,10 +18,33 @@ void print_reponse(chat_request * message){
 }
 
 
+
+
 void welcome (chat_request * message){
   printf("Hi %s. Bienvenue dans le chat\n", message->pseudo);
 }
 
+
+
+
+/* retourne 1 lorsque le message reponse vient du  */
+/* serveur et correspond a un QUIT_ACK, 0 sinon    */
+ int est_quit_ack(chat_request * reponse_quit){
+  return ((strcmp(reponse_quit->msg, "QUIT_ACK") == 0 ) && 
+	  (strcmp (reponse_quit->pseudo, "SYSTEM") == 0 ) );
+}
+
+
+
+
+void kill_client(int code_erreur){
+  /* Fermer la connexion */  
+  pthread_cancel(thread_envoie);
+  pthread_cancel(thread_reception);
+  shutdown(sock,2); 
+  close(sock); 
+  exit(code_erreur);
+}
 
 /* arret du client mais avant il faut  */
 /* envoyer un message QUIT au serveur */
@@ -59,12 +54,8 @@ void stop_client(){
   chat_request reponse_quit;
  
   fprintf(stderr, "Stopping client...");
- 
-  /* arreter les threads d'envoie et de reception */
-  pthread_cancel(thread_envoie);
-  pthread_cancel(thread_reception);
   
-  /* formuler le messag */
+  /* formuler le message */
   /* si on estla cela veut dire    */
   /* que le pseudo est deja dans   */
   /* le champ pseudo de la requete */
@@ -74,36 +65,31 @@ void stop_client(){
   /* envoyer le msg au serveur */
   if (write(sock, &req_quit, sizeof(req_quit)) == -1) { 
     perror("write 00"); 
-    /* Fermer la connexion */  
-    shutdown(sock,2); 
-    close(sock); 
-    exit(2);
+    kill_client(1);
   }
   
   do{
     /* attendre l'acquittement du serveur */
     if (read(sock, &reponse_quit, sizeof(reponse_quit)) == -1) { 
-      perror("read 00"); 
+      perror("read 00");
       /* Fermer la connexion */  
-      shutdown(sock,2); 
-      close(sock); 
-      exit(2);
+      kill_client(1); 
     }
-  } while( (strcmp(reponse_quit.msg, "QUIT_ACK")   != 0 ) || 
-	   (strcmp (reponse_quit.pseudo, "SYSTEM") != 0 ) );
+    fprintf(stderr, "DEBUG message recu du serveur %s\n", reponse_quit.msg);
+  } while( !est_quit_ack(&reponse_quit)); 
   
-  
-  /* Fermer la connexion */  
-  shutdown(sock,2); 
-  close(sock); 
+
+  /* arreter les threads d'envoie et de reception */
+  /* et rermer la connexion */  
   fprintf(stderr, "OK\n");
-  exit(0); /* tout va bien  */
+  kill_client(1);  
 }
 
 
-/* A la reception de n'importe quel signal (sauf SIGSTOP) */
-/* et avant de tuer le client, la routine stop_client est */
-/* lancee, ceci permet d'arreter proprement le client     */
+/* A la reception de n'importe quel signal  */
+/* et avant de tuer le client, la routine   */
+/* stop_client est lancee, ceci permet      */
+/* d'arreter proprement le client           */
 void set_sigaction(){
 
   int i;
@@ -152,6 +138,7 @@ void * envoie_message(){
       perror("fgets");
       stop_client();
     }
+    fprintf(stderr,"DEBUG envoie_message: %s\n", msg.msg);
     envoyer_message(msg);
   }
 }
@@ -162,7 +149,7 @@ void * envoie_message(){
 void msg_recu (chat_request * msg_recu){
   if (read(sock, msg_recu, sizeof(chat_request)) == -1) { 
     perror("read 0"); 
-    exit(1); 
+    kill_client(1); 
   }
   fprintf(stderr,"DEBUG msg_recu: %s\n", msg_recu->msg);
 
@@ -175,10 +162,16 @@ void * reception_message(){
   chat_request req_recu;
   while(1){
     msg_recu(&req_recu);
+    fprintf(stderr,"DEBUG reception_message: %s\n", req_recu.msg);
+    /* le message est un QUIT_ACK */
+    if (est_quit_ack(&req_recu)){
+      kill_client(1); 
+    }
     print_reponse(&req_recu);
   }
 }
 
+ 
 
 /*********************************************/
 /* entre du programme                        */
@@ -236,7 +229,7 @@ int main(int argc, char *argv[])
     exit(1); 
   } 
   
-  fprintf(stderr, "OK\n");
+  fprintf(stderr, "OK connexion\n");
   
   /* construire le message a envoyer */
   strcpy(req.msg, "JOIN");
@@ -255,7 +248,7 @@ int main(int argc, char *argv[])
     /* si l'aquitement n'est pas bon */
     /* on arrete le client */
     fprintf(stderr,"Error\n");
-    stop_client();
+    stop_client(); 
   }
 
   fprintf(stderr, "OK\n");
