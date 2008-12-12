@@ -124,6 +124,7 @@ void envoyer_message(chat_request msg){
     perror("write 0"); 
     exit(1); 
   } 
+    fprintf(stderr, "DEBUG message: %s envoye \n", msg.msg);
 }
 
 
@@ -138,7 +139,6 @@ void * envoie_message(){
       perror("fgets");
       stop_client();
     }
-    fprintf(stderr,"DEBUG envoie_message: %s\n", msg.msg);
     envoyer_message(msg);
   }
 }
@@ -150,9 +150,9 @@ void msg_recu (chat_request * msg_recu){
   if (read(sock, msg_recu, sizeof(chat_request)) == -1) { 
     perror("read 0"); 
     kill_client(1); 
-  }
-  fprintf(stderr,"DEBUG msg_recu: %s\n", msg_recu->msg);
+    }
 
+    fprintf(stderr,"DEBUG message_recu : %s\n", msg_recu->msg);
 }
 
 
@@ -238,11 +238,13 @@ int main(int argc, char *argv[])
   /* joindre le serveur       */
   /* envoyer la commande JOIN */
   fprintf(stderr, "[INFO] joining server...");
+  fprintf(stderr,"[DEBUG] j'envoie le message %s\n", req.msg);
+  sleep(3);
   envoyer_message(req);
   /* attendre la reception d'un acquittement */
   msg_recu(&reponse);
+  fprintf(stderr, " apres msg-recu %s  \n" , reponse.msg);    
   
-    
   if ( (strcmp(reponse.pseudo, "SYSTEM") != 0 ) ||
        (strcmp(reponse.msg, "JOIN_ACK") != 0)){
     /* si l'aquitement n'est pas bon */
@@ -256,9 +258,9 @@ int main(int argc, char *argv[])
   /* le client a bien rejoint le chat, nous allons creer deux threads  */
   /* une pour envoyer les messages au serveur et l'autre pour recevoir */
   /* les messages du serveur */
-
+  
   welcome(&req);
-
+  
   if  (pthread_create ((pthread_t *)&thread_reception, NULL, reception_message, (void *)&reponse) != 0) {
     fprintf(stderr,"pthread_create a rencontre un probleme\n");
     stop_client();
