@@ -25,10 +25,10 @@
 #define TAILLE_FILE 10
 
 /* nombre maximum de connectes */
-#define MAX_CONNECTES 30
+#define MAX_CONNECTES 20
 
 /* port d'ecoute */
-#define PORTSERV 9901
+#define PORTSERV 9900
 
 
 /* la struct des messages echanges */

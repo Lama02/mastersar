@@ -58,6 +58,22 @@ int est_quit_ack(chat_request * reponse_quit){
 
 
 /****************************************************************/
+/* retourne 1 lorsque le message reponse vient du               */
+/* serveur et correspond a un SERVER_DOWN, 0 sinon              */
+/****************************************************************/
+int est_server_down(chat_request * server_down){
+  if((strcmp(server_down->msg, "SERVER_DOWN") == 0 ) && 
+       (strcmp (server_down->pseudo, "SYSTEM") == 0 ) ){
+    return 1;
+  }else{
+    return 0;
+  } 
+}
+
+
+
+
+/****************************************************************/
 /* Arrete les threads d'envoie et de reception */
 /****************************************************************/
 void cancel_threads_communication(){
@@ -91,8 +107,9 @@ void deconnexion(){
   chat_request req_quit;
   chat_request reponse_quit;
   
-    fprintf(stderr, "Stopping client...\n");
-  
+  fprintf(stderr, "Stopping client...\n");
+
+  /* annuler les threads d'envoie et de reception */  
   cancel_threads_communication();
   
   /* formuler le message */
@@ -116,8 +133,7 @@ void deconnexion(){
   
   /*  fprintf(stderr,"[DEBUG] APRES le while \n \n ");*/
   
-  /* arreter les threads d'envoie et de reception */
-  /* et rermer la connexion */  
+  /* et fermer la connexion */  
   kill_client(1);  
 }
 
@@ -157,8 +173,11 @@ void * reception_message(){
     /*fprintf(stderr,"DEBUG reception_message: %s\n", reponse.msg);*/
     /* le message est un QUIT_ACK */
     if (est_quit_ack(&reponse)){
-      /* todo quitter proprement */
       kill_client(1); 
+    }
+    if (est_server_down(&reponse)){
+      fprintf(stderr, "Le serveur est en cours d'arret...\n");
+      kill_client(7);
     }
     print_reponse(&reponse);
   }
@@ -292,26 +311,36 @@ void join_server(){
   
   /* joindre le serveur       */
   /* envoyer la commande JOIN */
-    fprintf(stderr, "[INFO] joining server...\n");
-    /*
-      fprintf(stderr,"[DEBUG] j'envoie le message %s\n", req.msg);
-    */
+  fprintf(stderr, "[INFO] joining server...\n");
+  /*
+    fprintf(stderr,"[DEBUG] j'envoie le message %s\n", req.msg);
+  */
   envoyer_message(&req);
-
+  
   /* attendre la reception d'un acquittement */
   recevoir_reponse(&reponse);
 
   /* 
      fprintf(stderr, "[DEBUG] apres msg-recu %s  \n" , reponse.msg);    
-   */
+  */
+  
+  /* si le serveur est plein */
+  if ( (strcmp(reponse.pseudo, "SYSTEM") == 0 ) &&
+       (strcmp(reponse.msg, "SERVER_FULL") == 0)){
+    /* le serveur est plein */
+    fprintf(stderr, "[INFO] joining server...ERROR: Le serveur est sature, essayez plus tard.\n");
+    kill_client(5); 
+  }
+  
   if ( (strcmp(reponse.pseudo, "SYSTEM") != 0 ) ||
        (strcmp(reponse.msg, "JOIN_ACK") != 0)){
     /* si l'aquitement n'est pas bon */
     /* on arrete le client */
     fprintf(stderr, "[INFO] joining server...ERROR\n");
-    deconnexion(); 
+    kill_client(4); 
   }
-    fprintf(stderr, "[INFO] joining server...OK\n");
+  /* si tout va bien */
+  fprintf(stderr, "[INFO] joining server...OK\n");
   welcome(&req);  
 }
 
@@ -360,7 +389,7 @@ int main(int argc, char *argv[])
   /* mettre en place le deroutement  */
   init_deroutement();
   
-  fprintf(stderr, "[INFO] Connecting to the server...");
+  fprintf(stderr, "[INFO] Connecting to the server...\n");
   /* le pseudo du client */
   strcpy(pseudo, argv[2]);
   
@@ -375,7 +404,6 @@ int main(int argc, char *argv[])
   /* une pour envoyer les messages au serveur et l'autre pour recevoir */
   /* les messages du serveur */  
   init_threads_communication(&requete, &reponse); 
-  
   
   return(0); 
 }
