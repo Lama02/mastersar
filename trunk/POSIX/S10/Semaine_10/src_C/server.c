@@ -1,5 +1,6 @@
 /* "server.c" */
 #include "chat.h"
+#include "server.h"
 #include <errno.h>
 
 
@@ -28,7 +29,7 @@ mqd_t fil;
 
 
 /****************************************************************/
-/* stoper la communication                                      */
+/* stopper la communication                                     */
 /****************************************************************/
 void stop_communication(int scom){
   /* deconnexion : arreter les envoies/receptions */
@@ -46,17 +47,23 @@ void stop_communication(int scom){
 /****************************************************************/
 void stop_server(){
   int i;
-
+  
+  chat_request shutdown_msg;
+  
   fprintf(stderr, "Stopping server...\n");
   /* fermons d'abord celle de connexion comme ca */
   /* on creera plus de socket de communication */
   close(socket_connexion);
   
+  /* avertir tout le monde que le serveur est */
+  /* entrain de s'arreter */
+  set_requete(&shutdown_msg, "SYSTEM", "SERVER_DOWN");
   /* fermons les sockets de communications */
   /* posons un verrou sur la liste */
   pthread_mutex_lock(&mutex_tab_connectes);
   for (i=0; i< MAX_CONNECTES; i++){
     if (tab_connectes[i].valid == 1){
+      envoyer_reponse(tab_connectes[i].scom, &shutdown_msg);
       stop_communication(tab_connectes[i].scom);
     }
   }
@@ -158,8 +165,6 @@ void put_message(int scom, chat_request * message){
     pthread_mutex_unlock(&mutex_liste_message);
     pthread_exit((void *)1);
   }
-  fprintf(stderr, "[INFO] le message \"%s\" est mis dans la liste\n",
-	  message->msg);
   pthread_mutex_unlock(&mutex_liste_message);
 }
 
@@ -175,9 +180,6 @@ void pop_message( chat_request * message){
     perror("mq_receive"); 
     stop_server();
   }
-  fprintf(stderr, "[INFO] le message \"%s\" est recupere de la liste\n",
-	  message->msg);
-  
 }
 
 
@@ -193,9 +195,6 @@ void recevoir_requete(int scom, chat_request * requete){
     stop_communication(scom);
     pthread_exit((void *)1);      
   }
-  fprintf(stderr, "[INFO] le message \"%s\" est envoye par le client %d\n",
-	  requete->msg, scom);
-  
 }
 
 
@@ -211,9 +210,6 @@ void envoyer_reponse(int scom, chat_request *reponse){
     stop_communication(scom);
     pthread_exit((void *)1);       
   }
-
-  fprintf(stderr, "[INFO] le message \"%s\" est envoyer au client %d\n",
-	  reponse->msg, scom);
 }
 
 
@@ -222,7 +218,7 @@ void envoyer_reponse(int scom, chat_request *reponse){
 /****************************************************************/
 /* cette fonction diffuse les messages se                       */
 /* trouvant dans la file des messages a tous                    */
-/* les participants au chat                                     */
+/* les participants du chat                                     */
 /****************************************************************/
 void * diffuser_messages(){
   int i;
@@ -231,7 +227,6 @@ void * diffuser_messages(){
   
   while(1){
     pop_message(&resp_to_cli);
-    fprintf(stderr,"[INFO] le message \"%s\" sera diffuser\n",resp_to_cli.msg);
     /* envoyer le message */
     pthread_mutex_lock(&mutex_tab_connectes);
     for (i=0; i< MAX_CONNECTES; i++){
@@ -267,7 +262,7 @@ void deconnexion(int scom, char * pseudo){
 
 /****************************************************************/
 /* Avertie tous les participants que le client                  */
-/* pseudo est entrain de quitter le chat                        */
+/* pseudo est en train de quitter le chat                       */
 /* Supprimer le client de la liste des connectes                */
 /****************************************************************/
 void traitement_quit(int scom, char * pseudo){
@@ -300,7 +295,7 @@ void traitement_quit(int scom, char * pseudo){
   fprintf(stderr, "[INFO] Arreter la communication avec le client %s\n", pseudo);
   /* deconnexion : arreter les envoies/receptions */
   stop_communication(scom);
-  fprintf(stderr, "[INFO] fin communication avec %s. BYE\n", pseudo);
+  fprintf(stderr, "[INFO] fin de communication avec %s. BYE\n", pseudo);
   pthread_exit((void *)0);
 }
 
@@ -316,8 +311,8 @@ void add_connecte(int scom, char * pseudo){
   for (i=0; i< MAX_CONNECTES; i++){
     if (tab_connectes[i].scom == scom){
       strcpy(tab_connectes[i].pseudo, pseudo);
-      fprintf(stderr,"[INFO] Ajout de %s a la liste des connectes\n", pseudo);
       /*
+	fprintf(stderr,"[DEBUG] Ajout de %s a la liste des connectes\n", pseudo);
 	fprintf(stderr,"[DEBUG] %s \tindice=%d \t scm=%d \n",pseudo, i, scom);
       */
       break;
@@ -373,7 +368,7 @@ void traitement_join(int scom, char * pseudo){
 
 
 /****************************************************************/
-/* traitement desrequetes envoyees par le client                */
+/* traitement des requetes envoyees par le client               */
 /****************************************************************/
 void * traitement_req(void * scom){
   
@@ -411,7 +406,9 @@ void * traitement_req(void * scom){
     recevoir_requete(*(int *) scom, &req_from_cli);
     
     /* le message correspond a QUIT */
-    printf(" message lu par le serveur : %s\n", req_from_cli.msg);
+    /*
+      fprintf("[DEBUG] message lu par le serveur : %s\n", req_from_cli.msg);
+    */
     if (est_quit(&req_from_cli) == 1){
       traitement_quit(*(int*)scom, req_from_cli.pseudo);
     }else{  
@@ -548,7 +545,7 @@ int wait_client(){
 
 
 /****************************************************************/
-/* la thread qui s'occupera de diffuser les message             */
+/* la thread qui s'occupera de diffuser les messages            */
 /* de la file de messages a tous les connectes                  */
 /****************************************************************/
 void start_thread_diffusion_messages(){
@@ -567,18 +564,45 @@ void start_thread_diffusion_messages(){
 
 
 
+
+/****************************************************************/
+/* formuler la requete */
+/****************************************************************/
+void set_requete(chat_request * requete, char * pseudo, char * message){
+  strcpy(requete->msg, message);
+  strcpy(requete->pseudo, pseudo);
+}
+
+
+
+
+/****************************************************************/
+/* traitement a faire lors de la connexion d'un client alors    */
+/* le serveur est plein */
+/****************************************************************/
+void server_full(int scom){
+  chat_request reject_msg;
+  set_requete(&reject_msg, "SYSTEM", "SERVER_FULL");
+  envoyer_reponse(scom, &reject_msg);
+}
+
+
+
+
 /****************************************************************/
 /* la thread qui s'occupe du client connecte                    */
-/* via la socket scom                                           */
+/* via la socket scom */
+/* la fonction renvoie -1 lorsque il n'y a plus de place sur le */
+/* serveur. 1 lorsque tout va bien */
 /****************************************************************/
-void new_thread_for_client(int scom){
+int new_thread_for_client(int scom){
   int i;
   
   /* entree libre de tab_connectes */
-
   if ( (i = get_free_index()) == -1){
-    /* TODO */
     fprintf(stderr,"[ERROR] Le chat est complet\n");
+    server_full(scom);
+    return -1;
   }
   
   /* incrementer le nombre des connectes */
@@ -610,6 +634,7 @@ void new_thread_for_client(int scom){
     close (socket_connexion);
     exit(1);
   }
+  return 1;
 }
 
 
@@ -650,7 +675,9 @@ int main(int argc, char * argv[]){
     socket_communication = wait_client();
     /* creer une nouvelle thread qui s'occupera de notre */
     /* chere client ;) */
-    new_thread_for_client(socket_communication);
+    if (new_thread_for_client(socket_communication) == -1){
+      continue;
+    }
   }
   
   return 0;    
