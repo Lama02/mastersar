@@ -28,7 +28,7 @@ void print_reponse(chat_request * message){
 
 
 /****************************************************************/
-/* TODO                                                         */
+/* Afficher un message d'accueil                                */
 /****************************************************************/
 void welcome (chat_request * message){
   printf("Hi %s. Bienvenue dans le chat\n", message->pseudo);
@@ -58,7 +58,7 @@ int est_quit_ack(chat_request * reponse_quit){
 
 
 /****************************************************************/
-/* TODO                                                         */
+/* Arrete les threads d'envoie et de reception */
 /****************************************************************/
 void cancel_threads_communication(){
   pthread_cancel(thread_envoie);
@@ -69,12 +69,13 @@ void cancel_threads_communication(){
 
 
 /****************************************************************/
-/* TODO                                                         */
+/* Arreter le client */
 /****************************************************************/
 void kill_client(int code_erreur){
   /* Fermer la connexion */  
   shutdown(sock,2); 
   close(sock); 
+  fprintf(stderr, "Stopping client...OK\n");
   exit(code_erreur);
 }
 
@@ -106,11 +107,10 @@ void deconnexion(){
   do{
     /* attendre l'acquittement du serveur */
     recevoir_reponse(&reponse_quit);
-
+    
     /*    fprintf(stderr, "[DEBUG] deconnexion: Le message recu est \"%s\".\n", reponse_quit.msg);*/
     /* fprintf(stderr, "[DEBUG] deconnexion: Le pseudoest \"%s\".\n", reponse_quit.pseudo);*/
-      
-    sleep(3);
+    
     
   } while( !est_quit_ack(&reponse_quit)); 
   
@@ -118,7 +118,6 @@ void deconnexion(){
   
   /* arreter les threads d'envoie et de reception */
   /* et rermer la connexion */  
-   fprintf(stderr, "Stopping client...OK\n");
   kill_client(1);  
 }
 
@@ -175,11 +174,10 @@ void * reception_message(){
 void recevoir_reponse (chat_request * reponse){
   if (read(sock, reponse, sizeof(chat_request)) == -1) { 
     perror("read 0"); 
-    /* TODO */
     kill_client(1); 
   }
   
-  /*  fprintf(stderr,"DEBUG recevoir_reponse : %s\n", reponse->msg);*/
+  /*  fprintf(stderr,"[DEBUG] recevoir_reponse : %s\n", reponse->msg);*/
 }
 
 
@@ -189,13 +187,13 @@ void recevoir_reponse (chat_request * reponse){
 /* envoyer le message msg au seveur                             */
 /****************************************************************/
 void envoyer_message(chat_request * message){
-  /* fprintf(stderr, "DEBUG envoyer_message: %s\n", message->msg);*/
+  /* fprintf(stderr, "[DEBUG] envoyer_message: %s\n", message->msg);*/
   if (write(sock, (chat_request *)message, 
 	    sizeof(chat_request)) == -1) { 
     perror("write 0"); 
     exit(1); 
   } 
-  /*  fprintf(stderr, "DEBUG envoyer_message: message: %s envoye \n", message->msg);*/
+  /*  fprintf(stderr, "[DEBUG] envoyer_message: message: %s envoye \n", message->msg);*/
 }
 
 
@@ -274,7 +272,7 @@ void init_socket_communication( char * hostname){
 
 
 /****************************************************************/
-/* TODO                                                         */
+/* formuler la requete */
 /****************************************************************/
 void set_requete(chat_request * requete, char * pseudo, char * message){
   strcpy(requete->msg, message);
@@ -284,7 +282,7 @@ void set_requete(chat_request * requete, char * pseudo, char * message){
  
 
 /****************************************************************/
-/* TODO                                                         */
+/* Joindre le serveur */
 /****************************************************************/
 void join_server(){
   chat_request req, reponse;
@@ -311,7 +309,6 @@ void join_server(){
     /* si l'aquitement n'est pas bon */
     /* on arrete le client */
     fprintf(stderr, "[INFO] joining server...ERROR\n");
-    /* TODO stopper proprement le client */
     deconnexion(); 
   }
     fprintf(stderr, "[INFO] joining server...OK\n");
@@ -321,7 +318,7 @@ void join_server(){
 
 
 /****************************************************************/
-/* TODO                                                         */
+/* initialise les threads de reception et d'envoie */
 /****************************************************************/
 void init_threads_communication(chat_request *requete, chat_request * reponse){
   
