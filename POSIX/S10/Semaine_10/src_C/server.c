@@ -49,7 +49,7 @@ void stop_server(){
   int i;
   
   chat_request shutdown_msg;
-  
+ 
   fprintf(stderr, "Stopping server...\n");
   /* fermons d'abord celle de connexion comme ca */
   /* on creera plus de socket de communication */

@@ -1,2 +1,182 @@
-Authors : Ait Oumghar & Alahyane
-Version : v1.0
+Authors : 
+=========
+
+ Ait Oumghar & Alahyane
+
+
+Version :
+========= 
+
+ v1.0 -> 01/12/08
+ v1.1 -> 13/12/08
+
+
+Demarrer l'application : 
+========================
+
+
+ Le serveur se lance sans argument par la commande :
+ 
+ $ ./bin/server
+
+ Le client prend en argument le nom de la machine  
+ sur laquelle le serveur est lance et le pseudonyme 
+ du client.
+
+--------------------------------------------------------------
+ $ ./bin/client <nom/adresse machine> <pseudo>
+--------------------------------------------------------------
+
+
+
+Quitter l'application :
+=======================
+
+
+ Pour quitter l'application serveur : on lui envoie n'importe quel signal.
+
+--------------------------------------------------------------
+ $ killall server
+--------------------------------------------------------------
+
+ Pour quitter l'application client : soit on lui envoie directement un 
+ signal quelconque soit on envoie un message QUIT au serveur.
+
+
+
+Exemple d'utlisation :
+======================
+
+ On lance l'application serveur sur la machine 132.227.114.194
+
+--------------------------------------------------------------
+ 132.227.114.194-bash-3.2$ ./bin/server
+ 
+ Starting server...
+ Starting server...OK
+--------------------------------------------------------------
+
+ On lance l'application client sur une autre 
+ machine avec le pseudo toto : 
+
+--------------------------------------------------------------
+ 132.227.118.19-bash-3.2$ ./bin client 132.227.114.194 toto
+
+ [INFO] Connecting to the server...
+ [INFO] Connecting to the server...OK
+ [INFO] joining server...
+ [INFO] joining server...OK
+ Hi toto. Bienvenue dans le chat
+ <toto> :
+ > SYSTEM : toto a rejoint le chat
+
+--------------------------------------------------------------
+
+
+ A ce moment la, vous etes considere comme connecte au chat, vous pouvez 
+ librement recevoir et envoyer des messages.
+
+ Pour quitter le chat il suffit de faire un Ctrl-c ou envoyer le 
+ message QUIT.
+
+
+--------------------------------------------------------------
+ QUIT
+ <toto> : Stopping client...OK
+--------------------------------------------------------------
+
+
+ Si le client saisi un message on observe :
+
+ cote client : 
+ ------------
+
+ Salut tout le monde !
+ <toto> :
+ > toto : Salut tout le monde !
+
+ cote serveur :
+ -------------
+
+ -bash-3.2$ [INFO] Le client toto a fait un JOIN
+ [INFO] le client toto est mis dans la liste des connectes
+ [INFO] Le client toto peut joindre le serveur
+
+
+ Si un autre client se connecte sur la meme machine avec le pseudo lala, on 
+ observe :
+
+ chez le client toto :
+ --------------------
+
+ > SYSTEM : lala a rejoint le chat
+
+ chez le client lala :
+ --------------------
+
+ [INFO] Connecting to the server...
+ [INFO] Connecting to the server...OK
+ [INFO] joining server...
+ [INFO] joining server...OK
+ Hi lala. Bienvenue dans le chat
+ <lala> :
+ > SYSTEM : lala a rejoint le chat
+
+ chez le serveur :
+ ----------------
+
+ [INFO] Le client lala a fait un JOIN
+ [INFO] le client lala est mis dans la liste des connectes
+ [INFO] Le client lala peut joindre le serveur
+
+
+ Si toto souhaite quitter le chat en envoyant un message QUIT on observe :
+
+ chez le client toto :
+ --------------------
+
+ QUIT
+ <toto> : Stopping client...OK
+ -bash-3.2$
+
+ chez le client lala :
+ --------------------
+
+ > SYSTEM : toto a quitte le chat
+
+ chez le serveur :
+ -----------------
+
+ [INFO] le client toto quitte le chat
+ [INFO] envoyer un QUIT_ACK a toto
+ [INFO] Arreter la communication avec le client toto
+ [INFO] fin de communication avec toto. BYE
+
+ Si on envoie un signal au client lala, on observe :
+
+ chez le client lala :
+ --------------------
+
+ Stopping client...
+ Stopping client...OK
+ -bash-3.2$
+
+ chez le serveur :
+ ----------------
+
+ [INFO] le client lala quitte le chat
+ [INFO] envoyer un QUIT_ACK a lala
+ [INFO] Arreter la communication avec le client lala
+ [INFO] fin de communication avec lala. BYE
+
+
+ Si on envoie ensuite un signal au serveur on observe :
+
+ chez le serveur :
+ ----------------
+
+ -bash-3.2$ killall server
+ Stopping server...
+ Stopping server...OK
+
+
