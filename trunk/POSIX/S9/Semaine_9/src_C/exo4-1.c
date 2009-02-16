@@ -105,7 +105,7 @@ int main(int argc, char * argv[]){
     }
 
     if(pthread_detach(tid[i]) != 0){
-      perror("pthread_create");
+      perror("pthread_detach");
       exit(1);
     }
   }
