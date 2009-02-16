@@ -23,6 +23,7 @@ menage:
 	@find $(RACINE) -name '#*#' -exec rm {} \;
 	@find $(RACINE) -name '*.tgz' -exec rm {} \;
 	@(cd $(RACINE) && $(MAKE) clean)
+	@(rm -fr *~ *.tgz)
 	@echo "-- Le menage est fait !"
 
 create-env:

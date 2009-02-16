@@ -23,5 +23,5 @@ $(OBJ_D)/capitalize_bis.o : $(SRC_D)/capitalize_bis.c
 	$(CC) -o $@ $(CFLAGS) -c $<
 
 clean :
-	rm -fr $(OBJ_D)/*.o $(BIN_D)/$(EXEC) $(LIB_D)/*.a $(BIN_D)
+	rm -fr $(SRC_D)/*~ $(OBJ_D)/*.o $(BIN_D)/$(EXEC) $(LIB_D)/*.a $(BIN_D) *~
 .PHONY : clean all
