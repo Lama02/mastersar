@@ -2,9 +2,9 @@
 
 = SVN depuis l'ARI =
 
-Pour pouvoir utiliser svn dans les locaux de l'ARI il faudra configurer svn. Pour le faire éditer le fichier 
+Pour pouvoir utiliser svn dans les locaux de l'ARI il faudra configurer svn. Pour le faire éditer le fichier ~/.subversion/servers
 
-modifier la section [global] de façon a avoir quelques choses qui ressemble à 
+modifier la section \[global\] de façon a avoir quelques choses qui ressemble à 
 
 {{{
 [global]
