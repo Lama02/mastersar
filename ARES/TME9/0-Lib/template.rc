@@ -1,0 +1,81 @@
+#
+# Copyright (c) 2006 University of La Reunion - France
+# Authors:   Pascal ANELLI
+#            F HARIVELO
+# http://www.univ-reunion.fr/~panelli
+# All rights reserved.
+#
+# Permission to use and copy this software in source and binary forms
+# is hereby granted, provided that the above copyright notice, this
+# paragraph and the following disclaimer are retained in any copies
+# of any part of this software and that the University of La Reunion is
+# acknowledged in all documentation pertaining to any such copy
+# or derivative work. The name of the University of La Reunion may not
+# be used to endorse or promote products derived from this software
+# without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE WARRANTIES OF
+# MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL
+# THE UNIVERSITY OF PARIS LA REUNION BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+#
+# 
+#          Minimum Configuration file
+
+#puts "#load template.rc"
+
+#====================================================
+# BEGIN of ressource attributes
+#====================================================
+# Default parameters for the model
+#     List of parameters, see tcl/lib/ns-default.tcl
+
+
+# Parameters passed by command line
+#----------------------------------
+# Below theses parameters can be set from a command line
+set opt(nam)         0; # boolean : (1) launch Network animator
+set opt(namgraph)    0; # doesn't work with ssthresh
+set opt(stoptime)    0; # duration of simulation
+set opt(quiet)       0; #boolean: draw graph (0) or not (1)
+set opt(verbose)     0; #boolean : print the log file (1)
+set opt(replication) 1; #Replication number
+set opt(wd)          tmp; ; # Working directory
+set opt(grapher)     xgraph; # xgraph or gnuplot
+set opt(errorcore)   {}; # error model
+# Network topology 
+#================
+
+#core link
+set opt(corelink)   {}
+set opt(routelength) 1
+
+#edge link (for Diff-Serv network)
+set opt(edgelink)  {}
+
+# Host
+#================
+# The host section defines the source patterns. 
+
+set opt(pattern) {}
+
+#  Post Process 
+#================
+# Analysis
+#
+#       Packet trace file
+set conf(pkt) {}
+#       Variable trace file
+set conf(param) {}
+
+
+set conf(plot) {}
+set conf(parameter) {}; # default parameters in test-metric.tcl:default-parameter
+
+#====================================================
+# END of ressource attributes
+#====================================================

@@ -1,0 +1,18 @@
+ TOPOLOGY
+-------------------x-------------------x--------------------
+Core network
+		node id: 0 index: 0
+		node id: 1 index: 1
+			bw          : 100000
+			delay       : 0.10000000000000001
+			queue type  : Queue/DropTail
+			queue length: 10
+Source Pattern: TCP
+	 source node id: 2 index: 0
+	 destin node id: 3 index: 0
+	     connected to network node id 0 1
+	        access tp 10ms  bw 1Mb
+	        exit   tp 10ms  bw 1Mb
+		agent class: Agent/TCP/RFC793edu fid: 0 flow index: 0 traffic class: be
+-------------------x-------------------x--------------------
+0.00000  START  flow   0 class be from   2 to   3     -1 bytes inter 0.00000 when 0 flows

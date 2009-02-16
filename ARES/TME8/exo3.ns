@@ -1,0 +1,83 @@
+#------------------------------------------------------- 
+# This ns script has been created by the nam editor.
+# If you edit it manually, the nam editor might not
+# be able to open it properly in the future.
+#
+# EDITING BY HAND IS AT YOUR OWN RISK!
+#------------------------------------------------------- 
+# Create a new simulator object.
+set ns [new Simulator]
+# Create a nam trace datafile.
+set namfile [open /tmp/2309965/exo3.nam w]
+$ns namtrace-all $namfile
+
+# Create wired nodes.
+set node(1) [$ns node]
+## node(1) at 494.737427,609.279358
+$node(1) set X_ 494.737427
+$node(1) set Y_ 609.279358
+$node(1) set Z_ 0.0
+$node(1) color "black"
+
+set node(2) [$ns node]
+## node(2) at 590.765259,519.670105
+$node(2) set X_ 590.765259
+$node(2) set Y_ 519.670105
+$node(2) set Z_ 0.0
+$node(2) color "black"
+
+
+# Create links between nodes.
+$ns simplex-link $node(1) $node(2) 2.000000Mb 200.000000ms DropTail
+$ns simplex-link-op $node(1) $node(2) queuePos 0.5
+$ns simplex-link-op $node(1) $node(2) color black
+$ns simplex-link-op $node(1) $node(2) orient 317.0deg
+# Set Queue Properties for link 1->2
+[[$ns link $node(1) $node(2)] queue] set limit_ 20
+
+$ns simplex-link $node(2) $node(1) 2.000000Mb 200.000000ms DropTail
+$ns simplex-link-op $node(2) $node(1) queuePos 0.5
+$ns simplex-link-op $node(2) $node(1) color black
+$ns simplex-link-op $node(2) $node(1) orient 137.0deg
+# Set Queue Properties for link 2->1
+[[$ns link $node(2) $node(1)] queue] set limit_ 20
+
+# Add Link Loss Models
+
+# Create agents.
+set agent(1) [new Agent/TCP]
+$ns attach-agent $node(1) $agent(1)
+
+$ns color 1 "#ffff00000000"
+$agent(1) set fid_ 1
+$agent(1) set packetSize_ 41
+$agent(1) set window_ 20
+$agent(1) set windowInit_ 1
+$agent(1) set maxcwnd_ 0
+
+# Create traffic sources and add them to the agent.
+set traffic_source(1) [new Application/Telnet]
+$traffic_source(1) attach-agent $agent(1)
+$traffic_source(1) set interval_ 0.200000
+set agent(2) [new Agent/TCPSink]
+$ns attach-agent $node(2) $agent(2)
+$agent(2) set packetSize_ 210
+
+# Connect agents.
+$ns connect $agent(1) $agent(2)
+
+
+# Traffic Source actions.
+$ns at 0.000000 "$traffic_source(1) start"
+$ns at 60.000000 "$traffic_source(1) stop"
+
+# Run the simulation
+proc finish {} {
+	global ns namfile
+	$ns flush-trace
+	close $namfile
+	exec nam -r 2000.000000us /tmp/2309965/exo3.nam &	
+	exit 0
+	}
+$ns at 60.000000 "finish"
+$ns run

@@ -1,0 +1,93 @@
+#
+# Copyright (c) 2007 University of La Reunion - France
+# Author:   Pascal ANELLI
+# http://www.univ-reunion.fr/~panelli
+# All rights reserved.
+#----------------------------------------------------
+# Goal:
+#      Same bandwith on all the links 
+#      No congestion control in the end hosts
+#---------------------------------------------------
+
+#====================================================
+# BEGIN of ressource attributes
+#====================================================
+# Simulation Model
+#================
+# default value
+#--------------
+Queue set limit_ 50
+
+# Topology network
+#-----------------
+
+set opt(corelink)   {{bw 56kb} {tp 20ms} {queuesize 4} {queuetype DropTail}}
+# number of core nodes
+set opt(routelength) 2
+
+# Hosts
+#-------
+set opt(pattern) { \
+                  {{hook {0 1}} \
+                   {nbnode 1} \
+                   {nbflow 1} \
+		   {bw {{56Kb 56kb}}} \
+                   {tp 20ms} \
+		   {type TCP} \
+                   {sourceparam {{tcpversion TCP/RFC793edu} \
+                                 {tcpsink TCPSink} \
+                                 {agentparam { \
+                                               {add793slowstart false}  \
+					       {add793additiveinc false} \
+					       {add793exponinc false} \
+					       {add793expbackoff false} \
+					       {syn false} \
+					       {window 4} \
+                                              {packetSize 256} \
+                                             } \
+                                 } \
+                                }\
+                   } \
+                   {starttime 0}  \
+                   {transfersize 65536} \
+                  } \
+                 }
+
+
+
+#  Post Process
+#===============
+# Analysis
+#---------
+
+set conf(pkt) { \
+                       {Flow  { \
+			       { 0 {PerFlow throughput AverageEWMA throughputT dropratioT}} \
+			      } \
+		       } \
+		       {Queue { \
+                               {{0 1} {activity}} \
+			      } \
+			} \
+		}
+
+set conf(param) { \
+                }
+
+set conf(parameter) {{bottlebw 56kb} \
+                     {timetransit 0} \
+                     {weight 1/16} \
+                     {timeinterval 0.2}  \
+                     {sizesampledrop 1} \
+                    }
+
+# Plotting
+#---------
+set conf(plot) { {throughput AverageEWMA} \
+                 {goodput AverageEWMA} \
+	       }
+
+#====================================================
+# END of ressource attributes
+#====================================================
+
