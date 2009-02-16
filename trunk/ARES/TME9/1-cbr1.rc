@@ -1,0 +1,94 @@
+#          Configuration file
+
+#====================================================
+# BEGIN of ressource attributes
+#====================================================
+# Default parameters
+#-------------------
+
+Queue set limit_ 50
+
+set opt(stoptime) 30
+
+#Queue/RED set setbit_ false
+#Queue/RED set gentle_ true
+
+
+# Network topology 
+#=================
+#core link
+set opt(corelink)   {{bw {1Mb}} {tp {0ms}} {queuesize 20} {queuetype DropTail} \
+                     {linkparam { \
+                                   {queue_in_bytes true} \
+                                   {mean_pktsize 1250} \
+                                 } \
+                      } \
+                     }
+# number of core nodes
+set opt(routelength) 2
+
+
+# Hosts
+#=======
+set opt(pattern) { \
+                  { {hook {0 1}} \
+		   {nbflow 1} \
+		   {nbnode 1} \
+		   {bw {{10Mb}} } \
+		   {tp {{10ms 10ms} }} \
+		   {type UDP} \
+                   {shaper { \
+                            {{rate 1Mb} {bucket 10000} {qlen 0}}
+                            } \
+                   } \
+                   {sourceparam {{trafficgenerator Traffic/CBR} \
+				 {trafficparam {{random 1} \
+                                                {maxpkts 99} \
+                                                {rate 1Mb} \
+                                                {packetSize 1250}\
+                                               } \
+		                 } \
+                                 {agentparam {{packetSize 1250}}} \
+                               } \
+                   }\
+		   {starttime 0}  \
+		   {finishtime -1} \
+		  } \
+                 } 
+
+
+#  Post Process
+#===============
+# Analysis
+#---------
+
+set conf(pkt) {  \
+                       {Flow  { \
+                               { {*} {activity throughputT dropratioT}} \
+                              } \
+                       } \
+                       {Queue { \
+                                {{0 1} {PerFlow rateinstant}} \
+                                {{2 0} {PerFlow rateinstant}} \
+                               } \
+                       } \
+                }
+
+set conf(param) { \
+                }
+# {RED { {{0 1} {length}}}} \
+
+set conf(parameter) { {bottlebw 1Mb} {timeinterval 0.4} \
+                      {timetransit 0} {sizessampledrop 1} \
+                      {weight 1.0/16} \
+                      {wrap 99} {scale 0.01} \
+                      }
+# Plotting
+#---------
+set conf(plot) { \
+                {} \
+               }
+
+#====================================================
+# END of ressource attributes
+#====================================================

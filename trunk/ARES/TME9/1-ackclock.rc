@@ -1,0 +1,75 @@
+# Copyright (c) 2007 University of La Reunion - France
+# Author:   Pascal ANELLI
+# All rights reserved.
+#----------------------------------------------------
+# Goal:
+#      No congestion control in the end hosts
+#      No packet losts at start up
+#      To show what is the self-clock for TCP.
+#---------------------------------------------------
+#====================================================
+# BEGIN of ressource attributes
+#====================================================
+# Default parameters
+#-------------------
+Queue set limit_ 3
+set opt(stoptime) 5
+
+# Network topology 
+#=================
+set opt(corelink)   {{bw 0.1Mb} {tp 100ms} {queuesize 10} {queuetype DropTail}}
+# number of core nodes
+set opt(routelength) 2
+
+# Hosts
+#=======
+set opt(pattern) { \
+                  {{hook {0 1}} \
+                   {nbnode 1} \
+                   {nbflow 1} \
+                   {bw {{1Mb 1Mb}}} \
+                   {tp 10ms} \
+                   {type TCP} \
+                   {sourceparam {{tcpversion TCP/RFC793edu} \
+                                 {tcpsink TCPSink} \
+                                 {agentparam { \
+                                               {add793slowstart false}  \
+                                               {add793additiveinc false} \
+                                               {add793exponinc false} \
+                                               {add793expbackoff false} \
+                                               {syn false} \
+                                               {window 10}\
+                                               {packetSize 625} \
+                                             } \
+                                 } \
+                                }\
+                   } \
+                   {starttime 0}  \
+                   {transfersize -1} \
+                  } \
+                 }
+#  Post Process
+#===============
+# Analysis
+#---------
+
+set conf(pkt) { \
+	        {Flow  { \
+                        { {*} {activity}} \
+                       } \
+                } \
+              }
+set conf(param) { \
+                  {TCP { \
+                         {0 {t_seqno}} \
+                      } \
+                  }\
+                }
+set conf(parameter) { {bottlebw 0.1Mb} {timeinterval 0.5} {wrap 99} }
+
+# Plotting
+#---------
+set conf(plot) { {throughput AverageEWMA} }
+#====================================================
+# END of ressource attributes
+#====================================================

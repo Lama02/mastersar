@@ -1,0 +1,13 @@
+
+Q3)
+
+un agent peut etre soit 
+- TCP 
+- TCPSink : une facon de dire a notre simulteur que le node doit repondre aux requetes envoyees par l emetteur. Gerer les problemes d ACK
+ dans le cas d UDP on utilisera null car l'emetteur n attend pas de reponse du recepteur.
+...
+est le protocol utilise.
+
+Remearque :
+
+Q4)
