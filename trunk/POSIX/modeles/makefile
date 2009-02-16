@@ -39,7 +39,7 @@ $(OBJ_D)/exo3-2.o : $(SRC_D)/exo3-2.c
 
 
 clean :
-	@rm -fr $(OBJ_D)/*.o $(BIN_D)/$(EXEC) $(LIB_D)/*.a $(BIN_D)
+	@rm -fr $(SRC_D)/*~ $(OBJ_D)/*.o $(BIN_D)/$(EXEC) $(LIB_D)/*.a $(BIN_D) *~
 
 run:
 	$(BIN_D)/$(EXEC)

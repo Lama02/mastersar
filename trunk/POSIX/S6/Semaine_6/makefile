@@ -43,5 +43,5 @@ $(OBJ_D)/exo3-1.o : $(SRC_D)/exo3-1.c
 	$(CC) -o $@ $(CFLAGS)  -c $< 
 
 clean :
-	rm -fr $(OBJ_D)/*.o $(BIN_D)/$(EXEC) $(LIB_D)/*.a $(BIN_D)
+	rm -fr $(SRC_D)/*~ $(OBJ_D)/*.o $(BIN_D)/$(EXEC) $(LIB_D)/*.a $(BIN_D) *~
 .PHONY : clean  all
