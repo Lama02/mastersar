@@ -1,0 +1,125 @@
+#define p lann[2]@ask_SC
+#define q lann[2]@in_SC
+#define N      3    /* Number of processes */ 
+#define L     10    /* Buffer size */
+#define NIL (N+1)   /* for an undefined value */
+
+mtype = {req, tk};
+
+/* le processus i recoit ses messages dans canal[i] */ 
+chan canal[N] = [L] of {mtype, byte};    /* pour un message de type tk, 
+                                            on mettra la valeur associee a 0 */
+
+byte SharedVar = 0;                      /* la variable partagee */ 
+
+inline Initialisation ( ) {
+   /* initialise les variables locales, sauf reqId, val et typ_mes */
+   requesting = false;	       /* indique si le processus a demande la SC ou 
+   next = NIL;		       /* next node to whom send the token */   
+   father = 0;		       /* probable owner */
+   /* indique si le processus possede le jeton ou non */
+   token = (father == id);     
+   if 
+   :: (father == id) -> father = NIL;
+   if
+}
+
+
+inline Request_CS ( ) {
+  /* operations effectuees lors d'une demande de SC */
+  
+  requesting = true;
+  if 
+  /* si j'ai un pere */
+  /* lui envoyer une requete */
+  :: (father != NIL) -> canal[father] ! req(id);
+     father = NIL
+  fi
+  /* attendre le token */
+  TODO  attendre(token == true)
+}
+
+
+inline Release_CS ( ) {
+  /* operations effectuees en sortie de SC */
+  requesting = false;
+  if 
+  :: (next != NIL) -> canal[next] ! tq(0); token = false; next = NIL 
+  fi  
+}
+
+
+inline Receive_Request_CS ( ) {
+  /* traitement de la reception d'une requete */      
+  if 
+  :: (father == NIL) -> 
+     if
+	:: (requesting == true ) -> next = reqId
+	:: else ->     
+	   token = false; canal[father] ! req(reqId);
+     fi 
+  :: else -> canal[father] ! req(reqId);    
+  fi   
+  father = reqId;
+}
+
+
+inline Receive_Token () {
+  /* traitement de la reception du jeton */       
+  token = true
+}
+
+
+proctype node(byte id; byte Initial_Token_Holder){
+    
+bit requesting;    /* indique si le processus a demande la SC ou pas  */
+bit token;         /* indique si le processus possede le jeton ou non */
+
+byte father;       /* probable owner */
+byte next;         /* next node to whom send the token */
+byte val;          /* la valeur contenue dans le message */
+mtype typ_mes;     /* le type du message recu */
+byte reqId;        /* l'Id du demandeur, pour une requete */
+
+chan canal_rec = canal[id];     /* un alias pour mon canal de reception */
+xr canal_rec;                   /* je dois etre le seul a le lire */
+
+/* Chaque processus execute une boucle infinie */
+
+   Initialisation ( );
+   do
+       :: ((token == true) && empty(canal_rec) && (requesting == true)) ->
+	      /* on oblige le detenteur du jeton a consulter les messages recus */
+	      in_SC :
+	           /* acces a la ressource critique (actions sur SharedVar), 
+                      puis sortie de SC */
+		      
+		      printf("+++ Je suis dans la section critique\n");
+
+       :: canal_rec ? typ_mes(val) ->
+	  /* traitement du message recu */ 
+	  /* on a recu une requete */
+	  Receive_Request_CS();
+
+	  /* on a recu un token */	   
+	  Receive_Token();
+       
+       :: (requesting == false) -> /* demander la SC */
+               Request_CS ( );
+   od ;
+}
+
+/* Cree un ensemble de N processus */ 
+
+init {
+   byte proc; 
+   atomic {
+      proc=0;
+      do
+         :: proc <N ->
+            run node(proc, 0); 
+            proc++
+         :: proc == N -> break 
+      od
+   }
+}
