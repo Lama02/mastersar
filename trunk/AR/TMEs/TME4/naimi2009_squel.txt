@@ -5,7 +5,6 @@
 #define NIL (N+1)   /* for an undefined value */
 
 mtype = {req, tk};
-
 /* le processus i recoit ses messages dans canal[i] */ 
 chan canal[N] = [L] of {mtype, byte};    /* pour un message de type tk, 
                                             on mettra la valeur associee a 0 */
