@@ -25,7 +25,6 @@ struct thread_descriptor {
   // et vous avez besoin de drapeau pour indiquer au collecteur que vous avez fini de
   // placer les racines la dedans
         
-
   // la liste globale des objets du thread
   struct object_header *liste_objets; 
   
@@ -33,7 +32,8 @@ struct thread_descriptor {
   struct object_header *liste_racines;
 
   // la taille deja allouer
-  int size_allocated;
+  // par defaut initialise a 0. TODO c possible ca ?
+  int size_allocated = 0;
 
   // Fini de rechercher les racines
   int ready_to_collect;
@@ -46,13 +46,10 @@ struct thread_descriptor {
 // relativement au segment ds: cette adresse est donc la même pour tout les threads
 static __thread struct thread_descriptor tls;
 // amorce de la liste chaînée de tous les threads. Ce noeud est vide, il sert de référence. C'est juste
-// une simplification pour les liste doublement chaînées circulaires
+// une simplification pour les listes doublement chaînées circulaires
 static struct thread_descriptor          all_threads;
 // et un petit mutex lorsqu'on touche à cette liste
 static pthread_mutex_t                   thread_mutex = PTHREAD_MUTEX_INITIALIZER; 
-
-
-
 
 #ifdef _DEBUG
 // permet d'afficher les threads actifs
@@ -122,10 +119,10 @@ void handShake() {
   // à faire OK
   
   // attendre que req_collect soit positionne a 1
-  while (req_collect != 1) 
+  while (req_collect != 1)  
     
   
-  void **cur = down_stack(); // TODO : trouver le bas de la pile
+    void **cur = down_stack(); // TODO : trouver le bas de la pile
   // parcours de la pile a la recherche des racines
   while ( cur > tls.top_stack){ // hypothese : la pile croit vers des adresses basses
     if (racine_ptr = to_header(*cur)){ // si une racine 
@@ -144,6 +141,7 @@ static void *collector(void *arg) {
   // à faire
   return 0;
 }
+
 
 struct stack_frame {
   struct stack_frame *next;
