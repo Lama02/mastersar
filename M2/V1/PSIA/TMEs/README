@@ -1,0 +1,34 @@
+
+
+Positionner JAVA_HOME
+Pour trouver le chemin taper la commande 
+
+$ readlink -f /usr/bin/java
+
+EXEMPLE :
+# java home
+export JAVA_HOME=/usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0
+
+Positionner FELIX_PATH le repertoire contenant Felix
+
+EXEMPLE :
+# felix path
+export FELIX_PATH=/users/Etu5/2309965/Programmes/felix-framework-2.0.0
+
+
+
+Ajouter le repertoire "resources" dans le repertoire de felix au niveau de bin...
+
+Pour lancer l'exemple de cours par exemple: 
+- se deplacer dans le repertoire contenant felix, taper la commande 
+java -jar bin/felix.jar
+Ceci lance felix.
+- Dans une deuxieme fenetre, deplacez-vous dans le rep contenant le helloworld,
+cd helloworld 
+puis lancer la compilation en tapant la commande "ant"
+- revenz sur la premiere fenetre, la ou vous avez lancé votre felix taper la comande :
+install file:///users/nfs/Etu5/2309965/mastersar/M2/V1/PSIA/TMEs/exemple_cours/helloworld/helloworld/helloworld.jar
+Ceci peut etre copier depuis les messages d information de ant
+puis start id 
+ou id est l'identifiant du bundle
+
