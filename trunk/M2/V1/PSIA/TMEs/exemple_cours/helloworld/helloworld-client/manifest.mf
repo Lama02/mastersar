@@ -1,6 +1,0 @@
-Bundle-Name: The HelloWorld client
-Bundle-Description: A complete and reactive client for the helloworld service
-Bundle-Vendor: UPMC
-Bundle-Version: 1.0.0
-Bundle-Activator: lip6.helloworld.client.Activator
-Import-Package: org.osgi.framework, lip6.services.helloworld
