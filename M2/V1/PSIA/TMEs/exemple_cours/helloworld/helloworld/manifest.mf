@@ -1,0 +1,5 @@
+Bundle-Name: HelloWorld interface
+Bundle-Description: The HelloWorld interface
+Bundle-Vendor: UPMC
+Bundle-Version: 1.0.0
+Export-Package: lip6.services.helloworld
