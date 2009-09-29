@@ -1,6 +1,9 @@
 
+Pre-requis
+==========
 
-Positionner JAVA_HOME
++ Telecharger Felix 
++ Positionner JAVA_HOME
 Pour trouver le chemin taper la commande 
 
 $ readlink -f /usr/bin/java
@@ -9,13 +12,15 @@ EXEMPLE :
 # java home
 export JAVA_HOME=/usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0
 
-Positionner FELIX_PATH le repertoire contenant Felix
++ Positionner FELIX_PATH le repertoire contenant Felix
 
 EXEMPLE :
 # felix path
 export FELIX_PATH=/users/Etu5/2309965/Programmes/felix-framework-2.0.0
 
 
+Utiliser Felix
+==============
 
 Ajouter le repertoire "resources" dans le repertoire de felix au niveau de bin...
 
