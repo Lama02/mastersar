@@ -1,6 +1,0 @@
-Bundle-Name: The french HelloWorld
-Bundle-Description: The french implementation of the HelloWorld service
-Bundle-Vendor: UPMC
-Bundle-Version: 1.0.0
-Bundle-Activator: lip6.helloworld.fr.Activator
-Import-Package: org.osgi.framework, lip6.services.helloworld
