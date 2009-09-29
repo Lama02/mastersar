@@ -46,10 +46,10 @@ public class Activator implements BundleActivator, ServiceListener{
 				//TODO
 				
 				// recuperer le nom du services
-				String stringClasses[] = (String[]) newRef.getProperty("objectClass");
-				
+				String nameClass = context.getService(newRef).getClass().getCanonicalName();
+
 				// Le nom associe a la classe a administrer
-				ObjectName name = new ObjectName(":type=" + stringClasses[0]);
+				ObjectName name = new ObjectName(":type=" + nameClass);
 				
 				// Ajoute la classe au serveur pour l'administrer
 				mbs.registerMBean(context.getService(newRef), name);
