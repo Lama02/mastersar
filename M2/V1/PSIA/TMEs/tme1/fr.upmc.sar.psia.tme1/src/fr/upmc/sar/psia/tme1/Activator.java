@@ -3,6 +3,7 @@ package fr.upmc.sar.psia.tme1;
 import java.lang.management.ManagementFactory;
 
 import javax.management.InstanceAlreadyExistsException;
+import javax.management.InstanceNotFoundException;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
@@ -23,7 +24,7 @@ public class Activator implements BundleActivator, ServiceListener{
 	@Override
 	public void start(BundleContext context) throws Exception {
 		// TODO Auto-generated method stub
-		System.out.println("[tme1] start");
+		System.out.println("[tme1] started");
 		this.context = context;
 		this.context.addServiceListener(this);
 	}
@@ -31,34 +32,52 @@ public class Activator implements BundleActivator, ServiceListener{
 	@Override
 	public void stop(BundleContext arg0) throws Exception {
 		// TODO Auto-generated method stub
-		System.out.println("[tme1] stop");		
+		System.out.println("[tme1] stopped");		
 	}
 
 	@Override
 	public void serviceChanged(ServiceEvent ev) {
 		// TODO Auto-generated method stub
 		ServiceReference newRef = ev.getServiceReference();  // la nouvelle reference OSGi
-		System.out.println("[tme1] New event");
-		
+		System.err.println("[tme1] New event");
+
+		Object obj = context.getService(newRef);                // objet implementant le service
+
+		// recuperer le nom du services
+		String nameClass = context.getService(newRef).getClass().getCanonicalName();
+		String nameInterface = nameClass + "MBean";
+
 		try {
+			// Le nom associe a la classe a administrer
+			ObjectName name = new ObjectName(":type=" + nameClass);
+
 			switch(ev.getType()) {
 			case ServiceEvent.REGISTERED:
-				//TODO
-				
-				// recuperer le nom du services
-				String nameClass = context.getService(newRef).getClass().getCanonicalName();
-
-				// Le nom associe a la classe a administrer
-				ObjectName name = new ObjectName(":type=" + nameClass);
-				
-				// Ajoute la classe au serveur pour l'administrer
-				mbs.registerMBean(context.getService(newRef), name);
-
+				System.err.println("[tme1] Service REGISTERED");
+				Class<?> interfaces[] = obj.getClass().getInterfaces(); // interfaces implementees par le service
+				// voir si une des interfaces implementees par le service 
+				// finit bien par la chaine "MBean"
+				for (int i=0; i<interfaces.length; i++ ){
+					if (interfaces[i].getName().equals(nameInterface)){					
+						// Ajoute la classe au serveur pour l'administrer
+						mbs.registerMBean(obj, name);
+					}
+				}
+				break;
 
 			case ServiceEvent.UNREGISTERING:
-				//TODO
+				System.err.println("[tme1] Service UNREGISTERED");
+				// si le service est deja enregistre, on le desabonne
+				if (mbs.isRegistered(name)){
+					mbs.unregisterMBean(name);
+				}
+				break;
+
 			case ServiceEvent.MODIFIED: 
+				System.err.println("[tme1] Service MODIFIED");
 				//TODO
+				break;
+
 			}
 		} catch (InstanceAlreadyExistsException e) {
 			// TODO Auto-generated catch block
@@ -73,6 +92,9 @@ public class Activator implements BundleActivator, ServiceListener{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (NullPointerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InstanceNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
