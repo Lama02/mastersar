@@ -6,11 +6,23 @@
 #include "debug.h"
 
 
+
+/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+/*             TODO                 */
+char** down_stack() {
+  return NULL;
+}
+/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+
+
 // Si positionne a  
 //   1 tous les handshake de tous les threads doivent etre lances
 //   0 normal
 // ATTENTION : A POROTEGER PAR UN VERROU
 int req_collect;
+
+// Condition 
+pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 
 // descriptor de thread
@@ -33,7 +45,7 @@ struct thread_descriptor {
 
   // la taille deja allouer
   // par defaut initialise a 0. TODO c possible ca ?
-  int size_allocated = 0;
+  int size_allocated;
 
   // Fini de rechercher les racines
   int ready_to_collect;
@@ -76,18 +88,22 @@ void *gcmalloc(unsigned int size) {
   // vous pouvez prendre un verrou ici, mais vous pouvez aussi utiliser le tls: l'ensemble des objets vivants
   // est stocké dans l'ensemble des tls. Ca vous évite un verrou de plus
 
-  // à faire OK
-  // Ajout du nouvelle entete dans la liste globale de tous les objets geres par la thread
+
+  // ajout du nouvelle entete dans la liste globale de tous les objets geres par la thread
+  pthread_mutex_lock (&thread_mutex);
   header -> next =   tls.liste_objets;
-  header -> perv =   tls.liste_objets.prev;
-  tls -> liste_objets -> prev = header;
-
-  // au bout de PAGE_SIZE Mo on lance la collection   
+  header -> prev =   tls.liste_objets -> prev;
+  tls.liste_objets -> prev = header;
+  tls.liste_objets = header;
+  // au bout de PAGE_SIZE (4096) Mo on lance la collection   
   tls.size_allocated += size;
-  if (tls.size_allocated >= PAGE_SIZE) {
-    
+  pthread_mutex_unlock(&thread_mutex);
+  if (tls.size_allocated >= 4096) { 
+    pthread_mutex_lock(&thread_mutex);
+    req_collect = 1;
+    pthread_mutex_unlock(&thread_mutex); 
   }
-
+  
   // pour le retour, l'utilisateur est intéressé par l'objet, pas par son entête
   return toObject(header);
 }
@@ -97,40 +113,46 @@ void _writeBarrier(void *dst, void *src) {
   // à faire
   struct object_header *header_dst = toHeader(dst);  // entête de la destination
   struct object_header *header_src = toHeader(src);  // entête de la source
-	
+  
   assert(header_dst && header_src);                  // si vous n'avez pas de bug, cet invariant est respecté
 }
 
 
 
-// ajoute l'element item a la liste list
-void add_item(void * item, void * list){
-  item -> next =   list;
-  item -> perv =   list.prev;
-  list -> prev = item;
-}
-
 
 // le handshake pour accumuler les racines du thread. Vous les stockerez dans la variable tls
 // celle-ci est ensuite accédée par le collecteur via la variable all_threads
 void handShake() {
+  struct object_header * racine;       // adresse de la racine 
+  char **cur = down_stack();          // TODO : trouver le bas de la pile
   
-  void * racine; // adresse de la racine 
-  // à faire OK
   
   // attendre que req_collect soit positionne a 1
-  while (req_collect != 1)  
-    
-  
-    void **cur = down_stack(); // TODO : trouver le bas de la pile
+  pthread_mutex_lock (&thread_mutex);
+  while (req_collect != 1) {
+    pthread_cond_wait(&cond,&thread_mutex);
+  }
   // parcours de la pile a la recherche des racines
-  while ( cur > tls.top_stack){ // hypothese : la pile croit vers des adresses basses
-    if (racine_ptr = to_header(*cur)){ // si une racine 
-      // ajout dans la liste des racines 
-      add_item(racine, tls.liste_racines);
-    }    
+  while ( (char*)cur > tls.top_stack){ // HYPOTHESE : la pile croit vers des adresses basses
+    if ((racine = toHeader(*cur))){        // si une racine 
+      // alors ajout dans la liste des racines 
+      racine -> next = tls.liste_racines;
+      racine -> prev = tls.liste_racines -> prev;
+      tls.liste_racines -> prev = racine;
+      tls.liste_racines = racine;
+    }
   }
   tls.ready_to_collect = 1;
+  pthread_mutex_unlock(&thread_mutex);
+
+
+  // attendre la fin de la collection
+  pthread_mutex_lock (&thread_mutex);
+  while (req_collect != 0) {
+    pthread_cond_wait(&cond,&thread_mutex);
+  }
+  pthread_mutex_unlock(&thread_mutex);
+
 }
 
 
@@ -138,7 +160,15 @@ void handShake() {
 // le thread collecteur. Quand une collection est requise, il doit se réveiller et parcourir le graphe
 // des objets atteignables puis supprimer tous ceux qui n'ont pas été atteints
 static void *collector(void *arg) {
-  // à faire
+  
+  
+  
+  // reveille tous les thread mutateur
+  pthread_mutex_lock(&thread_mutex);
+  req_collect = 0;
+  pthread_cond_broadcast(&cond);
+  pthread_mutex_unlock(&thread_mutex); 
+  
   return 0;
 }
 
