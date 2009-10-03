@@ -101,6 +101,7 @@ void *gcmalloc(unsigned int size) {
   if (tls.size_allocated >= 4096) { 
     pthread_mutex_lock(&thread_mutex);
     req_collect = 1;
+    pthread_cond_broadcast(&cond); // Reveille tous les threads mutateurs  faire un handShake
     pthread_mutex_unlock(&thread_mutex); 
   }
   
@@ -161,9 +162,22 @@ void handShake() {
 // des objets atteignables puis supprimer tous ceux qui n'ont pas été atteints
 static void *collector(void *arg) {
   
+  // attendre que req_collect soit positionne a 1
+  pthread_mutex_lock (&thread_mutex);
+  while (req_collect != 1) {
+    pthread_cond_wait(&cond,&thread_mutex);
+  }
+  pthread_mutex_unlock(&thread_mutex);
   
-  
-  // reveille tous les thread mutateur
+
+
+  // Parcours les threads,
+  //    puis libere les objets non atteignable
+  // ...
+
+
+
+  // reveille tous les threads mutateur
   pthread_mutex_lock(&thread_mutex);
   req_collect = 0;
   pthread_cond_broadcast(&cond);
