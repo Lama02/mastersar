@@ -21,8 +21,11 @@ char** down_stack() {
 // ATTENTION : A POROTEGER PAR UN VERROU
 int req_collect;
 
+
 // Condition 
-pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+static pthread_cond_t   cond              = PTHREAD_COND_INITIALIZER;
+static pthread_cond_t   cond_collect      = PTHREAD_COND_INITIALIZER;
+static pthread_cond_t   cond_ready        = PTHREAD_COND_INITIALIZER;
 
 
 // descriptor de thread
@@ -79,6 +82,22 @@ void print_threads() {
 
 
 
+
+int all_mutator_ready() {
+  struct thread_descriptor *thread_courrant = &all_threads;
+
+  do {
+    if (thread_courrant -> ready_to_collect == 0) {
+      printf("////////// NO READY\n");
+      return 0;
+    }
+    thread_courrant = thread_courrant -> next;
+  } while (thread_courrant -> next != &all_threads);
+  printf("============= READY\n");
+  return 1;
+}
+
+
 // la fonction gcmalloc, vous devez remplir cette fonction
 void *gcmalloc(unsigned int size) {
   // l'allocation se fait en suivant l'algo de hash de Boehm
@@ -91,7 +110,6 @@ void *gcmalloc(unsigned int size) {
 
   // ajout du nouvelle entete dans la liste globale de tous les objets geres par la thread
   pthread_mutex_lock (&thread_mutex);
-
   header -> next =   (tls.liste_objets == NULL) ? header : tls.liste_objets;
   header -> prev =   (tls.liste_objets == NULL) ? header : tls.liste_objets -> prev;
   if (tls.liste_objets != NULL)
@@ -100,14 +118,14 @@ void *gcmalloc(unsigned int size) {
 
   // au bout de PAGE_SIZE (4096) Mo on lance la collection   
   tls.size_allocated += size;
-  pthread_mutex_unlock(&thread_mutex);
   if (tls.size_allocated >= 4096) { 
-    pthread_mutex_lock(&thread_mutex);
     req_collect = 1;
-    pthread_cond_broadcast(&cond); // Reveille tous les threads mutateurs  faire un handShake
-    pthread_mutex_unlock(&thread_mutex); 
+    printf("Demande de collection.\n");
+    pthread_cond_broadcast(&cond_collect); // Reveille le collecteur
+    tls.size_allocated = 0;
   }
-  
+  pthread_mutex_unlock(&thread_mutex);
+
   // pour le retour, l'utilisateur est intéressé par l'objet, pas par son entête
   return toObject(header);
 }
@@ -128,35 +146,37 @@ void _writeBarrier(void *dst, void *src) {
 // celle-ci est ensuite accédée par le collecteur via la variable all_threads
 void handShake() {
   struct object_header * racine;       // adresse de la racine 
-  char **cur = down_stack();          // TODO : trouver le bas de la pile
+  char **cur = down_stack();           // TODO : trouver le bas de la pile
   
-  
-  // attendre que req_collect soit positionne a 1
-  pthread_mutex_lock (&thread_mutex);
-  while (req_collect != 1) {
-    pthread_cond_wait(&cond,&thread_mutex);
+  pthread_mutex_lock(&thread_mutex);  
+  if (req_collect == 0) { // Si pas de demande de collection par le gcmalloc
+    pthread_mutex_unlock(&thread_mutex);
+    return;               // Alors ne rien faire
   }
-  // parcours de la pile a la recherche des racines
+
+
+
+  // Sinon parcours de la pile a la recherche des racines
   while ( (char*)cur > tls.top_stack){ // HYPOTHESE : la pile croit vers des adresses basses
     if ((racine = toHeader(*cur))){        // si une racine 
       // alors ajout dans la liste des racines 
-
+      // is_racine;
       racine -> next =   (tls.liste_racines == NULL) ? racine : tls.liste_racines;
       racine -> prev =   (tls.liste_racines == NULL) ? racine : tls.liste_racines -> prev;
       if (tls.liste_racines != NULL)
 	tls.liste_racines -> prev = racine;
       tls.liste_racines = racine;
     }
+    // cur++down_stack();
   }
   tls.ready_to_collect = 1;
-  pthread_mutex_unlock(&thread_mutex);
-
-
   // attendre la fin de la collection
-  pthread_mutex_lock (&thread_mutex);
+  printf("Attendre fin de collection.\n");
   while (req_collect != 0) {
+    pthread_cond_broadcast(&cond_ready);   // Previent le collecteur pour lui dire qu'on est pret
     pthread_cond_wait(&cond,&thread_mutex);
   }
+  printf("Fin attent de collection.\n");
   pthread_mutex_unlock(&thread_mutex);
 
 }
@@ -166,26 +186,31 @@ void handShake() {
 // le thread collecteur. Quand une collection est requise, il doit se réveiller et parcourir le graphe
 // des objets atteignables puis supprimer tous ceux qui n'ont pas été atteints
 static void *collector(void *arg) {
-  
-  // attendre que req_collect soit positionne a 1
-  pthread_mutex_lock (&thread_mutex);
-  while (req_collect != 1) {
-    pthread_cond_wait(&cond,&thread_mutex);
-  }
-  pthread_mutex_unlock(&thread_mutex);
-  
 
+  pthread_mutex_lock (&thread_mutex);
+  
+  printf("**************** Collection *****************\n");
+
+  // Attendre que req_collect soit positionne a 1
+  while (req_collect != 1) {
+    printf("Attend requete de collection.\n");
+    pthread_cond_wait(&cond_collect,&thread_mutex);
+  }
+
+  // Attend que tous les mutateurs soient pret  
+  while (all_mutator_ready() == 0) {
+    pthread_cond_wait(&cond_ready,&thread_mutex);
+  }
 
   // Parcours les threads,
   //    puis libere les objets non atteignable
   // ...
 
 
-
   // reveille tous les threads mutateur
-  pthread_mutex_lock(&thread_mutex);
   req_collect = 0;
   pthread_cond_broadcast(&cond);
+  printf("Fin de collection.\n");
   pthread_mutex_unlock(&thread_mutex); 
   
   return 0;
