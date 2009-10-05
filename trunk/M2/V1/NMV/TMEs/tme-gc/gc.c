@@ -91,10 +91,13 @@ void *gcmalloc(unsigned int size) {
 
   // ajout du nouvelle entete dans la liste globale de tous les objets geres par la thread
   pthread_mutex_lock (&thread_mutex);
-  header -> next =   tls.liste_objets;
-  header -> prev =   tls.liste_objets -> prev;
-  tls.liste_objets -> prev = header;
+
+  header -> next =   (tls.liste_objets == NULL) ? header : tls.liste_objets;
+  header -> prev =   (tls.liste_objets == NULL) ? header : tls.liste_objets -> prev;
+  if (tls.liste_objets != NULL)
+    tls.liste_objets -> prev = header;
   tls.liste_objets = header;
+
   // au bout de PAGE_SIZE (4096) Mo on lance la collection   
   tls.size_allocated += size;
   pthread_mutex_unlock(&thread_mutex);
@@ -137,9 +140,11 @@ void handShake() {
   while ( (char*)cur > tls.top_stack){ // HYPOTHESE : la pile croit vers des adresses basses
     if ((racine = toHeader(*cur))){        // si une racine 
       // alors ajout dans la liste des racines 
-      racine -> next = tls.liste_racines;
-      racine -> prev = tls.liste_racines -> prev;
-      tls.liste_racines -> prev = racine;
+
+      racine -> next =   (tls.liste_racines == NULL) ? racine : tls.liste_racines;
+      racine -> prev =   (tls.liste_racines == NULL) ? racine : tls.liste_racines -> prev;
+      if (tls.liste_racines != NULL)
+	tls.liste_racines -> prev = racine;
       tls.liste_racines = racine;
     }
   }
