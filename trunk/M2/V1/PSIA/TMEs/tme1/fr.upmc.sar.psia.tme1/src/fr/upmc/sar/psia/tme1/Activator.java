@@ -35,6 +35,7 @@ public class Activator implements BundleActivator, ServiceListener{
 			this.context = context;
 			// Recherche les services deja charger
 			ServiceReference[] servicesAlreadyLoaded = this.context.getAllServiceReferences(null, null);
+			// Parcours les services
 			for (int i = 0; i < servicesAlreadyLoaded.length; i++) {
 				Object obj = this.context.getService(servicesAlreadyLoaded[i]);
 				String nameClass = obj.getClass().getCanonicalName();
@@ -86,18 +87,17 @@ public class Activator implements BundleActivator, ServiceListener{
 			String nameInterface = nameClass + "MBean";          // le nom de l'interface MBean du service
 
 			try {
-				// Le nom associe a la classe a administrer
-				ObjectName name = new ObjectName(":type=" + nameClass);
-
+				ObjectName name = new ObjectName(":type=" + nameClass);	// Le nom associe a la classe a administrer via JMX
+				
 				switch(ev.getType()) {
 				case ServiceEvent.REGISTERED:
 					Class<?> interfaces[] = obj.getClass().getInterfaces(); // interfaces implementees par le service
 					// Verifie si une des interfaces implementees par le service finit bien par la chaine "MBean"
 					for (int i=0; i<interfaces.length; i++ ){
+						// si implements alors enregistre le MBean
 						if (interfaces[i].getName().equals(nameInterface)){
-							// si implements alors enregistre le MBean
 							mbs.registerMBean(obj, name);
-							services.put(name, obj); // Ajout le servies a la Map
+							services.put(name, obj);
 							System.err.println("[tme1] Service '" + nameClass + "' REGISTERED");
 						}
 					}
@@ -107,8 +107,7 @@ public class Activator implements BundleActivator, ServiceListener{
 					// si le service est deja enregistre, on le desabonne
 					if (mbs.isRegistered(name)){
 						mbs.unregisterMBean(name);
-						services.remove(name); // Supprime le service de la Map
-						System.err.println("Map empty: " + services.isEmpty());
+						services.remove(name);
 						System.err.println("[tme1] Service '" + nameClass + "' UNREGISTERED");
 					}
 					break;
