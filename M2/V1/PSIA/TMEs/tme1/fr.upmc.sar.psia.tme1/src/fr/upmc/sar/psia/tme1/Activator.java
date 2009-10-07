@@ -93,8 +93,8 @@ public class Activator implements BundleActivator, ServiceListener{
 					Class<?> interfaces[] = obj.getClass().getInterfaces(); // interfaces implementees par le service
 					// Verifie si une des interfaces implementees par le service finit bien par la chaine "MBean"
 					for (int i=0; i<interfaces.length; i++ ){
-						// si implements alors enregistre le MBean
-						if (interfaces[i].getName().equals(nameInterface)){
+						// si implements et pas deja enregistre alors enregistre le MBean
+						if (interfaces[i].getName().equals(nameInterface) && !mbs.isRegistered(name)){
 							mbs.registerMBean(obj, name);
 							services.put(name, obj);
 							System.out.println("[tme1] Service '" + nameClass + "' REGISTERED");
