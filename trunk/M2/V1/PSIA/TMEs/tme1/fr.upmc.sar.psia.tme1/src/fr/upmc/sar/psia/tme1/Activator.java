@@ -24,20 +24,19 @@ public class Activator implements BundleActivator, ServiceListener{
 	private MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 	// Le contexte
 	private BundleContext context;
-
 	// Liste des services exporter en JMX
 	private Map<ObjectName,Object> services = new HashMap<ObjectName,Object>();
 
 	@Override
 	public void start(BundleContext context) throws Exception {
 		synchronized (this) {
-			System.out.println("[tme1] started " + services);
+			System.out.println("[tme1] started");
 			this.context = context;
 			// Recherche les services deja charger
-			ServiceReference[] servicesAlreadyLoaded = this.context.getAllServiceReferences(null, null);
+			ServiceReference[] servicesAlreadyPresent = this.context.getAllServiceReferences(null, null);
 			// Parcours les services
-			for (int i = 0; i < servicesAlreadyLoaded.length; i++) {
-				Object obj = this.context.getService(servicesAlreadyLoaded[i]);
+			for (int i = 0; i < servicesAlreadyPresent.length; i++) {
+				Object obj = this.context.getService(servicesAlreadyPresent[i]);
 				String nameClass = obj.getClass().getCanonicalName();
 				String nameInterface = nameClass + "MBean";
 				Class<?> interfaces[] = obj.getClass().getInterfaces(); // interfaces implementees par le service
@@ -48,7 +47,7 @@ public class Activator implements BundleActivator, ServiceListener{
 						ObjectName name = new ObjectName(":type=" + nameClass);
 						mbs.registerMBean(obj, name);
 						services.put(name, obj); // Ajout le service a la Map
-						System.err.println("[tme1] Service Already Loaded '" + nameClass + "' REGISTERED");
+						System.out.println("[tme1] Service already present: '" + nameClass + "' REGISTERED");
 					}
 				}
 			}
@@ -66,19 +65,19 @@ public class Activator implements BundleActivator, ServiceListener{
 				if (mbs.isRegistered(name)){
 					mbs.unregisterMBean(name); // desabonne le service
 					//services.remove(name);     // Supprime le service de la Map
-					System.err.println("[tme1] STOP Service '" + obj.getClass().getCanonicalName() + "' UNREGISTERED");
+					System.out.println("[tme1] Going to stop...: Service '" + obj.getClass().getCanonicalName() + "' UNREGISTERED");
 				}
 				// traitements
 			}
+			mbs      = null;
 			services = null;
-			System.out.println("++services: " + services);
 		}
 	}
 
 	@Override
 	public void serviceChanged(ServiceEvent ev) {
 		synchronized (this) {
-			System.err.println("[tme1] New event");
+			System.out.println("[tme1] New event");
 
 			ServiceReference newRef = ev.getServiceReference();  // la nouvelle reference OSGi
 			Object obj = context.getService(newRef);             // objet implementant le service
@@ -98,7 +97,7 @@ public class Activator implements BundleActivator, ServiceListener{
 						if (interfaces[i].getName().equals(nameInterface)){
 							mbs.registerMBean(obj, name);
 							services.put(name, obj);
-							System.err.println("[tme1] Service '" + nameClass + "' REGISTERED");
+							System.out.println("[tme1] Service '" + nameClass + "' REGISTERED");
 						}
 					}
 					break;
@@ -108,12 +107,12 @@ public class Activator implements BundleActivator, ServiceListener{
 					if (mbs.isRegistered(name)){
 						mbs.unregisterMBean(name);
 						services.remove(name);
-						System.err.println("[tme1] Service '" + nameClass + "' UNREGISTERED");
+						System.out.println("[tme1] Service '" + nameClass + "' UNREGISTERED");
 					}
 					break;
 
 				case ServiceEvent.MODIFIED: 
-					System.err.println("[tme1] Service MODIFIED");
+					System.out.println("[tme1] Service MODIFIED");
 					//TODO
 					break;
 
