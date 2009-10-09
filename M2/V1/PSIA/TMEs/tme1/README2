@@ -21,6 +21,18 @@ Pre-requis:
 
 Présentation:
 =============
+Tous les points importants du projet sont traités et fonctionnels.
+Notement celle concernant le nommage des services en JMX. La solution proposés
+est la suivante:
+    - domaine: Nom du package contenant la classe implementants les services
+    - type   : Nom de la classe concatener à l'identifiant unique du bundle 
+               contenant le services, ce qui assure l'unicte du nom (c.f. la
+               fonction 'uniqueName').
+
+Nous avons également utilisé comme structure de données une 
+HashMap<String,ObjectName> qui nous permet de connaitre à tous moment les 
+services exposés en JMX, afin de pouvoir les mettre à jours ou 
+les désabonner.
 
 
 Déploiement:
