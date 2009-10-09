@@ -97,11 +97,14 @@ public class Activator implements BundleActivator, ServiceListener{
 				// Recupere les proprietes du services
 				String strProps    = serviceProperties(newRef);
 				
+				// Recupere le package comme domaine
+				String domaine = obj.getClass().getPackage().getName();
+				
 				// Le nom unique utilise pour enregistrer dans JMX
 				String uniqueNameClass = uniqueName(newRef);
 
 				// Le ObjectName associe a la classe a administrer via JMX
-				ObjectName objectName = new ObjectName(":type=" + uniqueNameClass + strProps);
+				ObjectName objectName = new ObjectName(domaine + ":type=" + uniqueNameClass + strProps);
 
 				// Les interfaces implementees par le service
 				Class<?> interfaces[] = obj.getClass().getInterfaces();
@@ -171,11 +174,14 @@ public class Activator implements BundleActivator, ServiceListener{
 			// Recupere les proprietes du services
 			String strProps    = serviceProperties(newRef);
 			
+			// Recupere le package comme domaine
+			String domaine = obj.getClass().getPackage().getName();
+			
 			// Le nom unique utilise pour enregistrer dans JMX
 			String uniqueNameClass = uniqueName(newRef);
 
 			// Le nouveau ObjectName associe a la classe a administrer via JMX
-			ObjectName newObjectName = new ObjectName(":type=" + uniqueNameClass + strProps);
+			ObjectName newObjectName = new ObjectName(domaine + ":type=" + uniqueNameClass + strProps);
 			// L'ancien   ObjectName associe a la classe a administrer via JMX
 			ObjectName oldObjectName = services.get(uniqueNameClass);
 
@@ -226,7 +232,7 @@ public class Activator implements BundleActivator, ServiceListener{
 	
 	private String uniqueName(ServiceReference newRef) {
 		// Le nom de la classe du services
-		String nameClass = context.getService(newRef).getClass().getCanonicalName();
+		String nameClass = context.getService(newRef).getClass().getSimpleName();
 		
 		// L'id du bundle hebergeant le service
 		long bundleId = newRef.getBundle().getBundleId();
