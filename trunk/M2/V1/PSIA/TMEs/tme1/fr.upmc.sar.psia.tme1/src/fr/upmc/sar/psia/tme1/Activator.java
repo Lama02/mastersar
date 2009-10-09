@@ -106,9 +106,6 @@ public class Activator implements BundleActivator, ServiceListener{
 				// Le nom de la classe du services
 				String nameClass = obj.getClass().getCanonicalName();
 
-				// Le nom de l'interface MBean que devervait implementer le service
-				String nameInterface = nameClass + "MBean";
-
 				// Le ObjectName associe a la classe a administrer via JMX
 				ObjectName objectName = new ObjectName(":type=" + nameClass + strProps);
 
@@ -117,8 +114,8 @@ public class Activator implements BundleActivator, ServiceListener{
 
 				// Verifie si une des interfaces implementees par le service finit bien par la chaine "MBean"
 				for (int i=0; i<interfaces.length; i++ ){
-					// si implements et pas deja enregistre alors enregistre le MBean
-					if (interfaces[i].getName().equals(nameInterface) && !mbs.isRegistered(objectName)){
+					// si implements *MBean et pas deja enregistre alors enregistre le MBean
+					if (interfaces[i].getName().matches(".*MBean") && !mbs.isRegistered(objectName)){
 						mbs.registerMBean(obj, objectName);
 						services.put(nameClass, objectName);
 						System.out.println("   [tme1] Service '" + nameClass + "' REGISTERED");
