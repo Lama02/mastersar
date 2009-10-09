@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Tme1
+Bundle-Name: JMX Exposer
 Bundle-SymbolicName: fr.upmc.sar.psia.tme1
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: fr.upmc.sar.psia.tme1.Activator
