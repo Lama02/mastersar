@@ -105,9 +105,12 @@ public class Activator implements BundleActivator, ServiceListener{
 
 				// Le nom de la classe du services
 				String nameClass = obj.getClass().getCanonicalName();
+				
+				// Le nom unique utilise pour enregistrer dans JMX
+				String uniqueNameClass = nameClass + newRef.getBundle().getBundleId();
 
 				// Le ObjectName associe a la classe a administrer via JMX
-				ObjectName objectName = new ObjectName(":type=" + nameClass + strProps);
+				ObjectName objectName = new ObjectName(":type=" + uniqueNameClass + strProps);
 
 				// Les interfaces implementees par le service
 				Class<?> interfaces[] = obj.getClass().getInterfaces();
@@ -117,8 +120,8 @@ public class Activator implements BundleActivator, ServiceListener{
 					// si implements *MBean et pas deja enregistre alors enregistre le MBean
 					if (interfaces[i].getName().matches(".*MBean") && !mbs.isRegistered(objectName)){
 						mbs.registerMBean(obj, objectName);
-						services.put(nameClass, objectName);
-						System.out.println("   [tme1] Service '" + nameClass + "' REGISTERED");
+						services.put(uniqueNameClass, objectName);
+						System.out.println("   [tme1] Service '" + uniqueNameClass + "' REGISTERED");
 					}
 				}
 			} catch (InstanceAlreadyExistsException e) {
@@ -148,15 +151,18 @@ public class Activator implements BundleActivator, ServiceListener{
 
 				// Le nom de la classe du services
 				String nameClass = obj.getClass().getCanonicalName(); 
+				
+				// Le nom unique utilise pour enregistrer dans JMX
+				String uniqueNameClass = nameClass + newRef.getBundle().getBundleId();
 
 				// Le ObjectName associe a la classe a administrer via JMX
-				ObjectName objectName = services.get(nameClass);	
+				ObjectName objectName = services.get(uniqueNameClass);	
 
 				// Si le service est deja enregistre, on le desabonne
 				if ((objectName != null) && mbs.isRegistered(objectName)){
 					mbs.unregisterMBean(objectName);
 					services.remove(objectName);
-					System.out.println("   [tme1] Service '" + nameClass + "' UNREGISTERED");
+					System.out.println("   [tme1] Service '" + uniqueNameClass + "' UNREGISTERED");
 				}
 			} catch (MBeanRegistrationException e) {
 				// TODO Auto-generated catch block
@@ -188,11 +194,14 @@ public class Activator implements BundleActivator, ServiceListener{
 
 			// Le nom de la classe du services
 			String nameClass = obj.getClass().getCanonicalName();
+			
+			// Le nom unique utilise pour enregistrer dans JMX
+			String uniqueNameClass = nameClass + newRef.getBundle().getBundleId();
 
 			// Le nouveau ObjectName associe a la classe a administrer via JMX
-			ObjectName newObjectName = new ObjectName(":type=" + nameClass + strProps);
+			ObjectName newObjectName = new ObjectName(":type=" + uniqueNameClass + strProps);
 			// L'ancien   ObjectName associe a la classe a administrer via JMX
-			ObjectName oldObjectName = services.get(nameClass);
+			ObjectName oldObjectName = services.get(uniqueNameClass);
 
 			// Si le service etait deja enregistrer alors maj sinon on ne fais rien
 			if (mbs.isRegistered(oldObjectName)){
@@ -201,8 +210,8 @@ public class Activator implements BundleActivator, ServiceListener{
 				// Resenregistre le nouveau MBean
 				mbs.registerMBean(obj,newObjectName);
 				// Met a jours la HashMap
-				services.put(nameClass, newObjectName);
-				System.out.println("   [tme1] Service '" + nameClass + "' MODIFIED");
+				services.put(uniqueNameClass, newObjectName);
+				System.out.println("   [tme1] Service '" + uniqueNameClass + "' MODIFIED");
 			}
 		} catch (InstanceNotFoundException e) {
 			// TODO Auto-generated catch block
