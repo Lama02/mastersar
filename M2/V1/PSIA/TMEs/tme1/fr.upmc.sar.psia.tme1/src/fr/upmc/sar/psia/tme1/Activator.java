@@ -50,7 +50,7 @@ public class Activator implements BundleActivator, ServiceListener{
 		synchronized(this) {	
 			// Parcours les services deja expose
 			for(Entry<String, ObjectName> entry : services.entrySet()) {
-				String key = entry.getKey();
+				String       key = entry.getKey();
 				ObjectName value = entry.getValue();
 				// Et les  desenregistre si possible
 				if (mbs.isRegistered(value)){
@@ -95,19 +95,10 @@ public class Activator implements BundleActivator, ServiceListener{
 				Object obj = context.getService(newRef);
 
 				// Recupere les proprietes du services
-				String[] keyProps  = newRef.getPropertyKeys();
-				String strProps    = "";
-				for (int k = 0; k < keyProps.length; k++) {
-					if (newRef.getProperty(keyProps[k]) instanceof String) {
-						strProps += "," + keyProps[k] + "=" + ((String) newRef.getProperty(keyProps[k]));
-					}
-				}
-
-				// Le nom de la classe du services
-				String nameClass = obj.getClass().getCanonicalName();
+				String strProps    = serviceProperties(newRef);
 				
 				// Le nom unique utilise pour enregistrer dans JMX
-				String uniqueNameClass = nameClass + newRef.getBundle().getBundleId();
+				String uniqueNameClass = uniqueName(newRef);
 
 				// Le ObjectName associe a la classe a administrer via JMX
 				ObjectName objectName = new ObjectName(":type=" + uniqueNameClass + strProps);
@@ -146,14 +137,8 @@ public class Activator implements BundleActivator, ServiceListener{
 	private void unregisterService(ServiceReference newRef) {
 		synchronized(this) {
 			try {
-				// L'objet implementant le service
-				Object obj = context.getService(newRef);
-
-				// Le nom de la classe du services
-				String nameClass = obj.getClass().getCanonicalName(); 
-				
 				// Le nom unique utilise pour enregistrer dans JMX
-				String uniqueNameClass = nameClass + newRef.getBundle().getBundleId();
+				String uniqueNameClass = uniqueName(newRef);
 
 				// Le ObjectName associe a la classe a administrer via JMX
 				ObjectName objectName = services.get(uniqueNameClass);	
@@ -184,19 +169,10 @@ public class Activator implements BundleActivator, ServiceListener{
 			Object obj = context.getService(newRef);
 
 			// Recupere les proprietes du services
-			String[] keyProps  = newRef.getPropertyKeys();
-			String strProps    = "";
-			for (int k = 0; k < keyProps.length; k++) {
-				if (newRef.getProperty(keyProps[k]) instanceof String) {
-					strProps += "," + keyProps[k] + "=" + ((String) newRef.getProperty(keyProps[k]));
-				}
-			}
-
-			// Le nom de la classe du services
-			String nameClass = obj.getClass().getCanonicalName();
+			String strProps    = serviceProperties(newRef);
 			
 			// Le nom unique utilise pour enregistrer dans JMX
-			String uniqueNameClass = nameClass + newRef.getBundle().getBundleId();
+			String uniqueNameClass = uniqueName(newRef);
 
 			// Le nouveau ObjectName associe a la classe a administrer via JMX
 			ObjectName newObjectName = new ObjectName(":type=" + uniqueNameClass + strProps);
@@ -233,6 +209,29 @@ public class Activator implements BundleActivator, ServiceListener{
 			e.printStackTrace();
 		} 
 
+	}
+	
+	private String serviceProperties(ServiceReference newRef) {
+		// Recupere les proprietes du services
+		String[] keyProps  = newRef.getPropertyKeys();
+		String   strProps  = "";
+		for (int k = 0; k < keyProps.length; k++) {
+			if (newRef.getProperty(keyProps[k]) instanceof String) {
+				strProps += "," + keyProps[k] + "=" + ((String) newRef.getProperty(keyProps[k]));
+			}
+		}
+		
+		return strProps;
+	}
+	
+	private String uniqueName(ServiceReference newRef) {
+		// Le nom de la classe du services
+		String nameClass = context.getService(newRef).getClass().getCanonicalName();
+		
+		// L'id du bundle hebergeant le service
+		long bundleId = newRef.getBundle().getBundleId();
+
+		return nameClass + bundleId;
 	}
 
 }
