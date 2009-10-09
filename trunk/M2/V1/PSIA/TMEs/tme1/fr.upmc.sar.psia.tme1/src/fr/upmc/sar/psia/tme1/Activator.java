@@ -81,7 +81,7 @@ public class Activator implements BundleActivator, ServiceListener{
 				break;
 
 			case ServiceEvent.MODIFIED: 
-				unpdateRegistedService(newRef);
+				updateRegistedService(newRef);
 				break;
 
 			}
@@ -162,7 +162,7 @@ public class Activator implements BundleActivator, ServiceListener{
 		}
 	}
 
-	private void unpdateRegistedService(ServiceReference newRef) {
+	private void updateRegistedService(ServiceReference newRef) {
 
 		try {
 			// L'objet implementant le service
