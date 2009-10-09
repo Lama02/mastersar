@@ -30,17 +30,17 @@ public class Activator implements BundleActivator, ServiceListener{
 	@Override
 	public void start(BundleContext context) throws Exception {
 		synchronized(this) {
-			System.out.println("[tme1] Started");
+			System.out.println("[JMX Exposer] Started");
 			this.context = context;
 			// Recherche les services deja charge
 			ServiceReference[] servicesAlreadyPresent = this.context.getAllServiceReferences(null, null);
 			// Parcours les services
-			System.out.println("[tme1] Service already present, going to be REGISTERED...");
+			System.out.println("[JMX Exposer] Service already present, going to be REGISTERED...");
 			for (int i = 0; i < servicesAlreadyPresent.length; i++) {
 				// Et les enregistrent si possible
 				registerService(servicesAlreadyPresent[i]);
 			}
-			System.out.println("[tme1] ... service already present finish");
+			System.out.println("[JMX Exposer] ... service already present finish");
 			this.context.addServiceListener(this);
 		}
 	}
@@ -55,19 +55,19 @@ public class Activator implements BundleActivator, ServiceListener{
 				// Et les  desenregistre si possible
 				if (mbs.isRegistered(value)){
 					mbs.unregisterMBean(value);
-					System.out.println("   [tme1] Service '" + key + "' UNREGISTERED");
+					System.out.println("   [JMX Exposer] Service '" + key + "' UNREGISTERED");
 				}
 			}
 			mbs      = null;
 			services = null;
-			System.out.println("[tme1] Stopped");	
+			System.out.println("[JMX Exposer] Stopped");	
 		}
 	}
 
 	@Override
 	public void serviceChanged(ServiceEvent ev) {
 		synchronized(this) {
-			System.out.println("[tme1] New event");
+			System.out.println("[JMX Exposer] New event");
 
 			ServiceReference newRef = ev.getServiceReference();  // la nouvelle reference OSGi
 
@@ -115,7 +115,7 @@ public class Activator implements BundleActivator, ServiceListener{
 					if (interfaces[i].getName().matches(".*MBean") && !mbs.isRegistered(objectName)){
 						mbs.registerMBean(obj, objectName);
 						services.put(uniqueNameClass, objectName);
-						System.out.println("   [tme1] Service '" + uniqueNameClass + "' REGISTERED");
+						System.out.println("   [JMX Exposer] Service '" + uniqueNameClass + "' REGISTERED");
 					}
 				}
 			} catch (InstanceAlreadyExistsException e) {
@@ -150,7 +150,7 @@ public class Activator implements BundleActivator, ServiceListener{
 				if ((objectName != null) && mbs.isRegistered(objectName)){
 					mbs.unregisterMBean(objectName);
 					services.remove(objectName);
-					System.out.println("   [tme1] Service '" + uniqueNameClass + "' UNREGISTERED");
+					System.out.println("   [JMX Exposer] Service '" + uniqueNameClass + "' UNREGISTERED");
 				}
 			} catch (MBeanRegistrationException e) {
 				// TODO Auto-generated catch block
@@ -193,7 +193,7 @@ public class Activator implements BundleActivator, ServiceListener{
 				mbs.registerMBean(obj,newObjectName);
 				// Met a jours la HashMap
 				services.put(uniqueNameClass, newObjectName);
-				System.out.println("   [tme1] Service '" + uniqueNameClass + "' MODIFIED");
+				System.out.println("   [JMX Exposer] Service '" + uniqueNameClass + "' MODIFIED");
 			}
 		} catch (InstanceNotFoundException e) {
 			// TODO Auto-generated catch block

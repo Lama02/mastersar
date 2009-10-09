@@ -1,7 +1,7 @@
 <!-- <?xml version="1.0" encoding="ISO-8859-9"?> -->
 
-<project name="tme1" default="all" basedir=".">
-		 <property name="bundle.name"      value="tme1"/>
+<project name="fr.upmc.sar.psia.tme1" default="all" basedir=".">
+		 <property name="bundle.name"      value="fr.upmc.sar.psia.OSGi-JMX"/>
 		 <property name="bundle.suf"       value="jar"/>
 
 		 <property environment="env"/>
