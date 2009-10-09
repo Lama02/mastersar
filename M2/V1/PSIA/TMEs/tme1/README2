@@ -1,0 +1,53 @@
+##############################################################################
+#                                                                            #
+#                              Projet  PSIA:                                 #
+#                              -------------                                 #
+#                                                                            #
+#                                OSGi/JMX                                    #
+#                                                                            #
+##############################################################################
+
+
+Auteur:
+=======
+   * ALAHYANE Rachid
+   * CHAOUKI  Monir
+
+Pre-requis:
+===========
+  * java-1.6.0-openjdk-1.6.0.0
+  * felix-framework-2.0.0
+
+
+Présentation:
+=============
+
+
+Déploiement:
+============
+
+$ unzip PSIA-OSGi-Alahyane-Chaouki.zip
+$ cd PSIA-OSGi-Alahyane-Chaouki/
+$ sh build.sh
+    [echo] You can start ... with "install file:///...helloworld-es.jar"
+    [echo] You can start ... with "install file:///...helloworld-en.jar"
+    [echo] You can start ... with "install file:///...helloworld.jar"
+    [echo] You can start ... with "install file:///...helloworld-fr.jar"
+    [echo] You can start ... with "install file:///...tme1.jar"
+$ cd $FELIX_PATH
+$ jconsole &
+$ java -Dcom.sun.management.jmxremote -jar bin/felix.jar
+Welcome to Felix
+================
+
+-> # enjoy... ;)
+
+
+
+
+Remarques:
+==========
+Lors de l'execution de la commande 'sh build.sh' des messages d'erreurs 
+peuvent apparaitre sur la console ('/usr/bin/build-classpath: error: Could 
+not find...') malgré que la compilation se soit bien déroulé.
+Donc ces messages n'ont pas d'importance. N'y tenez pas d'impotance :p.
