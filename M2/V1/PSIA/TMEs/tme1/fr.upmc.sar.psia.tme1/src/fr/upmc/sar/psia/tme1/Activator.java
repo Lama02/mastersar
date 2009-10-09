@@ -102,10 +102,10 @@ public class Activator implements BundleActivator, ServiceListener{
 						strProps += "," + keyProps[k] + "=" + ((String) newRef.getProperty(keyProps[k]));
 					}
 				}
-				
+
 				// Le nom de la classe du services
 				String nameClass = obj.getClass().getCanonicalName();
-				
+
 				// Le nom de l'interface MBean que devervait implementer le service
 				String nameInterface = nameClass + "MBean";
 
@@ -124,7 +124,7 @@ public class Activator implements BundleActivator, ServiceListener{
 						System.out.println("   [tme1] Service '" + nameClass + "' REGISTERED");
 					}
 				}
-			}catch (InstanceAlreadyExistsException e) {
+			} catch (InstanceAlreadyExistsException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (MBeanRegistrationException e) {
@@ -139,7 +139,7 @@ public class Activator implements BundleActivator, ServiceListener{
 			} catch (NullPointerException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			} 
+			}
 		}
 	}
 
@@ -175,6 +175,57 @@ public class Activator implements BundleActivator, ServiceListener{
 	}
 
 	private void unpdateRegistedService(ServiceReference newRef) {
+
+		try {
+			// L'objet implementant le service
+			Object obj = context.getService(newRef);
+
+			// Recupere les proprietes du services
+			String[] keyProps  = newRef.getPropertyKeys();
+			String strProps    = "";
+			for (int k = 0; k < keyProps.length; k++) {
+				if (newRef.getProperty(keyProps[k]) instanceof String) {
+					strProps += "," + keyProps[k] + "=" + ((String) newRef.getProperty(keyProps[k]));
+				}
+			}
+
+			// Le nom de la classe du services
+			String nameClass = obj.getClass().getCanonicalName();
+
+			// Le nouveau ObjectName associe a la classe a administrer via JMX
+			ObjectName newObjectName = new ObjectName(":type=" + nameClass + strProps);
+			// L'ancien   ObjectName associe a la classe a administrer via JMX
+			ObjectName oldObjectName = services.get(nameClass);
+
+			// Si le service etait deja enregistrer alors maj sinon on ne fais rien
+			if (mbs.isRegistered(oldObjectName)){
+				// Desenregistre l'ancien   MBean
+				mbs.unregisterMBean(oldObjectName);
+				// Resenregistre le nouveau MBean
+				mbs.registerMBean(obj,newObjectName);
+				// Met a jours la HashMap
+				services.put(nameClass, newObjectName);
+				System.out.println("   [tme1] Service '" + nameClass + "' MODIFIED");
+			}
+		} catch (InstanceNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (MalformedObjectNameException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NullPointerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (MBeanRegistrationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InstanceAlreadyExistsException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NotCompliantMBeanException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
 
 	}
 
