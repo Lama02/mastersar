@@ -30,7 +30,7 @@ public class Activator implements BundleActivator, ServiceListener{
 	@Override
 	public void start(BundleContext context) throws Exception {
 		synchronized(this) {
-			System.out.println("[tme1] started");
+			System.out.println("[tme1] Started");
 			this.context = context;
 			// Recherche les services deja charge
 			ServiceReference[] servicesAlreadyPresent = this.context.getAllServiceReferences(null, null);
@@ -40,6 +40,7 @@ public class Activator implements BundleActivator, ServiceListener{
 				// Et les enregistrent si possible
 				registerService(servicesAlreadyPresent[i]);
 			}
+			System.out.println("[tme1] ... service already present finish");
 			this.context.addServiceListener(this);
 		}
 	}
@@ -59,7 +60,7 @@ public class Activator implements BundleActivator, ServiceListener{
 			}
 			mbs      = null;
 			services = null;
-			System.out.println("[tme1] stopped");	
+			System.out.println("[tme1] Stopped");	
 		}
 	}
 
@@ -80,7 +81,7 @@ public class Activator implements BundleActivator, ServiceListener{
 				break;
 
 			case ServiceEvent.MODIFIED: 
-				//TODO
+				unpdateRegistedService(newRef);
 				break;
 
 			}
@@ -97,11 +98,14 @@ public class Activator implements BundleActivator, ServiceListener{
 				String[] keyProps  = newRef.getPropertyKeys();
 				String strProps    = "";
 				for (int k = 0; k < keyProps.length; k++) {
-					//	strProps += "," + keyProps[k] + "=" + newRef.getProperty(keyProps[k]);
+					if (newRef.getProperty(keyProps[k]) instanceof String) {
+						strProps += "," + keyProps[k] + "=" + ((String) newRef.getProperty(keyProps[k]));
+					}
 				}
-
+				
 				// Le nom de la classe du services
 				String nameClass = obj.getClass().getCanonicalName();
+				
 				// Le nom de l'interface MBean que devervait implementer le service
 				String nameInterface = nameClass + "MBean";
 
