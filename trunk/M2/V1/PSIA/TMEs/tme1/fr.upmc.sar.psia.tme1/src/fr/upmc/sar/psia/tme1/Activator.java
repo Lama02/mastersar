@@ -234,7 +234,7 @@ public class Activator implements BundleActivator, ServiceListener{
 		// Le nom de la classe du services
 		String nameClass = context.getService(newRef).getClass().getSimpleName();
 		
-		// L'id du bundle hebergeant le service
+		// L'id unique du bundle hebergeant le service
 		long bundleId = newRef.getBundle().getBundleId();
 
 		return nameClass + bundleId;
