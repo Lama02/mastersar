@@ -25,31 +25,20 @@ public class Activator implements BundleActivator, ServiceListener{
 	// Le contexte
 	private BundleContext context;
 	// Liste des services exporter en JMX
-	private Map<ObjectName,Object> services = new HashMap<ObjectName,Object>();
+	private Map<String,ObjectName> services = new HashMap<String,ObjectName>();
 
 	@Override
 	public void start(BundleContext context) throws Exception {
-		synchronized (this) {
+		synchronized(this) {
 			System.out.println("[tme1] started");
 			this.context = context;
-			// Recherche les services deja charger
+			// Recherche les services deja charge
 			ServiceReference[] servicesAlreadyPresent = this.context.getAllServiceReferences(null, null);
 			// Parcours les services
+			System.out.println("[tme1] Service already present, going to be REGISTERED...");
 			for (int i = 0; i < servicesAlreadyPresent.length; i++) {
-				Object obj = this.context.getService(servicesAlreadyPresent[i]);
-				String nameClass = obj.getClass().getCanonicalName();
-				String nameInterface = nameClass + "MBean";
-				Class<?> interfaces[] = obj.getClass().getInterfaces(); // interfaces implementees par le service
-				// Verifie si une des interfaces implementees par le service finit bien par la chaine "MBean"
-				for (int j=0; j < interfaces.length; j++ ){
-					if (interfaces[j].getName().equals(nameInterface)){
-						// si implements alors enregistre le MBean
-						ObjectName name = new ObjectName(":type=" + nameClass);
-						mbs.registerMBean(obj, name);
-						services.put(name, obj); // Ajout le service a la Map
-						System.out.println("[tme1] Service already present: '" + nameClass + "' REGISTERED");
-					}
-				}
+				// Et les enregistrent si possible
+				registerService(servicesAlreadyPresent[i]);
 			}
 			this.context.addServiceListener(this);
 		}
@@ -57,67 +46,81 @@ public class Activator implements BundleActivator, ServiceListener{
 
 	@Override
 	public void stop(BundleContext arg0) throws Exception {
-		synchronized (this) {
-			System.out.println("[tme1] stopped");		
-			for(Entry<ObjectName, Object> entry : services.entrySet()) {
-				ObjectName name = entry.getKey();
-				Object obj = entry.getValue();
-				if (mbs.isRegistered(name)){
-					mbs.unregisterMBean(name); // desabonne le service
-					//services.remove(name);     // Supprime le service de la Map
-					System.out.println("[tme1] Going to stop...: Service '" + obj.getClass().getCanonicalName() + "' UNREGISTERED");
+		synchronized(this) {	
+			// Parcours les services deja expose
+			for(Entry<String, ObjectName> entry : services.entrySet()) {
+				String key = entry.getKey();
+				ObjectName value = entry.getValue();
+				// Et les  desenregistre si possible
+				if (mbs.isRegistered(value)){
+					mbs.unregisterMBean(value);
+					System.out.println("   [tme1] Service '" + key + "' UNREGISTERED");
 				}
-				// traitements
 			}
 			mbs      = null;
 			services = null;
+			System.out.println("[tme1] stopped");	
 		}
 	}
 
 	@Override
 	public void serviceChanged(ServiceEvent ev) {
-		synchronized (this) {
+		synchronized(this) {
 			System.out.println("[tme1] New event");
 
 			ServiceReference newRef = ev.getServiceReference();  // la nouvelle reference OSGi
-			Object obj = context.getService(newRef);             // objet implementant le service
 
-			String nameClass = context.getService(newRef).getClass().getCanonicalName(); // le nom de la classe du services
-			String nameInterface = nameClass + "MBean";          // le nom de l'interface MBean du service
+			switch(ev.getType()) {
+			case ServiceEvent.REGISTERED:
+				registerService(newRef);
+				break;
 
+			case ServiceEvent.UNREGISTERING:
+				unregisterService(newRef);
+				break;
+
+			case ServiceEvent.MODIFIED: 
+				//TODO
+				break;
+
+			}
+		}
+	}
+
+	private void registerService(ServiceReference newRef) {
+		synchronized(this) {
 			try {
-				ObjectName name = new ObjectName(":type=" + nameClass);	// Le nom associe a la classe a administrer via JMX
-				
-				switch(ev.getType()) {
-				case ServiceEvent.REGISTERED:
-					Class<?> interfaces[] = obj.getClass().getInterfaces(); // interfaces implementees par le service
-					// Verifie si une des interfaces implementees par le service finit bien par la chaine "MBean"
-					for (int i=0; i<interfaces.length; i++ ){
-						// si implements et pas deja enregistre alors enregistre le MBean
-						if (interfaces[i].getName().equals(nameInterface) && !mbs.isRegistered(name)){
-							mbs.registerMBean(obj, name);
-							services.put(name, obj);
-							System.out.println("[tme1] Service '" + nameClass + "' REGISTERED");
-						}
-					}
-					break;
+				// L'objet implementant le service
+				Object obj = context.getService(newRef);
 
-				case ServiceEvent.UNREGISTERING:
-					// si le service est deja enregistre, on le desabonne
-					if (mbs.isRegistered(name)){
-						mbs.unregisterMBean(name);
-						services.remove(name);
-						System.out.println("[tme1] Service '" + nameClass + "' UNREGISTERED");
-					}
-					break;
-
-				case ServiceEvent.MODIFIED: 
-					System.out.println("[tme1] Service MODIFIED");
-					//TODO
-					break;
-
+				// Recupere les proprietes du services
+				String[] keyProps  = newRef.getPropertyKeys();
+				String strProps    = "";
+				for (int k = 0; k < keyProps.length; k++) {
+					//	strProps += "," + keyProps[k] + "=" + newRef.getProperty(keyProps[k]);
 				}
-			} catch (InstanceAlreadyExistsException e) {
+
+				// Le nom de la classe du services
+				String nameClass = obj.getClass().getCanonicalName();
+				// Le nom de l'interface MBean que devervait implementer le service
+				String nameInterface = nameClass + "MBean";
+
+				// Le ObjectName associe a la classe a administrer via JMX
+				ObjectName objectName = new ObjectName(":type=" + nameClass + strProps);
+
+				// Les interfaces implementees par le service
+				Class<?> interfaces[] = obj.getClass().getInterfaces();
+
+				// Verifie si une des interfaces implementees par le service finit bien par la chaine "MBean"
+				for (int i=0; i<interfaces.length; i++ ){
+					// si implements et pas deja enregistre alors enregistre le MBean
+					if (interfaces[i].getName().equals(nameInterface) && !mbs.isRegistered(objectName)){
+						mbs.registerMBean(obj, objectName);
+						services.put(nameClass, objectName);
+						System.out.println("   [tme1] Service '" + nameClass + "' REGISTERED");
+					}
+				}
+			}catch (InstanceAlreadyExistsException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (MBeanRegistrationException e) {
@@ -132,12 +135,43 @@ public class Activator implements BundleActivator, ServiceListener{
 			} catch (NullPointerException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			} 
+		}
+	}
+
+	private void unregisterService(ServiceReference newRef) {
+		synchronized(this) {
+			try {
+				// L'objet implementant le service
+				Object obj = context.getService(newRef);
+
+				// Le nom de la classe du services
+				String nameClass = obj.getClass().getCanonicalName(); 
+
+				// Le ObjectName associe a la classe a administrer via JMX
+				ObjectName objectName = services.get(nameClass);	
+
+				// Si le service est deja enregistre, on le desabonne
+				if ((objectName != null) && mbs.isRegistered(objectName)){
+					mbs.unregisterMBean(objectName);
+					services.remove(objectName);
+					System.out.println("   [tme1] Service '" + nameClass + "' UNREGISTERED");
+				}
+			} catch (MBeanRegistrationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NullPointerException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			} catch (InstanceNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}
-
+			} 
 		}
+	}
+
+	private void unpdateRegistedService(ServiceReference newRef) {
+
 	}
 
 }
