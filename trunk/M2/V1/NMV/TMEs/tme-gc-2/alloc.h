@@ -4,6 +4,7 @@
 struct object_header {
   struct object_header * prev; // header precedent
   struct object_header * next; // header suivant
+  int    color;
   unsigned int object_size;       // gives the exact object size
 };
 

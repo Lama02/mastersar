@@ -5,6 +5,9 @@
 #include <unistd.h>
 #include "debug.h"
 
+#define NOIR  1
+#define BLANC 0
+
 
 // Si positionne a  
 //   1 tous les handshake de tous les threads doivent etre lances
@@ -85,15 +88,18 @@ char** down_stack() {
 
 void mark(struct object_header *header) {
   void *ptr;
-  for(ptr = toObject(header);ptr < ptr + header -> object_size ; ptr++) {
-    struct object_header *ref = toHeader(ptr);
-    if (ref != 0) {
-      ref -> next =   (tls.liste_atteignables == NULL) ? ref : tls.liste_atteignables;
-      ref -> prev =   (tls.liste_atteignables == NULL) ? ref : tls.liste_atteignables -> prev;
-      if (tls.liste_atteignables != NULL)
-        tls.liste_atteignables -> prev = ref;
-      tls.liste_atteignables = ref; 
-      mark(toHeader(ref));
+  if (header -> color != NOIR) {
+    for(ptr = toObject(header);ptr < ptr + header -> object_size ; ptr++) {
+      struct object_header *ref = toHeader(ptr);
+      if (ref != 0) {
+	ref -> color = NOIR;
+	ref -> next =   (tls.liste_atteignables == NULL) ? ref : tls.liste_atteignables;
+	ref -> prev =   (tls.liste_atteignables == NULL) ? ref : tls.liste_atteignables -> prev;
+	if (tls.liste_atteignables != NULL)
+	  tls.liste_atteignables -> prev = ref;
+	tls.liste_atteignables = ref; 
+	mark(toHeader(ref));
+      }
     }
   }
 }
@@ -205,7 +211,7 @@ static void *collector(void *arg) {
       pthread_cond_wait(&cond_collect,&thread_mutex);
     }
 
-    // Sinon
+    // Sinon traitement
     printf("   Debut collection.\n");
     printf("   Fin collection.\n");
 
