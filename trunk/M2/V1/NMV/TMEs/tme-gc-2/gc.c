@@ -84,7 +84,18 @@ char** down_stack() {
 /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 
 void mark(struct object_header *header) {
-
+  void *ptr;
+  for(ptr = toObject(header);ptr < ptr + header -> object_size ; ptr++) {
+    struct object_header *ref = toHeader(ptr);
+    if (ref != 0) {
+      ref -> next =   (tls.liste_atteignables == NULL) ? ref : tls.liste_atteignables;
+      ref -> prev =   (tls.liste_atteignables == NULL) ? ref : tls.liste_atteignables -> prev;
+      if (tls.liste_atteignables != NULL)
+        tls.liste_atteignables -> prev = ref;
+      tls.liste_atteignables = ref; 
+      mark(toHeader(ref));
+    }
+  }
 }
 
 // la fonction gcmalloc, vous devez remplir cette fonction
