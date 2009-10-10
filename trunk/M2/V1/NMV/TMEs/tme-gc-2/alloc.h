@@ -2,7 +2,9 @@
 #define _ALLOC_H_
 
 struct object_header {
-	unsigned int object_size;       // gives the exact object size
+  struct object_header * prev; // header precedent
+  struct object_header * next; // header suivant
+  unsigned int object_size;       // gives the exact object size
 };
 
 struct object_header *pre_malloc(unsigned int size);

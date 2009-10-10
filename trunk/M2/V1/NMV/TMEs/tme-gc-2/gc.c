@@ -29,10 +29,20 @@ struct thread_descriptor {
   // vous avez besoin d'une structure pour mettre vos racines sur votre pile
   // et vous avez besoin de drapeau pour indiquer au collecteur que vous avez fini de
   // placer les racines la dedans
-  
-  // la taille deja allouer
-  // par defaut initialise a 0. TODO c possible ca ?
+
+
+  // La liste des objets du thread
+  struct object_header *liste_objets; 
+
+  // La liste des objets racines
+  struct object_header *liste_racines;
+
+  // La taille deja allouer
   int size_allocated;
+
+  // Fini de rechercher les racines
+  int ready_to_collect;
+  
 };
 
 // chaque thread a sa propre image de cette variable: ce sont des variables locales au thread
@@ -63,7 +73,12 @@ void print_threads() {
 #define print_threads()
 #endif
 
-
+/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+/*             TODO                 */
+char** down_stack() {
+  return NULL;
+}
+/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 
 // la fonction gcmalloc, vous devez remplir cette fonction
 void *gcmalloc(unsigned int size) {
@@ -74,13 +89,27 @@ void *gcmalloc(unsigned int size) {
   // vous pouvez prendre un verrou ici, mais vous pouvez aussi utiliser le tls: l'ensemble des objets vivants
   // est stocké dans l'ensemble des tls. Ca vous évite un verrou de plus
 
-  // à faire
+  // Prend le mutex
   pthread_mutex_lock(&thread_mutex);
+
+  // Ajout du nouvelle entete dans la liste globale de tous les objets geres par la thread
+  header -> next =   (tls.liste_objets == NULL) ? header : tls.liste_objets;
+  header -> prev =   (tls.liste_objets == NULL) ? header : tls.liste_objets -> prev;
+  if (tls.liste_objets != NULL)
+    tls.liste_objets -> prev = header;
+  tls.liste_objets = header;
+
+  // Met a jours la quantite de memoire alloue par le thread
   tls.size_allocated += size;
+
+  // Si la taille alloue est > 4Mo alors demande une collection
   if (tls.size_allocated > (64 * 1024 * 1024)) {
     req_collect = 1;
   }
+
+  // Libere le mutex
   pthread_mutex_unlock(&thread_mutex);
+
   // pour le retour, l'utilisateur est intéressé par l'objet, pas par son entête
   return toObject(header);
 }
@@ -97,25 +126,48 @@ void _writeBarrier(void *dst, void *src) {
 // le handshake pour accumuler les racines du thread. Vous les stockerez dans la variable tls
 // celle-ci est ensuite accédée par le collecteur via la variable all_threads
 void handShake() {
-  // à faire
+  struct object_header * racine;       // Adresse de la racine 
+  char **cur = down_stack();           // TODO : trouver le bas de la pile
+
+  // Prend le mutex
   pthread_mutex_lock(&thread_mutex);
-  if (req_collect == 0) {
-    pthread_mutex_unlock(&thread_mutex);
-    return;
+  if (req_collect == 0) {  // Si pas de demande de collection par le gcmalloc
+    pthread_mutex_unlock(&thread_mutex); // 
+    return;                // Alors libere le mutex et ne rien faire
   }
   
+  // Sinon parcours de la pile a la recherche des racines
+  while ( (char*)cur > tls.top_stack){ // HYPOTHESE : la pile croit vers des adresses basses
+    if ((racine = toHeader(*cur))){    // Si une racine 
+      // Alors ajout dans la liste des racines 
+      // is_racine;
+      racine -> next =   (tls.liste_racines == NULL) ? racine : tls.liste_racines;
+      racine -> prev =   (tls.liste_racines == NULL) ? racine : tls.liste_racines -> prev;
+      if (tls.liste_racines != NULL)
+	tls.liste_racines -> prev = racine;
+      tls.liste_racines = racine;
+    }
+    cur--;
+  }
+
+
   nb_ready++;
+  // Si dernier mutateur
   if (nb_ready == 7) {
+    // Alors reveille le collecteur
     printf("Demande de collection.\n");
     pthread_cond_signal(&cond_collect);
   }
  
-  
+  // Et dans tous les cas attendre la fin de la collection
   printf("Attend fin de collection.\n");
   pthread_cond_wait(&cond,&thread_mutex);
   printf("Fin attend de collection.\n");
 
+  // Enfin reinisialise le mutateur
   tls.size_allocated = 0;
+
+  // Libere le mutateur
   pthread_mutex_unlock(&thread_mutex);
 }
 
