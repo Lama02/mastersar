@@ -37,6 +37,9 @@ struct thread_descriptor {
   // La liste des objets racines
   struct object_header *liste_racines;
 
+  // La liste des objets racines
+  struct object_header *liste_atteignables;
+
   // La taille deja allouer
   int size_allocated;
 
@@ -76,9 +79,13 @@ void print_threads() {
 /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 /*             TODO                 */
 char** down_stack() {
-  return NULL;
+  return __builtin_frame_address(0);
 }
 /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+
+void mark(struct object_header *header) {
+
+}
 
 // la fonction gcmalloc, vous devez remplir cette fonction
 void *gcmalloc(unsigned int size) {
@@ -174,22 +181,32 @@ void handShake() {
 // le thread collecteur. Quand une collection est requise, il doit se réveiller et parcourir le graphe
 // des objets atteignables puis supprimer tous ceux qui n'ont pas été atteints
 static void *collector(void *arg) {
-  // à faire
   printf("**************************** COLLECTOR ***************************\n");
+  // Boucle infinie
   while (1) {
+    // Prend le mutex
     pthread_mutex_lock(&thread_mutex);
-    
-    while (req_collect != 1) {
+
+    // Si pas de demande de collection
+    while (req_collect == 0) {
+      // Alors dort en attendant d'etre reveille par un mutateur
       printf("   Attend requete de collection.\n");
       pthread_cond_wait(&cond_collect,&thread_mutex);
     }
 
+    // Sinon
     printf("   Debut collection.\n");
     printf("   Fin collection.\n");
+
+    // Reinisialisation
     req_collect = 0;
     nb_ready    = 0;
+
+    // Reveille les mutateurs
     printf("   Reveille mutateur.\n");
     pthread_cond_broadcast(&cond);
+
+    // Libere le mutex
     pthread_mutex_unlock(&thread_mutex);
   }
   return 0;
