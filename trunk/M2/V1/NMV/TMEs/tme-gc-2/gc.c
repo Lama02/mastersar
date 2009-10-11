@@ -88,20 +88,27 @@ char** down_stack() {
 
 void mark(struct object_header *header) {
   void *ptr;
+
+  // Si objet n'est pas deja marquer
   if (header -> color != NOIR) {
-    for(ptr = toObject(header);ptr < ptr + header -> object_size ; ptr++) {
+    // Alors le marquer et l'ajouter au objets atteigniable
+    header -> color = NOIR;
+    header -> next  =   tls.liste_atteignables;
+    header -> prev  =   NULL;
+    if (tls.liste_atteignables != NULL)
+      tls.liste_atteignables -> prev = header;
+    tls.liste_atteignables = header;
+
+    // Puis parcours l'objet a la recherche des references
+    for(ptr = toObject(header);ptr < toObject(header) + header -> object_size ; ptr++) {
       struct object_header *ref = toHeader(ptr);
-      if (ref != 0) {
-	ref -> color = NOIR;
-	ref -> next  =   tls.liste_atteignables;
-	ref -> prev  =   NULL;
-	if (tls.liste_atteignables != NULL)
-	  tls.liste_atteignables -> prev = ref;
-	tls.liste_atteignables = ref; 
-	mark(toHeader(ref));
+      // Si une reference alors appeler mark dessus
+      if (ref != NULL) { 
+	mark(ref);
       }
     }
   }
+
 }
 
 // la fonction gcmalloc, vous devez remplir cette fonction
@@ -151,7 +158,9 @@ void _writeBarrier(void *dst, void *src) {
 // celle-ci est ensuite accédée par le collecteur via la variable all_threads
 void handShake() {
   struct object_header * racine;       // Adresse de la racine 
-  char **cur = down_stack();           // TODO : trouver le bas de la pile
+  char **cur = __builtin_frame_address(0);//down_stack();           // TODO : trouver le bas de la pile
+  int nbR = 0;
+  int nb  = 0;
 
   // Prend le mutex
   pthread_mutex_lock(&thread_mutex);
@@ -160,20 +169,27 @@ void handShake() {
     return;                // Alors libere le mutex et ne rien faire
   }
   
+  tls.liste_racines = NULL;
   // Sinon parcours de la pile a la recherche des racines
-  while ( (char*)cur > tls.top_stack){ // HYPOTHESE : la pile croit vers des adresses basses
+  while ((char*) cur < tls.top_stack){ // HYPOTHESE : la pile croit vers des adresses hautes
     if ((racine = toHeader(*cur))){    // Si une racine 
       // Alors ajout dans la liste des racines 
       // is_racine;
-      racine -> next = tls.liste_racines;
-      racine -> prev = NULL;
-      if (tls.liste_racines != NULL)
-	tls.liste_racines -> prev = racine;
-      tls.liste_racines = racine;
+      //      printf("hs  racine = %p\n",racine);
+      if (racine -> is_racine == 0) {
+	racine -> is_racine = 1;
+	nbR++;
+	racine -> next = tls.liste_racines;
+	racine -> prev = NULL;
+	if (tls.liste_racines != NULL)
+	  tls.liste_racines -> prev = racine;
+	tls.liste_racines = racine;
+      }
     }
-    cur--;
+    nb++;
+    cur++;
   }
-
+  printf("----------%p Nb = %d   |   NbR = %d\n",&tls,nb,nbR);
 
   nb_ready++;
   // Si dernier mutateur
@@ -217,29 +233,37 @@ static void *collector(void *arg) {
     struct thread_descriptor *thread_courrant = &all_threads;
     do {
       // Marquer les objet atteigniable par le thread
+      printf("      Marquer les objets atteigniable.\n");
       struct object_header *racine;
+      int nb = 0;
       for (racine  = thread_courrant -> liste_racines;
 	   racine != NULL;
 	   racine  = racine -> next) {
+	nb++;
+	printf("      %d Appel a mark\n",nb);
 	mark(racine);
       }
       // Puis parcourir la liste des objets alloue par le thread
-      struct object_header *obj;
-      for (obj  = thread_courrant -> liste_objets;
-	   obj != NULL;
-	   obj  = obj -> next) {
+      struct object_header *obj = thread_courrant -> liste_objets;
+      struct object_header *next;
+      while (obj != NULL) {
 	// Et libere l'objet si pas atteigniable
+	next = obj -> next;
 	if (obj -> color == NOIR) {
-	  obj -> color = BLANC;
+	  obj -> color     = BLANC;
+	  obj -> is_racine = 0;
 	}
 	else {
 	  // Erreur de segmentation
-/* 	  if (obj -> prev != NULL) */
-/* 	    obj -> prev -> next = obj -> next; */
-/* 	  if (obj -> next != NULL) */
-/* 	    obj -> next -> prev = obj -> prev; */
-/* 	  pre_free(toObject(obj)); */
+	  /*
+	  if (obj -> prev != NULL)
+	    obj -> prev -> next = obj -> next;
+	  if (obj -> next != NULL)
+	    obj -> next -> prev = obj -> prev;
+	  pre_free(toObject(obj));
+	  */
 	}
+	obj = next;
       }
       thread_courrant = thread_courrant -> next;
     } while (thread_courrant -> next != &all_threads);
