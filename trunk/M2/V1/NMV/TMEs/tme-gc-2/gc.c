@@ -15,6 +15,7 @@
 // ATTENTION : A POROTEGER PAR UN VERROU
 static int req_collect = 0;
 static int nb_ready    = 0;
+static int nbO = 0;
 
 // Condition 
 static pthread_cond_t   cond              = PTHREAD_COND_INITIALIZER;
@@ -48,6 +49,8 @@ struct thread_descriptor {
 
   // Fini de rechercher les racines
   int ready_to_collect;
+
+  int nbto;
   
 };
 
@@ -79,12 +82,16 @@ void print_threads() {
 #define print_threads()
 #endif
 
-/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
-/*             TODO                 */
-char** down_stack() {
-  return __builtin_frame_address(0);
+int nbElt(struct object_header *header) {
+  int cpt = 0;
+  struct object_header *elt = header;
+
+  while(elt != NULL) {
+    cpt++;
+    elt = elt -> next;
+  }
+  return cpt;
 }
-/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 
 void mark(struct object_header *header) {
   void *ptr;
@@ -93,12 +100,13 @@ void mark(struct object_header *header) {
   if (header -> color != NOIR) {
     // Alors le marquer et l'ajouter au objets atteigniable
     header -> color = NOIR;
+    /*
     header -> next  =   tls.liste_atteignables;
     header -> prev  =   NULL;
     if (tls.liste_atteignables != NULL)
       tls.liste_atteignables -> prev = header;
     tls.liste_atteignables = header;
-
+    */
     // Puis parcours l'objet a la recherche des references
     for(ptr = toObject(header);ptr < toObject(header) + header -> object_size ; ptr++) {
       struct object_header *ref = toHeader(ptr);
@@ -108,7 +116,6 @@ void mark(struct object_header *header) {
       }
     }
   }
-
 }
 
 // la fonction gcmalloc, vous devez remplir cette fonction
@@ -123,6 +130,9 @@ void *gcmalloc(unsigned int size) {
   // Prend le mutex
   pthread_mutex_lock(&thread_mutex);
 
+  nbO++;
+  tls.nbto++;
+
   // Ajout du nouvelle entete dans la liste globale de tous les objets geres par la thread
   header -> next = tls.liste_objets;
   header -> prev = NULL;
@@ -135,6 +145,8 @@ void *gcmalloc(unsigned int size) {
 
   // Si la taille alloue est > 4Mo alors demande une collection
   if (tls.size_allocated > (64 * 1024 * 1024)) {
+
+    printf("gc tls.nbto = %d  |  nbElt = %d\n",tls.nbto,nbElt(tls.liste_objets));
     req_collect = 1;
   }
 
@@ -168,6 +180,8 @@ void handShake() {
     pthread_mutex_unlock(&thread_mutex); // 
     return;                // Alors libere le mutex et ne rien faire
   }
+
+  printf("hc *1* tls.nbto = %d  |  nbElt = %d\n",tls.nbto,nbElt(tls.liste_objets));
   
   tls.liste_racines = NULL;
   // Sinon parcours de la pile a la recherche des racines
@@ -179,21 +193,45 @@ void handShake() {
       if (racine -> is_racine == 0) {
 	racine -> is_racine = 1;
 	nbR++;
+
+	if (racine -> prev != NULL){
+	  printf("Precedent non NULL\n");
+	  racine -> prev -> next = racine -> next;
+	}
+	else {
+	  printf("Precedent NULL\n");
+	  tls.liste_objets = racine -> next;
+	}
+	if (racine -> next != NULL) {
+	  printf("Suivant non NULL\n");
+	  racine -> next -> prev = racine -> prev;
+	}
+	else {
+	  printf("Suivant NULL\n");
+	}
+
+	//	racine -> prev = NULL;
+	//	racine -> next = NULL;
+	/*
 	racine -> next = tls.liste_racines;
 	racine -> prev = NULL;
 	if (tls.liste_racines != NULL)
 	  tls.liste_racines -> prev = racine;
 	tls.liste_racines = racine;
+	*/
+	printf("hc *#* tls.nbto = %d  |  nbElt = %d   | nbR = %d |  racine =%p\n",tls.nbto,nbElt(tls.liste_objets),nbR,racine);
       }
     }
     nb++;
     cur++;
   }
+  
+  printf("hc *2* tls.nbto = %d  |  nbElt = %d\n",tls.nbto,nbElt(tls.liste_objets));
   printf("----------%p Nb = %d   |   NbR = %d\n",&tls,nb,nbR);
-
+  sleep(3);
   nb_ready++;
   // Si dernier mutateur
-  if (nb_ready == 7) {
+  if (nb_ready == 1) {
     // Alors reveille le collecteur
     printf("Demande de collection.\n");
     pthread_cond_signal(&cond_collect);
@@ -227,11 +265,16 @@ static void *collector(void *arg) {
       pthread_cond_wait(&cond_collect,&thread_mutex);
     }
 
+    printf("NbObjt = %d\n",nbO);
     // Sinon debut de collection
     printf("   Debut collection.\n");
     // Pour chaque thread mutateur
     struct thread_descriptor *thread_courrant = &all_threads;
+    int nbT = 0;
     do {
+      nbT++;
+      printf("%p  | nbto = %d  | nbThread = %d\n",thread_courrant,thread_courrant->nbto,nbT);
+
       // Marquer les objet atteigniable par le thread
       printf("      Marquer les objets atteigniable.\n");
       struct object_header *racine;
@@ -243,27 +286,32 @@ static void *collector(void *arg) {
 	printf("      %d Appel a mark\n",nb);
 	mark(racine);
       }
+
+      printf("collector tls.nbto = %d  |  nbElt = %d\n",tls.nbto,nbElt(tls.liste_objets));
       // Puis parcourir la liste des objets alloue par le thread
       struct object_header *obj = thread_courrant -> liste_objets;
-      struct object_header *next;
+      //struct object_header *next;
       while (obj != NULL) {
 	// Et libere l'objet si pas atteigniable
-	next = obj -> next;
+	//next = obj -> next;
 	if (obj -> color == NOIR) {
+	  printf("NOIR\n");
 	  obj -> color     = BLANC;
 	  obj -> is_racine = 0;
 	}
 	else {
 	  // Erreur de segmentation
-	  /*
+	 printf("BLANC\n");
+	 /*
 	  if (obj -> prev != NULL)
 	    obj -> prev -> next = obj -> next;
 	  if (obj -> next != NULL)
 	    obj -> next -> prev = obj -> prev;
+	 */
 	  pre_free(toObject(obj));
-	  */
+	 
 	}
-	obj = next;
+	obj = obj -> next;
       }
       thread_courrant = thread_courrant -> next;
     } while (thread_courrant -> next != &all_threads);
