@@ -16,6 +16,9 @@
 static int req_collect = 0;
 static int nb_ready    = 0;
 static int nbO = 0;
+
+static int nbThread = 0;
+
 //static struct object_header *liste_atteints;
 
 // Condition 
@@ -247,7 +250,7 @@ void handShake() {
 
   // Si dernier mutateur
   nb_ready++;
-  if (nb_ready == 7) {
+  if (nb_ready == nbThread) {
     // Alors reveille le collecteur
     printf("Demande de collection.\n");
     pthread_cond_signal(&cond_collect);
@@ -285,16 +288,15 @@ static void *collector(void *arg) {
     // Sinon debut de collection
     printf("   Debut collection.\n");
     // Pour chaque thread mutateur
-    struct thread_descriptor *thread_courrant = &all_threads;
-    int nbT = 0;
-    do {
-      printf("%p  | nbto = %d  | Thread = %d\n",thread_courrant,thread_courrant->nbto,++nbT);
+    struct thread_descriptor *thread_courrant = all_threads.next;
+    while (thread_courrant != &all_threads) {
+      printf("++++++++ %p  | ptrRacine = %p \n",thread_courrant,thread_courrant->liste_racines);
 
       // Marquer les objet atteigniable par le thread
-      printf("      Marquer les objets atteigniable.\n");
       struct object_header *racine = thread_courrant -> liste_racines;
       int nb = 0;
       if (thread_courrant -> liste_racines != NULL) {
+	printf("      Marquer les objets atteigniable.\n");
 	printf("      NbRacine = %d.\n",nbElt(racine));
 	do {
 	  printf("      %d Appel a mark\n",++nb);
@@ -304,7 +306,7 @@ static void *collector(void *arg) {
       }
 
       thread_courrant = thread_courrant -> next;
-    } while (thread_courrant -> next != &all_threads);
+    }
 
     printf("   Fin collection.\n");
 
@@ -339,6 +341,9 @@ void attach_thread(void *top) {
   dprintf("thread", "Attach thread with tls at %p and top stack at %p", &tls, tls.top_stack);
   (tls.prev = all_threads.prev)->next = &tls;
   (tls.next = &all_threads)->prev = &tls;
+
+  nbThread++;
+
   pthread_mutex_unlock(&thread_mutex);
 }
 
@@ -349,6 +354,9 @@ void detach_thread() {
   tls.next->prev = tls.prev;
   tls.prev->next = tls.next;
   tls.next = tls.prev = &tls;
+
+  nbThread--;
+
   pthread_mutex_unlock(&thread_mutex);
 }
 
