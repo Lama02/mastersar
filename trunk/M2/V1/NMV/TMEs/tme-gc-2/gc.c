@@ -19,8 +19,8 @@ static int nbO = 0;
 
 static int nbThread = 0;
 
-//static struct object_header *liste_obj_alloues;
-//static struct object_header *liste_obj_atteints;
+static struct object_header liste_obj_alloues;
+static struct object_header liste_obj_atteints;
 
 // Condition 
 static pthread_cond_t   cond              = PTHREAD_COND_INITIALIZER;
@@ -41,13 +41,13 @@ struct thread_descriptor {
 
 
   // La liste des objets du thread
-  struct object_header *liste_obj_alloues; 
+  struct object_header liste_obj_alloues; 
 
   // La liste des objets atteigniables
-  struct object_header *liste_obj_atteints;
+  struct object_header liste_obj_atteints;
 
   // La liste des objets racines
-  struct object_header *liste_racines;
+  struct object_header liste_racines;
 
   // La taille deja allouer
   int size_allocated;
@@ -89,15 +89,12 @@ void print_threads() {
 
 int nbElt(struct object_header *header) {
   int cpt = 0;
-  struct object_header *elt = header;
+  struct object_header *elt = header->next;
 
-  if (header == NULL)
-    return 0;
-
-  do {
+  while(elt != header) {
     cpt++;
     elt = elt -> next;
-  } while(elt != header);
+  } 
 
   return cpt;
 }
@@ -109,28 +106,20 @@ void mark(struct object_header *header) {
   if (header -> color != NOIR) {
     // Alors le marquer et l'ajouter au objets atteigniable
     header -> color = NOIR;
+
+
+    // Suppresion de l'objet de la liste des objets alloues ou racines
+    header -> prev -> next = header -> next;
+    header -> next -> prev = header -> prev;
+    header -> next = header -> prev = header;
     
-/*     // Suppresion de l'objet de la liste des objets alloues ou racines */
-/*     header -> prev -> next = header -> next; */
-/*     header -> next -> prev = header -> prev; */
-/*     if (header -> is_racine == 1) */
-/*       tls.liste_racines = (header -> next != header) ? header -> next : NULL; */
-/*     else */
-/*       tls.liste_obj_alloues  = (header -> next != header) ? header -> next : NULL; */
-
-/*     // Ajout de l'objet a la liste des atteints */
-/*     if (tls.liste_obj_atteints != NULL) { */
-/*       header -> next = tls.liste_obj_atteints; */
-/*       header -> prev = tls.liste_obj_atteints -> prev; */
-/*       tls.liste_obj_atteints -> prev -> next = header; */
-/*       tls.liste_obj_atteints -> prev = header; */
-/*     } */
-/*     else{ */
-/*       header -> next = header; */
-/*       header -> prev = header; */
-/*     } */
-/*     tls.liste_obj_atteints = header; */
-
+    // Ajout de l'objet a la liste des atteints
+    header -> next =  liste_obj_atteints.next;
+    header -> prev = &liste_obj_atteints;
+    liste_obj_atteints.next -> prev  = header;
+    liste_obj_atteints.next          = header;
+    
+    
     // Puis parcours l'objet a la recherche des references
     for(ptr = toObject(header);ptr < toObject(header) + header -> object_size ; ptr++) {
       struct object_header *ref = toHeader(ptr);
@@ -158,18 +147,10 @@ void *gcmalloc(unsigned int size) {
   tls.nbto++;
 
   // Ajout du nouvelle entete dans la liste globale de tous les objets geres par la thread
-  if (tls.liste_obj_alloues != NULL) {
-    header -> next = tls.liste_obj_alloues;
-    header -> prev = tls.liste_obj_alloues -> prev;
-    tls.liste_obj_alloues -> prev -> next = header;
-    tls.liste_obj_alloues -> prev = header;
-  }
-  else{
-    header -> next = header;
-    header -> prev = header;
-  }
-  tls.liste_obj_alloues = header;
-
+  header -> next =  tls.liste_obj_alloues.next;
+  header -> prev = &tls.liste_obj_alloues;
+  tls.liste_obj_alloues.next -> prev  = header;
+  tls.liste_obj_alloues.next          = header;
 
   // Met a jours la quantite de memoire alloue par le thread
   tls.size_allocated += size;
@@ -177,7 +158,7 @@ void *gcmalloc(unsigned int size) {
   // Si la taille alloue est > 4Mo alors demande une collection
   if (tls.size_allocated > (64 * 1024 * 1024)) {
 
-    printf("gc tls.nbto = %d  |  nbElt = %d\n",tls.nbto,nbElt(tls.liste_obj_alloues));
+    printf("gc tls.nbto = %d  |  nbElt = %d\n",tls.nbto,nbElt(&tls.liste_obj_alloues));
     req_collect = 1;
   }
 
@@ -212,9 +193,9 @@ void handShake() {
     return;                // Alors libere le mutex et ne rien faire
   }
 
-  printf("hc *1* tls.nbto = %d  |  nbElt = %d\n",tls.nbto,nbElt(tls.liste_obj_alloues));
+  printf("hc *1* tls.nbto = %d  |  nbElt = %d\n",tls.nbto,nbElt(&tls.liste_obj_alloues));
   
-  tls.liste_racines = NULL;
+  tls.liste_racines.next = tls.liste_racines.prev = &tls.liste_racines;
   // Sinon parcours de la pile a la recherche des racines
   while ((char*) cur < tls.top_stack){ // HYPOTHESE : la pile croit vers des adresses hautes
     if ((racine = toHeader(*cur))){    // Si une racine 
@@ -226,31 +207,23 @@ void handShake() {
 	// Suppresion de la racine de la liste des objets alloues
 	racine -> prev -> next = racine -> next;
 	racine -> next -> prev = racine -> prev;
-	tls.liste_obj_alloues = (racine -> next != racine) ? racine -> next : NULL;
+	racine -> next = racine -> prev = racine;
 
 	// Ajout de la racine de a la liste des racines
-	if (tls.liste_racines != NULL) {
-	  racine -> next = tls.liste_racines;
-	  racine -> prev = tls.liste_racines -> prev;
-	  tls.liste_racines -> prev -> next = racine;
-	  tls.liste_racines -> prev = racine;
-	}
-	else{
-	  racine -> next = racine;
-	  racine -> prev = racine;
-	}
-	tls.liste_racines = racine;
+	racine -> next =  tls.liste_racines.next;
+	racine -> prev = &tls.liste_racines;
+	tls.liste_racines.next -> prev  = racine;
+	tls.liste_racines.next          = racine;
 
-	printf("hc *#* tls.nbto = %d  |  nbElt = %d   | nbR = %d |  racine =%p\n",tls.nbto,nbElt(tls.liste_obj_alloues),nbR,racine);
+	printf("hc *#* tls.nbto = %d  |  nbElt = %d   | nbR = %d |  racine =%p\n",tls.nbto,nbElt(&tls.liste_obj_alloues),nbR,racine);
       }
     }
     nb++; // debug
     cur++;
   }
   
-  printf("hc *2* tls.nbto = %d  |  nbElt = %d\n",tls.nbto,nbElt(tls.liste_obj_alloues));
-  printf("----------%p Nb = %d   |   NbR = %d | TailleRacine = %d  | ptrRacine = %p\n ",&tls,nb,nbR,nbElt(tls.liste_racines),tls.liste_racines);
-  sleep(3);
+  printf("hc *2* tls.nbto = %d  |  nbElt = %d\n",tls.nbto,nbElt(&tls.liste_obj_alloues));
+  printf("----------%p Nb = %d   |   NbR = %d | TailleRacine = %d  | ptrRacine = %p\n ",&tls,nb,nbR,nbElt(&tls.liste_racines),&tls.liste_racines);
 
   // Si dernier mutateur
   nb_ready++;
@@ -264,6 +237,7 @@ void handShake() {
   printf("Attend fin de collection.\n");
   pthread_cond_wait(&cond,&thread_mutex);
   printf("Fin attend de collection.\n");
+  sleep(2);
 
   // Enfin reinisialise le mutateur
   tls.size_allocated = 0;
@@ -294,21 +268,21 @@ static void *collector(void *arg) {
     // Pour chaque thread mutateur
     struct thread_descriptor *thread_courrant = all_threads.next;
     while (thread_courrant != &all_threads) {
-      printf("++++++++ %p  | ptrRacine = %p \n",thread_courrant,thread_courrant->liste_racines);
+      printf("++++++++ %p  | ptrRacine = %p \n",thread_courrant,&thread_courrant->liste_racines);
 
       // Marquer les objet atteigniable par le thread
-      struct object_header *racine = thread_courrant -> liste_racines;
+      struct object_header *racine = thread_courrant->liste_racines.next;
+      struct object_header *tmp    = thread_courrant->liste_racines.next;
       int nb = 0;
-      if (thread_courrant -> liste_racines != NULL) {
-	printf("      Marquer les objets atteigniable.\n");
-	printf("      NbRacine = %d.\n",nbElt(racine));
-	do {
-	  printf("      %d Appel a mark\n",++nb);
-	  mark(racine);
-	  racine = racine -> next;
-	} while (racine != thread_courrant -> liste_racines);
+      printf("      Marquer les objets atteigniable.\n");
+      printf("      NbRacine = %d.\n",nbElt(racine));
+      while (racine != &(thread_courrant->liste_racines)) {
+	printf("      %d Appel a mark\n",++nb);
+	tmp = racine -> next;	
+	mark(racine);
+	racine = tmp;	
       }
-
+      printf("      Apres Mark NbRacine = %d.\n",nbElt(&thread_courrant->liste_racines));
       thread_courrant = thread_courrant -> next;
     }
 
@@ -346,6 +320,10 @@ void attach_thread(void *top) {
   (tls.prev = all_threads.prev)->next = &tls;
   (tls.next = &all_threads)->prev = &tls;
 
+  tls.liste_obj_alloues.next  = tls.liste_obj_alloues.prev  = &tls.liste_obj_alloues;
+  tls.liste_obj_atteints.next = tls.liste_obj_atteints.prev = &tls.liste_obj_atteints;
+  tls.liste_racines.next      = tls.liste_racines.prev      = &tls.liste_racines;
+
   nbThread++;
 
   pthread_mutex_unlock(&thread_mutex);
@@ -359,6 +337,13 @@ void detach_thread() {
   tls.prev->next = tls.next;
   tls.next = tls.prev = &tls;
 
+  // vider racine, alloues, atteints
+  /*
+    !!!!!!!!!!
+    !!!!!!!!!!
+    !!!!!!!!!!
+   */
+
   nbThread--;
 
   pthread_mutex_unlock(&thread_mutex);
@@ -369,6 +354,8 @@ void detach_thread() {
 void initialise_gc() {
   pthread_t tid;
   all_threads.prev = all_threads.next = &all_threads;
+  liste_obj_atteints.prev = liste_obj_atteints.next = &liste_obj_atteints;
+  liste_obj_alloues.prev  = liste_obj_alloues.next  = &liste_obj_alloues;
   pthread_create(&tid, 0, &collector, 0);
 }
 
