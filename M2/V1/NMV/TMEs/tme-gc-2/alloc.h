@@ -1,6 +1,10 @@
 #ifndef _ALLOC_H_
 #define _ALLOC_H_
 
+#define GRIS  2
+#define NOIR  1
+#define BLANC 0
+
 struct object_header {
   struct object_header * prev; // header precedent
   struct object_header * next; // header suivant
