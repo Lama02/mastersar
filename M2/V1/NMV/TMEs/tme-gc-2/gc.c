@@ -15,7 +15,6 @@
 // ATTENTION : A POROTEGER PAR UN VERROU
 static int req_collect = 0;
 static int nb_ready    = 0;
-static int nbO = 0;
 
 static int nbThread = 0;
 
@@ -51,9 +50,6 @@ struct thread_descriptor {
 
   // Fini de rechercher les racines
   int ready_to_collect;
-
-  int nbto;
-  
 };
 
 // chaque thread a sa propre image de cette variable: ce sont des variables locales au thread
@@ -171,8 +167,6 @@ void *gcmalloc(unsigned int size) {
   // Prend le mutex
   pthread_mutex_lock(&thread_mutex);
 
-  nbO++;
-  tls.nbto++;
 
   // Ajout du nouvelle entete dans la liste globale de tous les objets geres par la thread
   header -> next =  tls.liste_obj_alloues.next;
@@ -185,8 +179,6 @@ void *gcmalloc(unsigned int size) {
 
   // Si la taille alloue est > 4Mo alors demande une collection
   if (tls.size_allocated > (4 * 1024 * 1024)) {
-
-    printf("gc tls.nbto = %d  |  nbElt = %d\n",tls.nbto,nbElt(&tls.liste_obj_alloues));
     req_collect = 1;
   }
 
@@ -211,8 +203,6 @@ void _writeBarrier(void *dst, void *src) {
 void handShake() {
   struct object_header * racine;       // Adresse de la racine 
   char **cur = __builtin_frame_address(0);//down_stack();           // TODO : trouver le bas de la pile
-  int nbR = 0; // debug
-  int nb  = 0; // debug
 
   // Prend le mutex
   pthread_mutex_lock(&thread_mutex);
@@ -221,8 +211,6 @@ void handShake() {
     return;                // Alors libere le mutex et ne rien faire
   }
 
-  printf("hc *1* tls.nbto = %d  |  nbElt = %d\n",tls.nbto,nbElt(&tls.liste_obj_alloues));
-  
   tls.liste_racines.next = tls.liste_racines.prev = &tls.liste_racines;
   // Sinon parcours de la pile a la recherche des racines
   while ((char*) cur < tls.top_stack){ // HYPOTHESE : la pile croit vers des adresses hautes
@@ -230,7 +218,6 @@ void handShake() {
       // Alors ajout dans la liste des racines si pas deja presente 
       if (racine -> is_racine == 0) {
 	racine -> is_racine = 1;
-	nbR++; // debug
 
 	// Suppresion de la racine de la liste des objets alloues
 	racine -> prev -> next = racine -> next;
@@ -243,16 +230,11 @@ void handShake() {
 	tls.liste_racines.next -> prev  = racine;
 	tls.liste_racines.next          = racine;
 
-	printf("hc *#* tls.nbto = %d  |  nbElt = %d   | nbR = %d |  racine =%p | size_objectR = %d\n",tls.nbto,nbElt(&tls.liste_obj_alloues),nbR,racine,racine -> object_size);
       }
     }
-    nb++; // debug
     cur++;
   }
   
-  printf("hc *2* tls.nbto = %d  |  nbElt = %d\n",tls.nbto,nbElt(&tls.liste_obj_alloues));
-  printf("----------%p Nb = %d   |   NbR = %d | TailleRacine = %d  | ptrRacine = %p\n ",&tls,nb,nbR,nbElt(&tls.liste_racines),&tls.liste_racines);
-
   // Si dernier mutateur
   nb_ready++;
   if (nb_ready == nbThread) {
@@ -265,7 +247,6 @@ void handShake() {
   printf("Attend fin de collection.\n");
   pthread_cond_wait(&cond,&thread_mutex);
   printf("Fin attend de collection.\n");
-  //  sleep(2);
 
   // Enfin reinisialise le mutateur
   tls.size_allocated = 0;
@@ -296,33 +277,18 @@ static void *collector(void *arg) {
     // Pour chaque thread mutateur
     struct thread_descriptor *thread_courrant = all_threads.next;
     while (thread_courrant != &all_threads) {
-      printf("++++++++ %p  | ptrRacine = %p \n",thread_courrant,thread_courrant->liste_racines.next);
 
       // Marquer les objet atteigniable par le thread
       struct object_header *racine = thread_courrant->liste_racines.next;
       struct object_header *tmp    = thread_courrant->liste_racines.next;
-      int nb = 0;
-      printf("      tls.nbto = %d.\n",thread_courrant->nbto);
-      printf("      Marquer les objets atteigniable.\n");
-      printf("      NbRacine = %d.\n",nbElt(racine));
-      printf("      NbAlloue = %d.\n",nbElt(&thread_courrant->liste_obj_alloues));
-      printf("      NbAttein = %d.\n",nbElt(&liste_obj_atteints));
       while (racine != &(thread_courrant->liste_racines)) {
-	printf("      %d Appel a mark\n",++nb);
 	tmp = racine -> next;	
 	mark(racine);
 	racine = tmp;
-	//sleep(1);
       }
-      printf("      Apres Mark NbRacine = %d.\n",nbElt(&thread_courrant->liste_racines));
-      printf("      Apres Mark NBalloue = %d.\n",nbElt(&thread_courrant->liste_obj_alloues));
-      printf("      Apres Mark NBattein = %d.\n",nbElt(&liste_obj_atteints));
 
-      printf("      Debut liberation\n");
-      int nbFree = 0;
       struct object_header *libre = thread_courrant->liste_obj_alloues.next;
       while (libre != &thread_courrant->liste_obj_alloues) {
-	nbFree++;
 	struct object_header *tmp    = libre -> next;
 
 	libre -> prev -> next = libre -> next;
@@ -332,20 +298,12 @@ static void *collector(void *arg) {
 	pre_free(toObject(libre));
 	libre = tmp;
       }
-      printf("      Fin liberation... %d \n",nbFree);
       
-
-      //      printf("-+-+--+ tls.liste_obj_alloues = %p\n",thread_courrant->liste_obj_alloues.next -> prev);
-      //      printf("-+-+--+ tls.liste_obj_alloues.next = %p\n",thread_courrant->liste_obj_alloues.next);
-
       thread_courrant = thread_courrant -> next;
     }
 
-    printf("      Debut liberation global\n");
     struct object_header *libre = liste_obj_alloues.next;
-    int nbFree = 0;
     while (libre != &liste_obj_alloues) {
-      nbFree++;
       struct object_header *tmp    = libre -> next;
       
       libre -> prev -> next = libre -> next;
@@ -355,25 +313,20 @@ static void *collector(void *arg) {
       pre_free(toObject(libre));
       libre = tmp;
     }
-    printf("      Fin liberation global... %d \n",nbFree);
 
 
-    printf("      Debut MAJ\n");
     struct object_header *atteint = liste_obj_atteints.next;
     while (atteint != &liste_obj_atteints) {
       atteint -> color     = BLANC;
       atteint -> is_racine = 0;
       atteint = atteint -> next;
     }
-    printf("      Fin MAJ\n");
 
 
-    printf("      Debut switch\n");
     liste_obj_alloues.next  =  liste_obj_atteints.next;
     liste_obj_atteints.next->prev = &liste_obj_alloues;
     liste_obj_alloues.prev  =  liste_obj_atteints.prev;
     liste_obj_atteints.prev->next = &liste_obj_alloues;
-    printf("      Fin switch\n");
 
     liste_obj_atteints.next = liste_obj_atteints.prev = &liste_obj_atteints;
 
@@ -381,8 +334,6 @@ static void *collector(void *arg) {
 
     printf("   Fin collection.\n");
 
-    printf("Nb atteint %d\n",nbElt(&liste_obj_atteints));
-    print_stats();
 
     // Reinisialisation
     req_collect = 0;
