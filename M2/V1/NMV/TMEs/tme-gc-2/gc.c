@@ -285,6 +285,7 @@ static void *collector(void *arg) {
 	racine = tmp;
       }
 
+      // Libere les objets local non atteigniable
       struct object_header *libre = thread_courrant->liste_obj_alloues.next;
       while (libre != &thread_courrant->liste_obj_alloues) {
 	struct object_header *tmp    = libre -> next;
@@ -300,6 +301,7 @@ static void *collector(void *arg) {
       thread_courrant = thread_courrant -> next;
     }
 
+    // Libere les objets global non atteigniable
     struct object_header *libre = liste_obj_alloues.next;
     while (libre != &liste_obj_alloues) {
       struct object_header *tmp    = libre -> next;
@@ -313,6 +315,7 @@ static void *collector(void *arg) {
     }
 
 
+    // Maj de la liste des objets: NOIR -> BLANC et is_racine = 0
     struct object_header *atteint = liste_obj_atteints.next;
     while (atteint != &liste_obj_atteints) {
       atteint -> color     = BLANC;
@@ -321,15 +324,14 @@ static void *collector(void *arg) {
     }
 
 
+    // Switch de la liste
     liste_obj_alloues.next  =  liste_obj_atteints.next;
     liste_obj_atteints.next->prev = &liste_obj_alloues;
     liste_obj_alloues.prev  =  liste_obj_atteints.prev;
     liste_obj_atteints.prev->next = &liste_obj_alloues;
-
     liste_obj_atteints.next = liste_obj_atteints.prev = &liste_obj_atteints;
 
     
-
     printf("   Fin collection.\n");
 
 
