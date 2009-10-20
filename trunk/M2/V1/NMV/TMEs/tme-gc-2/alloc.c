@@ -209,7 +209,7 @@ void pre_free(void *p) {
 		int tot  = total_size(size);
 
 		// et son allocateur associé
-		struct object_allocator *allocator = get_object_allocator(tot);
+		struct object_allocator *allocator = get_object_allocator(size);
 
 		// si c'est un petit objet
 		if(allocator) {
