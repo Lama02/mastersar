@@ -184,7 +184,7 @@ void *gcmalloc(unsigned int size) {
   tls.size_allocated += size;
 
   // Si la taille alloue est > 4Mo alors demande une collection
-  if (tls.size_allocated > (32 * 1024 * 1024)) {
+  if (tls.size_allocated > (4 * 1024 * 1024)) {
 
     printf("gc tls.nbto = %d  |  nbElt = %d\n",tls.nbto,nbElt(&tls.liste_obj_alloues));
     req_collect = 1;
@@ -340,6 +340,44 @@ static void *collector(void *arg) {
 
       thread_courrant = thread_courrant -> next;
     }
+
+    printf("      Debut liberation global\n");
+    struct object_header *libre = liste_obj_alloues.next;
+    int nbFree = 0;
+    while (libre != &liste_obj_alloues) {
+      nbFree++;
+      struct object_header *tmp    = libre -> next;
+      
+      libre -> prev -> next = libre -> next;
+      libre -> next -> prev = libre -> prev;
+      libre -> next         = libre -> prev = libre;
+      
+      pre_free(toObject(libre));
+      libre = tmp;
+    }
+    printf("      Fin liberation global... %d \n",nbFree);
+
+
+    printf("      Debut MAJ\n");
+    struct object_header *atteint = liste_obj_atteints.next;
+    while (atteint != &liste_obj_atteints) {
+      atteint -> color     = BLANC;
+      atteint -> is_racine = 0;
+      atteint = atteint -> next;
+    }
+    printf("      Fin MAJ\n");
+
+
+    printf("      Debut switch\n");
+    liste_obj_alloues.next  =  liste_obj_atteints.next;
+    liste_obj_atteints.next->prev = &liste_obj_alloues;
+    liste_obj_alloues.prev  =  liste_obj_atteints.prev;
+    liste_obj_atteints.prev->next = &liste_obj_alloues;
+    printf("      Fin switch\n");
+
+    liste_obj_atteints.next = liste_obj_atteints.prev = &liste_obj_atteints;
+
+    
 
     printf("   Fin collection.\n");
 
