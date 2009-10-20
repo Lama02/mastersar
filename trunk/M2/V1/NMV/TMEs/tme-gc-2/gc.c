@@ -5,9 +5,6 @@
 #include <unistd.h>
 #include "debug.h"
 
-#define NOIR  1
-#define BLANC 0
-
 
 // Si positionne a  
 //   1 tous les handshake de tous les threads doivent etre lances
@@ -16,7 +13,7 @@
 static int req_collect = 0;
 static int nb_ready    = 0;
 
-static int nbThread = 0;
+static int NB_THREAD = 0;
 
 static struct object_header liste_obj_alloues;
 static struct object_header liste_obj_atteints;
@@ -218,6 +215,7 @@ void handShake() {
       // Alors ajout dans la liste des racines si pas deja presente 
       if (racine -> is_racine == 0) {
 	racine -> is_racine = 1;
+	racine -> color     = GRIS;
 
 	// Suppresion de la racine de la liste des objets alloues
 	racine -> prev -> next = racine -> next;
@@ -237,7 +235,7 @@ void handShake() {
   
   // Si dernier mutateur
   nb_ready++;
-  if (nb_ready == nbThread) {
+  if (nb_ready == NB_THREAD) {
     // Alors reveille le collecteur
     printf("Demande de collection.\n");
     pthread_cond_signal(&cond_collect);
@@ -370,7 +368,7 @@ void attach_thread(void *top) {
   tls.liste_obj_alloues.next  = tls.liste_obj_alloues.prev  = &tls.liste_obj_alloues;
   tls.liste_racines.next      = tls.liste_racines.prev      = &tls.liste_racines;
 
-  nbThread++;
+  NB_THREAD++;
 
   pthread_mutex_unlock(&thread_mutex);
 }
@@ -390,7 +388,7 @@ void detach_thread() {
     !!!!!!!!!!
    */
 
-  nbThread--;
+  NB_THREAD--;
 
   pthread_mutex_unlock(&thread_mutex);
 }
