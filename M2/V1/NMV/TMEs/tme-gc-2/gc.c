@@ -151,7 +151,7 @@ void mark(struct object_header *header) {
       //    for(ptr = toObject(header); (char*)ptr < (char*)toObject(header) + header -> object_size ; ptr++) {
       struct object_header *ref = toHeader(*ptr);
       // Si une reference alors appeler mark dessus
-      if (ref != NULL) {
+      if (ref != 0) {
 	if (ref -> is_racine == 0)
 	  mark(ref);
       }
