@@ -19,14 +19,15 @@ public class Initializer implements Control {
 		this.grippePid = Configuration.getPid(prefix + ".helloWorldProtocolPid");
 		this.random    = new Random();
 	}
+
 	@Override
 	public boolean execute() {
+		System.out.println("Debut de l'intitialisation du reseaux...");
+
 		// Le nombre de noeud du reseaux
 		int nbNode = Network.size();
 
-		/*
-		 *  Pour chaque noeud, on fait le lien entre la couche applicative et la couche transport
-		 */
+		// Intialisation des noeuds: pour chaque noeud, on fait le lien entre la couche applicative et la couche transport
 		// Parcours les noeud du reseaux
 		for(int i = 0; i < nbNode; i++) {
 			// Et pour chaque noeud
@@ -35,22 +36,26 @@ public class Initializer implements Control {
 			Grippe grippe = (Grippe) node.getProtocol(grippePid);
 			// Intilalise la couche de transport du protocol Grippe
 			grippe.setTransportLayer(i);
+			grippe.initialierVoisin();
 		}
 
+		// Puis envoi le msg de la grippe par les N premier malade a leur voisins
 		for(int i = 0; i < NB_INIT_MALADE; i++) {
 			// Le noeud malade
 			Node node = Network.get(random.nextInt(Network.size()));
 			// Son protocole de Grippe
 			Grippe grippeEmeteur = (Grippe) node.getProtocol(grippePid);
 			// Le message de la grippe
-			Message msg = new Message();
+			Message msg = new Message(Message.MSG_MALADE);
 			// Envoi du message au voisins
 			for (Node dest: grippeEmeteur.getVoisins()) {
+				System.out.println("   Send msg: " + grippeEmeteur.getNodeId() + " -> " + ((Grippe)dest.getProtocol(grippePid)).getNodeId());
 				grippeEmeteur.send(msg, dest);
 			}
 		}
 
 
+		System.out.println("Fin de l'intitialisation du reseaux...");
 		return false;
 	}
 
