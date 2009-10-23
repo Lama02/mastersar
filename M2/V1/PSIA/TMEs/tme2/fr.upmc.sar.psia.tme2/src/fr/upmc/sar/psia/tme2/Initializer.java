@@ -23,7 +23,8 @@ public class Initializer implements Control {
 	@Override
 	public boolean execute() {
 		System.out.println("Debut de l'intitialisation du reseaux...");
-		Grippe.nbMort = 0;
+		Grippe.nbMort   = 0;
+		Grippe.nbMalade = 0;
 		
 		// Le nombre de noeud du reseaux
 		int nbNode = Network.size();
