@@ -15,7 +15,13 @@ public class Grippe implements EDProtocol {
 	private static final int MALADE        = 1;
 	private static final int IMMUNISER     = 2;
 	private static final int MORT          = 3;
-
+	
+	public static final int MIN_VOISIN    = 8;
+	public static final int MAX_VOISIN    = 15;
+	
+	public static int nbMort = 0;
+	
+	
 	// Identifiant de la couche transport
 	private int transportPid;
 	// La couche de transport
@@ -26,6 +32,8 @@ public class Grippe implements EDProtocol {
 
 	// Identifiant du noeud
 	private int nodeId;
+	// Le noeud
+	private Node node;
 
 	// Le prefix, ici on utilise par le nom du package
 	private String prefix;
@@ -58,6 +66,7 @@ public class Grippe implements EDProtocol {
 	public void setTransportLayer(int nodeId) {
 		// Initialise l'identifiant du noeud
 		this.nodeId = nodeId;
+		this.node   = Network.get(this.nodeId);
 		// Initialise le protocole de transport
 		this.transport = (GrippeTransport) Network.get(this.nodeId).getProtocol(this.transportPid);
 	}
@@ -69,14 +78,22 @@ public class Grippe implements EDProtocol {
 
 	// Reception d'un message
 	public void receive(Message msg) {
-		System.out.println("New event...");
+		//System.out.println("New event...");
 		switch (msg.getType()) {
 		case Message.MSG_MALADE:
 			switch (etat) {
 			case NON_IMMUNISER:
+				Message newMsg = new Message(Message.MSG_MALADE);
 				if (random.nextDouble() < 0.25) {
 					etat = MALADE;
+					for (Node dest: voisins) {
+						//System.out.println("   Send msg: " + nodeId + " -> " + ((Grippe)dest.getProtocol(pid)).getNodeId());
+						send(newMsg, dest);
+					}
 				}
+				
+				newMsg = new Message(Message.MSG_GUERIR);
+				send(newMsg,node);
 				break;
 			case MALADE:
 				break;
@@ -93,6 +110,7 @@ public class Grippe implements EDProtocol {
 				break;
 			case MALADE:
 				if (random.nextDouble() < 0.02) {
+					System.out.println("NbMort = " + ++nbMort);
 					etat = MORT;
 				}
 				else {
@@ -129,7 +147,8 @@ public class Grippe implements EDProtocol {
 	}
 
 	public void initialierVoisin() {
-		for (int i = 0; i< 5; i++) {
+		
+		for (int i = 0; i< 8; i++) {
 			this.voisins.add(Network.get(random.nextInt(Network.size())));
 		}
 	}

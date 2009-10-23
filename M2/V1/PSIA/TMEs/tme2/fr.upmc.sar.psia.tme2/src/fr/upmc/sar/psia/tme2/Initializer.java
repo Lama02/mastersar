@@ -23,7 +23,8 @@ public class Initializer implements Control {
 	@Override
 	public boolean execute() {
 		System.out.println("Debut de l'intitialisation du reseaux...");
-
+		Grippe.nbMort = 0;
+		
 		// Le nombre de noeud du reseaux
 		int nbNode = Network.size();
 
@@ -49,7 +50,7 @@ public class Initializer implements Control {
 			Message msg = new Message(Message.MSG_MALADE);
 			// Envoi du message au voisins
 			for (Node dest: grippeEmeteur.getVoisins()) {
-				System.out.println("   Send msg: " + grippeEmeteur.getNodeId() + " -> " + ((Grippe)dest.getProtocol(grippePid)).getNodeId());
+				//System.out.println("   Send msg: " + grippeEmeteur.getNodeId() + " -> " + ((Grippe)dest.getProtocol(grippePid)).getNodeId());
 				grippeEmeteur.send(msg, dest);
 			}
 		}
@@ -58,5 +59,6 @@ public class Initializer implements Control {
 		System.out.println("Fin de l'intitialisation du reseaux...");
 		return false;
 	}
+	
 
 }
