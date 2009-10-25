@@ -10,5 +10,5 @@ Utilisation :
 =============
  * Insertion du module :
 Inserer le module avec la commande 
-# insmod hideModule-v2.ko pid=1234
-ou l234 est le numéro du pid qu'on veut cacher aux outils de styles "top" et "ps"
+# insmod hideModule-v2.ko pid=24542
+ou 24542 est le numéro du pid qu'on veut cacher aux outils de styles "top" et "ps"
