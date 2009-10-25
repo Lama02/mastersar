@@ -1,0 +1,14 @@
+Informations :
+==============
+Encodage : UTF-8
+Auteurs  : ALAHYANE Rachid, CHAOUKI Monir 
+
+
+
+
+Utilisation :
+=============
+ * Insertion du module :
+Inserer le module avec la commande 
+# insmod hideModule-v2.ko pid=1234
+ou l234 est le numéro du pid qu'on veut cacher aux outils de styles "top" et "ps"
