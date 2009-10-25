@@ -25,15 +25,15 @@ Utiliser Felix
 Ajouter le repertoire "resources" dans le repertoire de felix au niveau de bin...
 
 Pour lancer l'exemple de cours par exemple: 
-- se deplacer dans le repertoire contenant felix, taper la commande 
+- se déplacer dans le répertoire contenant felix, taper la commande 
 java -jar bin/felix.jar
 Ceci lance felix.
-- Dans une deuxieme fenetre, deplacez-vous dans le rep contenant le helloworld,
+- Dans une deuxième fenêtre, déplacez-vous dans le répertoire contenant le helloworld,
 cd helloworld 
 puis lancer la compilation en tapant la commande "ant"
-- revenz sur la premiere fenetre, la ou vous avez lancé votre felix taper la comande :
-install file:///users/nfs/Etu5/2309965/mastersar/M2/V1/PSIA/TMEs/exemple_cours/helloworld/helloworld/helloworld.jar
-Ceci peut etre copier depuis les messages d information de ant
-puis start id 
-ou id est l'identifiant du bundle
+- revenez sur la première fenêtre, là où vous avez lancé votre felix, taper la comande :
+> install file:///users/nfs/Etu5/2309965/mastersar/M2/V1/PSIA/TMEs/exemple_cours/helloworld/helloworld/helloworld.jar
+Ceci peut être copié depuis les messages d'informations de ant, puis taper
+> start id 
+où id est l'identifiant du bundle
 
