@@ -368,7 +368,8 @@ int question7(int argc, char* argv[],int taille)
 }
 
 int main (int argc, char* argv[]){
-  //question1_2(argc, argv);
+  printf("Coucou\n");
+  question1_2(argc, argv);
 
   //question3(argc, argv);
 
@@ -381,6 +382,6 @@ int main (int argc, char* argv[]){
   //question5(argc, argv);
   int taille = 256*255;
   //question6(argc, argv,taille);
-  question7(argc, argv);
+  //  question7(argc, argv);
   return 0;
 }
