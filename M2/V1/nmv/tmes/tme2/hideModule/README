@@ -1,0 +1,14 @@
+/*
+ *    Description:  Module "module cache" pour noyau 2.6 
+ *
+ *        Version:  1.0
+ *        Created:  09/10/2009 13:53:46
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *        Authors:  A. Rachid, C. Monir, 
+ *        Company:  UPMC
+ */
+ATTENTION : CE MODULE UNE FOIS INSERE, NE PEUT PLUS ETRE ENLEVE DU NOYAU 
+EN UTILISANT LA FONCTION "rmmod". LA SEUL SOLUTION EST DE REDEMARRER LA
+MACHINE.   
