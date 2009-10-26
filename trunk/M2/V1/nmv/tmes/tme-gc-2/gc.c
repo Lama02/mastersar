@@ -35,7 +35,6 @@ struct thread_descriptor {
   // et vous avez besoin de drapeau pour indiquer au collecteur que vous avez fini de
   // placer les racines la dedans
 
-
   // La liste des objets du thread
   struct object_header liste_obj_alloues;
 
@@ -59,9 +58,6 @@ static __thread struct thread_descriptor tls;
 static struct thread_descriptor          all_threads;
 // et un petit mutex lorsqu'on touche à cette liste
 static pthread_mutex_t                   thread_mutex = PTHREAD_MUTEX_INITIALIZER; 
-
-
-
 
 #ifdef _DEBUG
 // permet d'afficher les threads actifs
@@ -180,11 +176,13 @@ void handShake() {
   while ((char*) cur < tls.top_stack){ // HYPOTHESE : la pile croit vers des adresses hautes
     if ((racine = toHeader(*cur))){    // Si une racine 
       // Alors ajout dans la liste des racines si pas deja presente 
+      /*
+       * Le premier thread qui execute __sync_bool_compare_and_swap met la valeur
+       * racine->is_racine à 1 puis renvoie 1. Les autres treads
+       * qui tombent sur le même objet, dans notre cas &racine->is_racine
+       * renvoient 0 
+       */
       if (__sync_bool_compare_and_swap(&racine->is_racine, 0, 1)){
-	/* le premier thread qui execute cet appel met la valeur            */
-	/* racine->is_racine à 1 puis renvoie 1. Les autres treads          */
-	/* qui tombent sur le même objet, dans notre cas &racine->is_racine */
-	/* renvoient 0 */
 	racine -> color     = GRIS;
 	// Suppresion de la racine de la liste des objets alloues
 	racine -> prev -> next = racine -> next;
@@ -340,29 +338,26 @@ void attach_thread(void *top) {
 
   tls.liste_obj_alloues.next  = tls.liste_obj_alloues.prev  = &tls.liste_obj_alloues;
   tls.liste_racines.next      = tls.liste_racines.prev      = &tls.liste_racines;
-
   NB_THREAD++;
-
   pthread_mutex_unlock(&thread_mutex);
 }
 
 // détache le thread, i.e. retire le tls de all_threads
-void detach_thread() {
+void detach_thread(){
   pthread_mutex_lock(&thread_mutex);
+  /* 
+   * Si une demande de collecte est en cours 
+   * on refuse de detacher le thread
+   */
+  while (req_collect){
+    /* on attend la fin de la collecte */
+    pthread_cond_wait(&cond, &thread_mutex);
+  }
   dprintf("thread", "Detach thread with tls at: %p", &tls);
   tls.next->prev = tls.prev;
   tls.prev->next = tls.next;
   tls.next = tls.prev = &tls;
-
-  // vider racine, alloues, atteints
-  /*
-    !!!!!!!!!!
-    !!!!!!!!!!
-    !!!!!!!!!!
-   */
-
   NB_THREAD--;
-
   pthread_mutex_unlock(&thread_mutex);
 }
 
