@@ -3,7 +3,7 @@ BIN=main
 OBJ=main.o alloc.o gc.o
 
 DEBUG=1
-CFLAGS=-O3 -g -Wall -Werror -std=gnu99 -D_DEBUG=$(DEBUG)
+CFLAGS=-O3 -g -Wall -Werror -std=gnu99 -D_DEBUG=$(DEBUG) -march=i486
 CXXFLAGS=$(CFLAGS)
 LDFLAGS=-pthread
 
@@ -15,6 +15,9 @@ all: bootstrap
 
 web:
 	make -C ../../../..
+
+run:
+	./main
 
 bootstrap: $(BIN)
 

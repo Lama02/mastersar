@@ -96,52 +96,19 @@ void mark(struct object_header *header) {
   if (header -> color != NOIR) {
     // Alors le marquer et l'ajouter au objets atteigniable
     header -> color = NOIR;
-
-    /*
-    if (header -> is_racine) {
-      printf("IS_RACINE:  p = %p : size=%d\n",header,header -> object_size);
-      printf("Avant supp de la racine NBRacines = %d\n",nbElt(header));
-      printf("Avant supp de la racine NBAtteint = %d\n",nbElt(&liste_obj_atteints));
-      for(ptr = toObject(header);(char*) ptr < (char*)toObject(header) + header -> object_size ; ptr++) {
-	struct object_header *ref = toHeader(*ptr);
-	if (ref != NULL) {
-	  printf("   --- toHeader = %p\n",ref);
-	}
-      }
-      
-    }
-    else {
-      printf("Avant supp de l'objet NBAlloues = %d\n",nbElt(header));
-      printf("Avant supp de l'objet NBAtteint = %d\n",nbElt(&liste_obj_atteints));
-    }
-    */
-
     // Suppresion de l'objet de la liste des objets alloues ou racines
     header -> prev -> next = header -> next;
     header -> next -> prev = header -> prev;
     header -> next = header -> prev = header;
     
-    /*
-    if (header -> is_racine) {
-      printf("Apres supp de la racine NBRacines = %d\n",nbElt(header));
-      printf("Apres supp de la racine NBAtteint = %d\n",nbElt(&liste_obj_atteints));
-    }
-    else {
-      printf("Apres supp de l'objet NBAlloues = %d\n",nbElt(header));
-      printf("Apres supp de l'objet NBAtteint = %d\n",nbElt(&liste_obj_atteints));
-    }
-    */
-
     // Ajout de l'objet a la liste des atteints
     header -> next =  liste_obj_atteints.next;
     header -> prev = &liste_obj_atteints;
     liste_obj_atteints.next -> prev  = header;
-    liste_obj_atteints.next          = header;
-    
+    liste_obj_atteints.next          = header;    
     
     // Puis parcours l'objet a la recherche des references
     for(ptr = toObject(header); (char*) ptr < (char*) toObject(header) + header -> object_size ; ptr++) {
-      //    for(ptr = toObject(header); (char*)ptr < (char*)toObject(header) + header -> object_size ; ptr++) {
       struct object_header *ref = toHeader(*ptr);
       // Si une reference alors appeler mark dessus
       if (ref != 0) {
@@ -152,6 +119,7 @@ void mark(struct object_header *header) {
   }
 }
 
+
 // la fonction gcmalloc, vous devez remplir cette fonction
 void *gcmalloc(unsigned int size) {
   // l'allocation se fait en suivant l'algo de hash de Boehm
@@ -160,10 +128,6 @@ void *gcmalloc(unsigned int size) {
   // ensuite, vous devrez mettre cette entête dans une liste des objets vivants...
   // vous pouvez prendre un verrou ici, mais vous pouvez aussi utiliser le tls: l'ensemble des objets vivants
   // est stocké dans l'ensemble des tls. Ca vous évite un verrou de plus
-
-  // Prend le mutex
-  pthread_mutex_lock(&thread_mutex);
-
 
   // Ajout du nouvelle entete dans la liste globale de tous les objets geres par la thread
   header -> next =  tls.liste_obj_alloues.next;
@@ -176,12 +140,13 @@ void *gcmalloc(unsigned int size) {
 
   // Si la taille alloue est > 4Mo alors demande une collection
   if (tls.size_allocated > (4 * 1024 * 1024)) {
+    // Prend le mutex
+    pthread_mutex_lock(&thread_mutex);
     req_collect = 1;
+    // Libere le mutex
+    pthread_mutex_unlock(&thread_mutex);
   }
-
-  // Libere le mutex
-  pthread_mutex_unlock(&thread_mutex);
-
+  
   // pour le retour, l'utilisateur est intéressé par l'objet, pas par son entête
   return toObject(header);
 }
@@ -199,24 +164,28 @@ void _writeBarrier(void *dst, void *src) {
 // celle-ci est ensuite accédée par le collecteur via la variable all_threads
 void handShake() {
   struct object_header * racine;       // Adresse de la racine 
-  char **cur = __builtin_frame_address(0);//down_stack();           // TODO : trouver le bas de la pile
-
+  char **cur = __builtin_frame_address(0);// le bas de la pile
   // Prend le mutex
   pthread_mutex_lock(&thread_mutex);
   if (req_collect == 0) {  // Si pas de demande de collection par le gcmalloc
-    pthread_mutex_unlock(&thread_mutex); // 
+    pthread_mutex_unlock(&thread_mutex); 
     return;                // Alors libere le mutex et ne rien faire
   }
-
+  
+  pthread_mutex_unlock(&thread_mutex); 
+  
   tls.liste_racines.next = tls.liste_racines.prev = &tls.liste_racines;
+  
   // Sinon parcours de la pile a la recherche des racines
   while ((char*) cur < tls.top_stack){ // HYPOTHESE : la pile croit vers des adresses hautes
     if ((racine = toHeader(*cur))){    // Si une racine 
       // Alors ajout dans la liste des racines si pas deja presente 
-      if (racine -> is_racine == 0) {
-	racine -> is_racine = 1;
+      if (__sync_bool_compare_and_swap(&racine->is_racine, 0, 1)){
+	/* le premier thread qui execute cet appel met la valeur            */
+	/* racine->is_racine à 1 puis renvoie 1. Les autres treads          */
+	/* qui tombent sur le même objet, dans notre cas &racine->is_racine */
+	/* renvoient 0 */
 	racine -> color     = GRIS;
-
 	// Suppresion de la racine de la liste des objets alloues
 	racine -> prev -> next = racine -> next;
 	racine -> next -> prev = racine -> prev;
@@ -227,30 +196,28 @@ void handShake() {
 	racine -> prev = &tls.liste_racines;
 	tls.liste_racines.next -> prev  = racine;
 	tls.liste_racines.next          = racine;
-
       }
     }
     cur++;
   }
   
   // Si dernier mutateur
+  /* on prend un verrou pour proteger la variable cond_collect */
+  pthread_mutex_lock(&thread_mutex);
   nb_ready++;
   if (nb_ready == NB_THREAD) {
     // Alors reveille le collecteur
     printf("Demande de collection.\n");
     pthread_cond_signal(&cond_collect);
   }
- 
   // Et dans tous les cas attendre la fin de la collection
   printf("Attend fin de collection.\n");
   pthread_cond_wait(&cond,&thread_mutex);
+  pthread_mutex_unlock(&thread_mutex);    
   printf("Fin attend de collection.\n");
 
   // Enfin reinisialise le mutateur
   tls.size_allocated = 0;
-
-  // Libere le mutateur
-  pthread_mutex_unlock(&thread_mutex);
 }
 
 // le thread collecteur. Quand une collection est requise, il doit se réveiller et parcourir le graphe
@@ -259,17 +226,21 @@ static void *collector(void *arg) {
   printf("**************************** COLLECTOR ***************************\n");
   // Boucle infinie
   while (1) {
+    /*
+     * Il est vrai qu'il faut toujours essayer de réduire la taille des sections 
+     * critiques, sauf que dans notre cas, le collecteur est le seul à pouvoir 
+     * travailler pendant que les autres threads restent en attente d'un signal en 
+     * provenance du collecteur. Alors, mettre un verrou pour toute la fonction 
+     * ne changera rien. (le deuxieme choix est le plus sûr)
+     */
     // Prend le mutex
     pthread_mutex_lock(&thread_mutex);
-
     // Si pas de demande de collection
     while (req_collect == 0) {
       // Alors dort en attendant d'etre reveille par un mutateur
       printf("   Attend requete de collection.\n");
       pthread_cond_wait(&cond_collect,&thread_mutex);
     }
-
-
     // Sinon debut de collection
     printf("   Debut collection.\n");
     // Pour chaque thread mutateur
@@ -340,7 +311,7 @@ static void *collector(void *arg) {
     nb_ready    = 0;
 
     // Reveille les mutateurs
-    printf("   Reveille mutateur.\n");
+    printf("   Reveiller les mutateurs.\n");
     pthread_cond_broadcast(&cond);
 
     // Libere le mutex
