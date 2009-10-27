@@ -1,6 +1,6 @@
 package fr.upmc.sar.psia.tme2;
 
-import java.util.Random;
+import java.util.Set;
 
 import peersim.config.Configuration;
 import peersim.core.Control;
@@ -13,11 +13,8 @@ public class Initializer implements Control {
 
 	private int grippePid;
 
-	private Random random;
-
 	public Initializer(String prefix) {
 		this.grippePid = Configuration.getPid(prefix + ".helloWorldProtocolPid");
-		this.random    = new Random();
 	}
 
 	@Override
@@ -25,7 +22,7 @@ public class Initializer implements Control {
 		System.out.println("Debut de l'intitialisation du reseaux...");
 		Grippe.nbMort   = 0;
 		Grippe.nbMalade = 0;
-		
+
 		// Le nombre de noeud du reseaux
 		int nbNode = Network.size();
 
@@ -41,25 +38,31 @@ public class Initializer implements Control {
 			grippe.initialierVoisin();
 		}
 
-		// Puis envoi le msg de la grippe par les N premier malade a leur voisins
-		for(int i = 0; i < NB_INIT_MALADE; i++) {
-			// Le noeud malade
-			Node node = Network.get(random.nextInt(Network.size()));
-			// Son protocole de Grippe
-			Grippe grippeEmeteur = (Grippe) node.getProtocol(grippePid);
-			// Le message de la grippe
-			Message msg = new Message(Message.MSG_MALADE);
-			// Envoi du message au voisins
-			for (Node dest: grippeEmeteur.getVoisins()) {
-				//System.out.println("   Send msg: " + grippeEmeteur.getNodeId() + " -> " + ((Grippe)dest.getProtocol(grippePid)).getNodeId());
-				grippeEmeteur.send(msg, dest);
+		try {
+			Set<Integer> setMalades;
+			setMalades = Utils.createSet(0, nbNode, NB_INIT_MALADE);
+			// Puis envoi le msg de la grippe par les N premier malade a leur voisins
+			for (Integer i : setMalades) {
+				// Le noeud malade
+				Node node = Network.get(i);
+				// Son protocole de Grippe
+				Grippe grippeEmeteur = (Grippe) node.getProtocol(grippePid);
+				// Le message de la grippe
+				Message msg = new Message(Message.MSG_MALADE);
+				// Envoi du message au voisins
+				for (Node dest: grippeEmeteur.getVoisins()) {
+					//System.out.println("   Send msg: " + grippeEmeteur.getNodeId() + " -> " + ((Grippe)dest.getProtocol(grippePid)).getNodeId());
+					grippeEmeteur.send(msg, dest);
+				}
 			}
-		}
-
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
 
 		System.out.println("Fin de l'intitialisation du reseaux...");
 		return false;
 	}
-	
+
 
 }
