@@ -1,41 +1,34 @@
 package fr.upmc.sar.psia.tme2;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-
-import peersim.core.CommonState;
+import peersim.config.Configuration;
 import peersim.core.Control;
 
 public class Controller implements Control {
+
+	private Statistique statistique;
 	
-	private static int cpt = 0;
-	
-	private BufferedWriter outMo;
-	private BufferedWriter outMa;
-	//private long time;
+	//private static int         endtime = Configuration.getInt("simulation.endtime");
+	private static int   cptExpriences = 0;
+	private static int   cptJours      = 0;
+	private static int   nbExperiences = Configuration.getInt("simulation.experiments");
+	private static int            step = Configuration.getInt("control.monmodule.step");
+	private static int         nbJours = (Configuration.getInt("simulation.endtime") + 1) / step; // A Verifier pas tjs vrai
 
 	public Controller(String prefix) {
-		
+		statistique = Statistique.getInstance();
+		cptExpriences++;
+		cptJours = 0;
 	}
 
 	@Override
 	public boolean execute() {
-		System.out.println("---------- cpt:" + cpt++);
-		System.out.println("****** NbMort   : " + Grippe.nbMort   + "   ----    " + CommonState.getTime());
-		System.out.println("****** NbMalalde: " + Grippe.nbMalade + "   ----    " + CommonState.getTime());
-		
-		try {
-			outMo = new BufferedWriter(new FileWriter("./statistiqueMo.txt",true));
-			outMo.write(CommonState.getTime() + "\t" + Grippe.nbMort + "\n");
-			outMo.close();
-			
-			outMa = new BufferedWriter(new FileWriter("./statistiqueMa.txt",true));
-			outMa.write(CommonState.getTime() + "\t" + Grippe.nbMalade + "\n");
-			outMa.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		statistique.saveNbMalades(cptJours, Grippe.nbMalade);
+		statistique.saveNbMorts(cptJours, Grippe.nbMort);
+
+		cptJours++;
+
+		if ((cptExpriences == nbExperiences) && (cptJours >= nbJours) ) {
+			statistique.writeStat();
 		}
 
 		return false;

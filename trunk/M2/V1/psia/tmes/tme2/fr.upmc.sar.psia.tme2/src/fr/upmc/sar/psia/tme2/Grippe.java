@@ -20,8 +20,8 @@ public class Grippe implements EDProtocol {
 	public static final int MIN_VOISIN    = 8;
 	public static final int MAX_VOISIN    = 15;
 
-	public static int nbMort   = 0;
-	public static int nbMalade = 0;
+	public static Integer nbMort   = 0;
+	public static Integer nbMalade = 0;
 
 
 	// Identifiant de la couche transport
@@ -130,7 +130,7 @@ public class Grippe implements EDProtocol {
 		case NON_IMMUNISER:
 			newMsg = new Message(Message.MSG_MALADE);
 			if (random.nextDouble() < 0.25) {
-				nbMalade++;
+				synchronized (nbMalade) {nbMalade++;}
 				etat = MALADE;
 				for (Node dest: voisins) {
 					send(newMsg, dest);
@@ -145,6 +145,7 @@ public class Grippe implements EDProtocol {
 			newMsg = new Message(Message.MSG_MALADE);
 			if (random.nextDouble() < 0.01) {
 				etat = MALADE;
+				synchronized (nbMalade) {nbMalade++;}
 				for (Node dest: voisins) {
 					send(newMsg, dest);
 				}
@@ -161,10 +162,11 @@ public class Grippe implements EDProtocol {
 			break;
 		case MALADE:
 			if (random.nextDouble() < 0.02) {
-				nbMort++;
+				synchronized (nbMort) {nbMort++;}
 				etat = MORT;
 			}
 			else {
+				synchronized (nbMalade) {nbMalade--;}
 				etat = IMMUNISER;
 			}
 			break;
