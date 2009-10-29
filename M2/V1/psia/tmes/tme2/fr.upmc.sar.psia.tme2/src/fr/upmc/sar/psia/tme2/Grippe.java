@@ -16,6 +16,7 @@ public class Grippe implements EDProtocol {
 	private static final int MALADE        = 1;
 	private static final int IMMUNISER     = 2;
 	private static final int MORT          = 3;
+	private static final int VACCINER      = 4;
 
 	public static final int MIN_VOISIN    = 8;
 	public static final int MAX_VOISIN    = 15;
@@ -141,6 +142,8 @@ public class Grippe implements EDProtocol {
 			break;
 		case MALADE:
 			break;
+		case VACCINER:
+			break;
 		case IMMUNISER:
 			newMsg = new Message(Message.MSG_MALADE);
 			if (random.nextDouble() < 0.01) {
@@ -160,6 +163,8 @@ public class Grippe implements EDProtocol {
 		switch (etat) {
 		case NON_IMMUNISER:
 			break;
+		case VACCINER:
+			break;
 		case MALADE:
 			if (random.nextDouble() < 0.02) {
 				synchronized (nbMort) {nbMort++;}
@@ -173,6 +178,10 @@ public class Grippe implements EDProtocol {
 		case IMMUNISER:
 			break;
 		}
+	}
+	
+	public void vacciner() {
+		this.etat = VACCINER;
 	}
 
 }

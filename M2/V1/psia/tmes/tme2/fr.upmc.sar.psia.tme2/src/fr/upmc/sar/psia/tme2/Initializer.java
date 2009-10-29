@@ -12,6 +12,8 @@ public class Initializer implements Control {
 	private static final int NB_INIT_MALADE = 5;
 
 	private int grippePid;
+	
+	private double taux_vaccination = Configuration.getDouble("taux_vaccination");
 
 	public Initializer(String prefix) {
 		this.grippePid = Configuration.getPid(prefix + ".helloWorldProtocolPid");
@@ -39,6 +41,22 @@ public class Initializer implements Control {
 		}
 
 		try {
+			Set<Integer> setVaccines;
+			setVaccines = Utils.createSet(0, nbNode, (int) (this.taux_vaccination * nbNode));
+			for (Integer i : setVaccines) {
+				// Le noeud malade
+				Node node = Network.get(i);
+				// Son protocole de Grippe
+				Grippe grippeVaccine = (Grippe) node.getProtocol(grippePid);
+				grippeVaccine.vacciner();
+			}
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		try {
 			Set<Integer> setMalades;
 			setMalades = Utils.createSet(0, nbNode, NB_INIT_MALADE);
 			// Puis envoi le msg de la grippe par les N premier malade a leur voisins
@@ -58,7 +76,7 @@ public class Initializer implements Control {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}		
+		}
 
 		System.out.println("Fin de l'intitialisation du reseaux...");
 		return false;

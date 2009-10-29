@@ -7,7 +7,6 @@ public class Controller implements Control {
 
 	private Statistique statistique;
 	
-	//private static int         endtime = Configuration.getInt("simulation.endtime");
 	private static int   cptExpriences = 0;
 	private static int   cptJours      = 0;
 	private static int   nbExperiences = Configuration.getInt("simulation.experiments");
