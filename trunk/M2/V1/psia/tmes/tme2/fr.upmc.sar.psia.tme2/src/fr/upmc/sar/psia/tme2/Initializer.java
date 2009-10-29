@@ -13,7 +13,6 @@ public class Initializer implements Control {
 
 	private int grippePid;
 	
-	private double taux_vaccination = Configuration.getDouble("taux_vaccination");
 
 	public Initializer(String prefix) {
 		this.grippePid = Configuration.getPid(prefix + ".helloWorldProtocolPid");
@@ -22,8 +21,8 @@ public class Initializer implements Control {
 	@Override
 	public boolean execute() {
 		System.out.println("Debut de l'intitialisation du reseaux...");
-		Grippe.nbMort   = 0;
-		Grippe.nbMalade = 0;
+		Grippe.nbMort   = 0.0;
+		Grippe.nbMalade = 0.0;
 
 		// Le nombre de noeud du reseaux
 		int nbNode = Network.size();
@@ -42,7 +41,7 @@ public class Initializer implements Control {
 
 		try {
 			Set<Integer> setVaccines;
-			setVaccines = Utils.createSet(0, nbNode, (int) (this.taux_vaccination * nbNode));
+			setVaccines = Utils.createSet(0, nbNode, (int) (Statistique.taux_vacc * nbNode));
 			for (Integer i : setVaccines) {
 				// Le noeud malade
 				Node node = Network.get(i);

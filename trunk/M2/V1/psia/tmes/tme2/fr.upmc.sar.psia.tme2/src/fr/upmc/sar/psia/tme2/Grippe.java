@@ -21,8 +21,8 @@ public class Grippe implements EDProtocol {
 	public static final int MIN_VOISIN    = 8;
 	public static final int MAX_VOISIN    = 15;
 
-	public static Integer nbMort   = 0;
-	public static Integer nbMalade = 0;
+	public static Double nbMort   = 0.0;
+	public static Double nbMalade = 0.0;
 
 
 	// Identifiant de la couche transport

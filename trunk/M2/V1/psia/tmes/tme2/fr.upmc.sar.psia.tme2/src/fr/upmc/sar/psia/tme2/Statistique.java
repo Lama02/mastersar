@@ -10,7 +10,9 @@ import peersim.config.Configuration;
 
 public class Statistique {
 	private static Statistique instance;
-
+	
+	public static double taux_vacc = 0.0;
+	
 	private BufferedWriter outMo;
 	private BufferedWriter outMa;
 
@@ -18,8 +20,11 @@ public class Statistique {
 	private static int           step = Configuration.getInt("control.monmodule.step");
 	private static int        nbJours = (Configuration.getInt("simulation.endtime") + 1) / step;
 
-	private static List<Integer> statMorts    = new ArrayList<Integer>();
-	private static List<Integer> statMalades  = new ArrayList<Integer>();
+	private static List<Double> statMorts    = new ArrayList<Double>();
+	private static List<Double> statMalades  = new ArrayList<Double>();
+
+	private static List<Double> statMaxMorts    = new ArrayList<Double>();
+	private static List<Double> statMaxMalades  = new ArrayList<Double>();
 
 
 	private Statistique() {}
@@ -28,21 +33,53 @@ public class Statistique {
 		if (instance == null) {
 			instance = new Statistique();
 			for(int i = 0; i < nbJours; i++) {
-				statMalades.add(0);
-				statMorts.add(0);
+				statMalades.add(0.0);
+				statMorts.add(0.0);
 			}
 		}
 		return instance;
 	}
+	
+	public void init(){
+		for(int i = 0; i < nbJours; i++) {
+			statMalades.set(i, 0.0);
+			statMorts.set(i, 0.0);
+		}
+	}
 
-	public void saveNbMalades(int day, Integer nbMalades){
+	public void saveNbMalades(int day, Double nbMalades){
 		statMalades.set(day, nbMalades + statMalades.get(day));
 	}
 
-	public void saveNbMorts(int day, Integer nbMorts){
+	public void saveNbMorts(int day, Double nbMorts){
 		statMorts.set(day, nbMorts + statMorts.get(day));
 	}
+	
+	public void saveMaxMalades() {
+		statMaxMalades.add(Utils.getMax(statMalades));
+	}
 
+	public void saveMaxMorts() {
+		statMaxMorts.add(Utils.getMax(statMorts));
+	}
+
+	
+	/**
+	 * Calculer la moyenne 
+	 */
+	public void saveMoyMorts(){
+		for (int i = 0; i < nbJours; i++) {
+			saveNbMalades(i, (statMorts.get(i) / nbExperiences));
+		}
+	}
+	
+
+	public void saveMoyMalades(){
+		for (int i = 0; i < nbJours; i++) {
+			saveNbMalades(i, (statMalades.get(i) / nbExperiences));
+		}		
+	}
+	
 	public void writeStat() {
 		try {
 
@@ -54,8 +91,10 @@ public class Statistique {
 			outMo = new BufferedWriter(new FileWriter("./statistiqueMo.txt",true));
 			outMa = new BufferedWriter(new FileWriter("./statistiqueMa.txt",true));
 			for (int i = 0; i < nbJours; i++) {
-				outMo.write(i * step + "\t" + (statMorts.get(i) / nbExperiences)  + "\n");
-				outMa.write(i * step + "\t" + (statMalades.get(i) / nbExperiences) + "\n");
+				//outMo.write(i * step + "\t" + (statMorts.get(i) / nbExperiences)  + "\n");
+				//outMa.write(i * step + "\t" + (statMalades.get(i) / nbExperiences) + "\n");
+				outMo.write(i * step + "\t" + statMorts.get(i)  + "\n");
+				outMa.write(i * step + "\t" + statMalades.get(i)  + "\n");
 			}
 			outMo.close();
 			outMa.close();
@@ -64,4 +103,28 @@ public class Statistique {
 			e.printStackTrace();
 		}
 	}
+
+	public void writeStatVaccinations() {
+		try {
+
+			outMo = new BufferedWriter(new FileWriter("./statistiqueVaccMo.txt"));
+			outMo.close();
+			outMa = new BufferedWriter(new FileWriter("./statistiqueVaccMa.txt"));
+			outMa.close();
+			
+			outMo = new BufferedWriter(new FileWriter("./statistiqueVaccMo.txt",true));
+			outMa = new BufferedWriter(new FileWriter("./statistiqueVaccMa.txt",true));
+			for (int i = 0; i < 100; i++) {
+				outMo.write(i + "\t" + statMaxMorts.get(i)   + "\n");
+				outMa.write(i + "\t" + statMaxMalades.get(i) + "\n");
+			}
+			outMo.close();
+			outMa.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	
 }

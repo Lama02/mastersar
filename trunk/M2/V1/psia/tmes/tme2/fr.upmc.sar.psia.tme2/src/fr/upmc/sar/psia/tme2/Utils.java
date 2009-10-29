@@ -1,6 +1,7 @@
 package fr.upmc.sar.psia.tme2;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
@@ -20,5 +21,15 @@ public class Utils {
 		}
 
 		return set;
+	}
+	
+	public static double getMax(List<Double> tab) {
+		Double max = -1.0;
+		for (Double value: tab) {
+			if (value > max) {
+				max = value;
+			}
+		}
+		return max;
 	}
 }
