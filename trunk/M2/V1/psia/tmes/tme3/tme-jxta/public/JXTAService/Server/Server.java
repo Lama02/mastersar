@@ -46,7 +46,7 @@ public class Server  {
 	private PipeService pipeSvc;
 	private InputPipe myPipe; // input pipe for the service
 	private Message msg;      // message received on input pipe
-	private final static String SERVICE = "JXTASPEC:JXTA-AC-Team"; // service name
+	private final static String SERVICE = "JXTASPEC:JXTA-EX1"; // service name
 	private final static String TAG = "DataTag";               // tag in message
 	private final static String FILENAME = "pipeserver.adv";   // file containing
 	// pipe advert.
@@ -123,6 +123,7 @@ public class Server  {
 			// is the NetPeerGroup
 			// TODO:....
 			discoSvc.publish(mcadv);
+			discoSvc.remotePublish(mcadv);
 
 			// Create the Module Spec advertisement associated with the service
 			// We build the module Spec Advertisement using the advertisement
@@ -143,7 +144,7 @@ public class Server  {
 			mdadv.setVersion("Version 1.0");
 			mdadv.setCreator("ac-team.com");
 			mdadv.setModuleSpecID(IDFactory.newModuleSpecID(mcID));
-			mdadv.setSpecURI("http://www.jxta.org/Exo5");
+			mdadv.setSpecURI("http://www.jxta.org/Ex1");
 
 			// Create a pipe advertisement for the Service. The client MUST use
 			// the same pipe advertisement to talk to the server. When the client
@@ -183,6 +184,7 @@ public class Server  {
 			// Ok the Module advertisement was created, just publish
 			// it in my local cache and into the NetPeerGroup.
 			discoSvc.publish(mdadv);
+			discoSvc.remotePublish(mdadv);
 
 			// We are now ready to start the service --
 			// create the input pipe endpoint (using the pipe service) clients will

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Enumeration;
 
+import net.jxta.document.Advertisement;
 import net.jxta.document.StructuredTextDocument;
 import net.jxta.document.MimeMediaType;
 import net.jxta.endpoint.Message;
@@ -42,7 +43,7 @@ public class Client {
 
 	private OutputPipe myPipe; // Output pipe to connect the service
 	private Message msg;       // message to be sent
-	private final static String SERVICE = "JXTASPEC:JXTA-AC-Team"; // service name
+	private final static String SERVICE = "JXTASPEC:JXTA-EX1"; // service name
 	private final static String TAG = "DataTag"; // tag in message
 
 	public static void main(String args[]) {
@@ -96,7 +97,7 @@ public class Client {
 		// Let's try to locate the service advertisement SERVICE
 		// we will loop until we find it!
 		System.out.println("searching for the " + SERVICE + " service advertisement");
-		Enumeration<?> enumer = null;
+		Enumeration enumer = null;
 		while (true) {
 			try {
 				// let's look first in our local cache to see
@@ -110,7 +111,7 @@ public class Client {
 
 				// We could not find anything in our local cache, so let's send a
 				// remote discovery request searching for the service advertisement
-				discoSvc.getRemoteAdvertisements(null, DiscoveryService.ADV, "Name", SERVICE, 0);
+				discoSvc.getRemoteAdvertisements(null, DiscoveryService.ADV, "Name", SERVICE, 1,null);
 
 				// The discovery is asynchronous as we do not know
 				// how long is going to take
