@@ -16,26 +16,22 @@ static int nb_ready    = 0;
 // Nombre de threads 
 static int NB_THREAD = 0;
 
-// Les listes globals
+// Les listes globales
 static struct object_header liste_obj_alloues;
 static struct object_header liste_obj_atteints;
 
-// Condition 
+// Conditions 
 static pthread_cond_t   cond              = PTHREAD_COND_INITIALIZER;
 static pthread_cond_t   cond_collect      = PTHREAD_COND_INITIALIZER;
 
 
-// descriptor de thread
-// on a un descriptor par thread
+// descripteur de thread
+// on a un descripteur par thread
 // ils sont chaînés pour que le collecteur puisse se promener dedans
 struct thread_descriptor {
   struct thread_descriptor *next;        // descripteur précédent
   struct thread_descriptor *prev;        // descripteur suivant
   char *                    top_stack;   // haut de pile
-  // ajoutez vos champs de threads ici
-  // vous avez besoin d'une structure pour mettre vos racines sur votre pile
-  // et vous avez besoin de drapeau pour indiquer au collecteur que vous avez fini de
-  // placer les racines la dedans
 
   // La liste des objets du thread
   struct object_header liste_obj_alloues;
@@ -47,13 +43,13 @@ struct thread_descriptor {
   int size_allocated;
 };
 
-// chaque thread a sa propre image de cette variable: ce sont des variables locales au thread
+// chaque thread a sa propre image de cette variable, ce sont des variables locales au thread
 // d'un point technique, un segment est utilisé pour stocker les variables "thread local storage"
 // pour gcc, accéder à la variable revient à passer par gs et prendre son adresse revient à trouver son adresse
-// relativement au segment ds: cette adresse est donc la même pour tout les threads
+// relativement au segment ds: cette adresse est donc la même pour tous les threads
 static __thread struct thread_descriptor tls;
 // amorce de la liste chaînée de tous les threads. Ce noeud est vide, il sert de référence. C'est juste
-// une simplification pour les liste doublement chaînées circulaires
+// une simplification pour les listes doublement chaînées circulaires
 static struct thread_descriptor          all_threads;
 // et un petit mutex lorsqu'on touche à cette liste
 static pthread_mutex_t                   thread_mutex = PTHREAD_MUTEX_INITIALIZER; 
@@ -87,22 +83,22 @@ int nbElt(struct object_header *header) {
 void mark(struct object_header *header) {
   void **ptr;
   
-  // Si objet n'est pas deja marquer
+  // Si objet n'est pas deja marqué
   if (header -> color != NOIR) {
-    // Alors le marquer et l'ajouter au objets atteigniable
+    // Alors le marquer et l'ajouter aux objets atteigniables
     header -> color = NOIR;
-    // Suppresion de l'objet de la liste des objets alloues ou racines
+    // Suppresion de l'objet de la liste des objets alloués ou racines
     header -> prev -> next = header -> next;
     header -> next -> prev = header -> prev;
     header -> next = header -> prev = header;
     
-    // Ajout de l'objet a la liste des atteints
+    // Ajout de l'objet à la liste des atteints
     header -> next =  liste_obj_atteints.next;
     header -> prev = &liste_obj_atteints;
     liste_obj_atteints.next -> prev  = header;
     liste_obj_atteints.next          = header;    
     
-    // Puis parcours l'objet a la recherche des references
+    // Puis parcours l'objet à la recherche des references
     for(ptr = toObject(header); (char*) ptr < (char*) toObject(header) + header -> object_size ; ptr++) {
       struct object_header *ref = toHeader(*ptr);
       // Si une reference alors appeler mark dessus
@@ -115,25 +111,21 @@ void mark(struct object_header *header) {
 }
 
 
-// la fonction gcmalloc, vous devez remplir cette fonction
+// la fonction gcmalloc
 void *gcmalloc(unsigned int size) {
   // l'allocation se fait en suivant l'algo de hash de Boehm
   struct object_header *header = pre_malloc(size);
 
-  // ensuite, vous devrez mettre cette entête dans une liste des objets vivants...
-  // vous pouvez prendre un verrou ici, mais vous pouvez aussi utiliser le tls: l'ensemble des objets vivants
-  // est stocké dans l'ensemble des tls. Ca vous évite un verrou de plus
-
-  // Ajout du nouvelle entete dans la liste globale de tous les objets geres par la thread
+  // Ajout du nouvelle entete dans la liste globale de tous les objets gerés par la thread
   header -> next =  tls.liste_obj_alloues.next;
   header -> prev = &tls.liste_obj_alloues;
   tls.liste_obj_alloues.next -> prev  = header;
   tls.liste_obj_alloues.next          = header;
 
-  // Met a jours la quantite de memoire alloue par le thread
+  // Met à jours la quantite de memoire alloue par le thread
   tls.size_allocated += size;
 
-  // Si la taille alloue est > 4Mo alors demande une collection
+  // Si la taille alloue est > 4Mo alors demander une collection
   if (tls.size_allocated > (4 * 1024 * 1024)) {
     // Prend le mutex
     pthread_mutex_lock(&thread_mutex);
@@ -148,23 +140,22 @@ void *gcmalloc(unsigned int size) {
 
 // la fonction writeBarrier qui doit assurer l'invariant tri-couleurs de boehm
 void _writeBarrier(void *dst, void *src) {
-  // à faire
   struct object_header *header_dst = toHeader(dst);  // entête de la destination
   struct object_header *header_src = toHeader(src);  // entête de la source
 	
-  assert(header_dst && header_src);                  // si vous n'avez pas de bug, cet invariant est respecté
+  assert(header_dst && header_src);
 }
 
 // le handshake pour accumuler les racines du thread. Vous les stockerez dans la variable tls
 // celle-ci est ensuite accédée par le collecteur via la variable all_threads
 void handShake() {
-  struct object_header * racine;       // Adresse de la racine 
-  char **cur = __builtin_frame_address(0);// le bas de la pile
+  struct object_header * racine;            // Adresse de la racine 
+  char **cur = __builtin_frame_address(0);  // le bas de la pile
   // Prend le mutex
   pthread_mutex_lock(&thread_mutex);
-  if (req_collect == 0) {  // Si pas de demande de collection par le gcmalloc
+  if (req_collect == 0) {                   // Si pas de demande de collection par le gcmalloc
     pthread_mutex_unlock(&thread_mutex); 
-    return;                // Alors libere le mutex et ne rien faire
+    return;                                 // Alors libere le mutex et ne rien faire
   }
   pthread_mutex_unlock(&thread_mutex); 
   
@@ -227,13 +218,14 @@ static void *collector(void *arg) {
      * critiques, sauf que dans notre cas, le collecteur est le seul à pouvoir 
      * travailler pendant que les autres threads restent en attente d'un signal en 
      * provenance du collecteur. Alors, mettre un verrou pour toute la fonction 
-     * ne changera rien. (le deuxieme choix est le plus sûr)
+     * ou pas ne changera rien.  Pour éviter toute surprise on préfère poser des 
+	 * verrous.
      */
     // Prend le mutex
     pthread_mutex_lock(&thread_mutex);
     // Si pas de demande de collection
     while (req_collect == 0) {
-      // Alors dort en attendant d'etre reveille par un mutateur
+      // Alors dort en attendant d'etre reveillé par un mutateur
       printf("   Attend requete de collection.\n");
       pthread_cond_wait(&cond_collect,&thread_mutex);
     }
@@ -243,7 +235,7 @@ static void *collector(void *arg) {
     struct thread_descriptor *thread_courrant = all_threads.next;
     while (thread_courrant != &all_threads) {
 
-      // Marquer les objet atteigniable par le thread
+      // Marquer les objets atteigniables par le thread
       struct object_header *racine = thread_courrant->liste_racines.next;
       struct object_header *tmp    = thread_courrant->liste_racines.next;
       while (racine != &(thread_courrant->liste_racines)) {
@@ -252,7 +244,7 @@ static void *collector(void *arg) {
 	racine = tmp;
       }
 
-      // Libere les objets local non atteigniable
+      // Libere les objets local non atteigniables
       struct object_header *libre = thread_courrant->liste_obj_alloues.next;
       while (libre != &thread_courrant->liste_obj_alloues) {
 	struct object_header *tmp    = libre -> next;
@@ -268,7 +260,7 @@ static void *collector(void *arg) {
       thread_courrant = thread_courrant -> next;
     }
 
-    // Libere les objets global non atteigniable
+    // Libere les objets globals non atteigniables
     struct object_header *libre = liste_obj_alloues.next;
     while (libre != &liste_obj_alloues) {
       struct object_header *tmp    = libre -> next;
@@ -352,7 +344,6 @@ void detach_thread(){
 }
 
 // initialisation du gc: création du thread collecteur et initialisation de la variable all_threads
-// vous devez completer cette fonction pour y ajouter vos structures de données
 void initialise_gc() {
   pthread_t tid;
   all_threads.prev = all_threads.next = &all_threads;
