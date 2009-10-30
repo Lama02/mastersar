@@ -78,7 +78,6 @@ public class Server  {
 		} 
 		try {
 			// Create, and Start the default jxta NetPeerGroup
-			//TODO:....
 			group =  new NetPeerGroupFactory().getInterface();
 
 		} catch (PeerGroupException e) {
@@ -90,10 +89,8 @@ public class Server  {
 
 		// Get the discovery, and pipe service
 		System.out.println("Getting DiscoveryService");
-		// TODO: ....
 		discoSvc = group.getDiscoveryService();
 		System.out.println("Getting PipeService");
-		// TODO: ....
 		pipeSvc = group.getPipeService();
 	}
 
@@ -109,7 +106,6 @@ public class Server  {
 			// a very small advertisement that only advertises the existence
 			// of service. In order to access the service, a peer will
 			// have to discover the associated module spec advertisement.
-			// TODO:....
 			ModuleClassAdvertisement mcadv = (ModuleClassAdvertisement) (AdvertisementFactory.newAdvertisement(ModuleClassAdvertisement.getAdvertisementType()));
 
 			// Init the name, description and id of the module class adv
@@ -121,7 +117,6 @@ public class Server  {
 			// Ok the Module Class advertisement was created, just publish
 			// it in my local cache and to my peergroup (using the discovery service). This
 			// is the NetPeerGroup
-			// TODO:....
 			discoSvc.publish(mcadv);
 			discoSvc.remotePublish(mcadv);
 
@@ -132,7 +127,6 @@ public class Server  {
 			// all the information necessary for a client to contact the service
 			// for instance it will contain a pipe advertisement to
 			// be used to contact the service
-			// TODO: ....
 			ModuleSpecAdvertisement mdadv = (ModuleSpecAdvertisement) AdvertisementFactory.newAdvertisement(ModuleSpecAdvertisement.getAdvertisementType()); 
 
 			// Setup some of the information field about the servive. In this
