@@ -113,7 +113,7 @@ public class Server  {
 			ModuleClassAdvertisement mcadv = (ModuleClassAdvertisement) (AdvertisementFactory.newAdvertisement(ModuleClassAdvertisement.getAdvertisementType()));
 
 			// Init the name, description and id of the module class adv
-			mcadv.setName(SERVICE);
+			mcadv.setName("JXTAMOD:JXTA-EX1");
 			mcadv.setDescription("Service d'affichage de chaine de caracteres");
 			ModuleClassID mcID = IDFactory.newModuleClassID();
 			mcadv.setModuleClassID(mcID);
@@ -140,7 +140,7 @@ public class Server  {
 			// advertisement. The module creates an input pipes to listen
 			// on this pipe endpoint.
 
-			mdadv.setName(SERVICE);
+			mdadv.setName("JXTASPEC:JXTA-EX1");
 			mdadv.setVersion("Version 1.0");
 			mdadv.setCreator("ac-team.com");
 			mdadv.setModuleSpecID(IDFactory.newModuleSpecID(mcID));
