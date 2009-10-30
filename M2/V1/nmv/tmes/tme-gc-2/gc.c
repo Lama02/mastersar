@@ -13,8 +13,10 @@
 static int req_collect = 0;
 static int nb_ready    = 0;
 
+// Nombre de threads 
 static int NB_THREAD = 0;
 
+// Les listes globals
 static struct object_header liste_obj_alloues;
 static struct object_header liste_obj_atteints;
 
@@ -43,9 +45,6 @@ struct thread_descriptor {
 
   // La taille deja allouer
   int size_allocated;
-
-  // Fini de rechercher les racines
-  int ready_to_collect;
 };
 
 // chaque thread a sa propre image de cette variable: ce sont des variables locales au thread
@@ -167,7 +166,6 @@ void handShake() {
     pthread_mutex_unlock(&thread_mutex); 
     return;                // Alors libere le mutex et ne rien faire
   }
-  
   pthread_mutex_unlock(&thread_mutex); 
   
   tls.liste_racines.next = tls.liste_racines.prev = &tls.liste_racines;
@@ -345,14 +343,6 @@ void attach_thread(void *top) {
 // détache le thread, i.e. retire le tls de all_threads
 void detach_thread(){
   pthread_mutex_lock(&thread_mutex);
-  /* 
-   * Si une demande de collecte est en cours 
-   * on refuse de detacher le thread
-   */
-  while (req_collect){
-    /* on attend la fin de la collecte */
-    pthread_cond_wait(&cond, &thread_mutex);
-  }
   dprintf("thread", "Detach thread with tls at: %p", &tls);
   tls.next->prev = tls.prev;
   tls.prev->next = tls.next;
