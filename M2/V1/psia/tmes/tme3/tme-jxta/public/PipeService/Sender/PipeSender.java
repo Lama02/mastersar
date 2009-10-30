@@ -69,7 +69,7 @@ public class PipeSender implements OutputPipeListener {
         } 
 	try {
 	    // create and start the default jxta NetPeerGroup
-	    ....      
+	    netPeerGroup =  new NetPeerGroupFactory().getInterface();
 	} 
 	catch (PeerGroupException e) {
 	    // could not instantiate the group, print the stack and exit
@@ -79,13 +79,15 @@ public class PipeSender implements OutputPipeListener {
 	}
 		
 	// Get the pipe service
-	pipeSvc = ....
+    pipeSvc = netPeerGroup.getPipeService();
 	
 	System.out.println("Reading in from file " + FILENAME);
 	try {
 	    FileInputStream is = new FileInputStream(FILENAME);
 	    // Create the pipeAdvertisement object from the is FileInputStream (use the AdvertisementFactory class)
-	    .....
+	    XMLDocument<?> xml = (XMLDocument<?>) StructuredDocumentFactory.newStructuredDocument( MimeMediaType.XMLUTF8, is );
+	    pipeAdv = (PipeAdvertisement) AdvertisementFactory.newAdvertisement(xml);
+
 	    is.close();
 	} 
 	catch (Exception e) {
@@ -99,7 +101,8 @@ public class PipeSender implements OutputPipeListener {
 	while (true) try {
 		System.out.println("Sending message to listener...");
 		// create the output pipe using the pipe service and the pipe advertisement
-		....
+		pipeSvc.createOutputPipe(pipeAdv, this);
+
 		Thread.sleep(10 * 1000);
 	    } catch (Exception e) {
 		System.out.println("Message sending exception: ");
@@ -114,12 +117,16 @@ public class PipeSender implements OutputPipeListener {
 	
 	// Getting the output pipe
 	OutputPipe op = event.getOutputPipe();
-	String myMsg = "Hello from peer " + netPeerGroup.getPeerName();
+	String myMsg = "Hello from peer from AC Team " + netPeerGroup.getPeerName();
 		
 	try {
 	    // Create a message object, add a (tag,value) pair to the message, 
 	    // then send the message using the pipe
-	    ....
+	    Message msg = new Message();
+		StringMessageElement sme = new StringMessageElement(TAG, myMsg, null);
+		msg.addMessageElement(sme);
+		
+		op.send(msg);
 	} 
 	catch (IOException e) {
 	    System.out.println("Error: failed to send message");
