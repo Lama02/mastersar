@@ -1,0 +1,19 @@
+Auteurs :  ALAHYANE Rachid & CHOUKI Monir
+
+
+COMPILATION :
+=============
+
+Pour compiler le projet il vous suffit de taper la commande :
+$ make
+
+
+EXECUTION :
+===========
+Pour exécuter le projet, taper la commande :
+$ ./main 
+
+
+DETAILS :
+=========
+Reportez-vous au code, il est bien commenté ;)
