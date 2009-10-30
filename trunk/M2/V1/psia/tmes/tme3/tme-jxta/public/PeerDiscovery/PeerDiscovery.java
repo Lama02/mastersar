@@ -79,7 +79,6 @@ public class PeerDiscovery implements DiscoveryListener, RendezvousListener {
 
 		// Get the discovery service & rendezvous service from our peer group
 		// add this class as listener to both discovery and rendezvous events
-		// TODO:....
 		discovery  = netPeerGroup.getDiscoveryService();
 		rendezvous = netPeerGroup.getRendezVousService();
 		discovery.addDiscoveryListener(this);
@@ -95,9 +94,9 @@ public class PeerDiscovery implements DiscoveryListener, RendezvousListener {
 			while (true) {
 				System.out.println("Sending a Discovery Message");
 				// send a discovery message looking for other peers
-				//TODO:....
 				Advertisement ad = netPeerGroup.getImplAdvertisement();
 				discovery.publish(ad);
+				// Recherche de tous Peer disponible
 				discovery.getRemoteAdvertisements(null, DiscoveryService.PEER, null, null, 0);
 				// wait a bit before sending next discovery message
 				Thread.sleep(10 * 1000); 
@@ -114,17 +113,14 @@ public class PeerDiscovery implements DiscoveryListener, RendezvousListener {
 	 */
 	public void discoveryEvent(DiscoveryEvent event) {
 		// Get the event response
-		//TODO:....
 		DiscoveryResponseMsg res = event.getResponse();
 		
 		System.out.println("New event...");
 		
 		// Get the advertisements from the response
-		//TODO:....
 		Enumeration<Advertisement> res_enum = res.getAdvertisements();		
 		while (res_enum.hasMoreElements()) {
 			// print the peer name from the advertisement
-			//TODO:....
 			System.out.println("Peer name: " + ((PeerAdvertisement)res_enum.nextElement()).getName());
 		}
 	}
@@ -135,6 +131,5 @@ public class PeerDiscovery implements DiscoveryListener, RendezvousListener {
 	 */
 	public void rendezvousEvent(RendezvousEvent event) {
 		// print on stdout which peers connect and reconnect (hint: use the event type)
-		//TODO:....
 	}
 }
