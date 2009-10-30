@@ -36,148 +36,153 @@ import net.jxta.peergroup.PeerGroup;
 import net.jxta.exception.PeerGroupException;
 
 public class Client {
-    static PeerGroup netPeerGroup = null;
-    private DiscoveryService discoSvc;
-    private PipeService pipeSvc;
-    
-    private OutputPipe myPipe; // Output pipe to connect the service
-    private Message msg;       // message to be sent
-    private final static String SERVICE = "JXTASPEC:JXTA-EX1"; // service name
-    private final static String TAG = "DataTag"; // tag in message
-    
-    public static void main(String args[]) {
-        Client myapp = new Client();
-        System.out.println("Starting Client peer ....");
-        myapp.startJxta();
-        myapp.startClient();
-        System.out.println("Good Bye ....");
-        System.exit(0);
-    }
-    
-    public Client() { }
-    
-    private void startJxta() {
-    	try {
-	    System.setProperty( "net.jxta.tls.principal","USERNAME" );
-            System.setProperty( "net.jxta.tls.password","PASSWORD" );
-            System.setProperty("net.jxta.logging.Logging", "SEVERE");
-        }
-        catch ( SecurityException se ) {
-            System.err.println( "a security manager exists" );
-        }
-        catch ( NullPointerException npe ) {
-            System.err.println( "key is null." );
-        }
-        catch ( IllegalArgumentException iae ) {
-            System.err.println( "key is empty." );
-        } 
-        try {
-            // Create, and Start the default jxta NetPeerGroup
-	    ....
-        } 
-        catch (PeerGroupException e) {
-            // Could not instantiate the group, print the stack and exit
-            System.out.println("fatal error : group creation failure");
-            e.printStackTrace();
-            System.exit(1);
-        }
-        
-        // Get the discovery, and pipe service
-        System.out.println("Getting DiscoveryService");
-        discoSvc = ....
-        System.out.println("Getting PipeService");
-        pipeSvc = ....
-    }
-    
-    // start the client
-    private void startClient() {
-        // Let's initialize the client
-        System.out.println("Start the Client");
-        // Let's try to locate the service advertisement SERVICE
-        // we will loop until we find it!
-        System.out.println("searching for the " + SERVICE + " service advertisement");
-        Enumeration enumer = null;
-        while (true) {
-            try {
-                // let's look first in our local cache to see
-                // if we have it! We try to discover an advertisement
-                // which has the (Name, JXTASPEC:JXTA-EX1) tag value
-                //
-                enumer = ....
-                
-                // Found it! Stop searching and go send a message.
-                if ((enumer != null) && enumer.hasMoreElements()) break;
-                
-                // We could not find anything in our local cache, so let's send a
-                // remote discovery request searching for the service advertisement
-                ....
-                
-                // The discovery is asynchronous as we do not know
-                // how long is going to take
-                try { // sleep as much as we want. Yes we
-                    // could implement asynchronous listener pipe...
-                    Thread.sleep(2000);
-                } 
-                catch (Exception e) {
-                }
-                
-            } 
-            catch (IOException e) {
-                // found nothing!  move on
-            }
-            System.out.print(".");
-        }
-        
-        System.out.println("We found the service advertisement:");
-        
-        // Ok get the service advertisement as a ModuleSpecAdvertisement
-        ModuleSpecAdvertisement mdsadv = (ModuleSpecAdvertisement) enumer.nextElement();
-        try {
-	    // get the advertisement as a plain text document form the spec advertisement. Use MimeMediaType "text/plain".
-            StructuredTextDocument doc = ...
+	static PeerGroup netPeerGroup = null;
+	private DiscoveryService discoSvc;
+	private PipeService pipeSvc;
 
-            // let's print the advertisement as a plain text document
-            StringWriter out = new StringWriter();
-            doc.sendToWriter(out);
-            System.out.println(out.toString());
-            out.close();
-            
-            // Get the pipe advertisement from the module spec advertisement -- need it to talk to the service
-            PipeAdvertisement pipeadv = ....
-            
-            if (pipeadv == null){
-                System.out.println("Error -- Null pipe advertisement!");
-                System.exit(1);
-            }
-            
-	    // create the output pipe endpoint to connect
-	    // to the server, try 3 times to bind the pipe endpoint to
-	    // the listening endpoint pipe of the service. Use a timeout, not an asynchronous event
-	    myPipe = null;
-	    for (int i=0; i<3; i++) {        
-		System.out.println("Trying to bind to pipe...");
+	private OutputPipe myPipe; // Output pipe to connect the service
+	private Message msg;       // message to be sent
+	private final static String SERVICE = "JXTASPEC:JXTA-AC-Team"; // service name
+	private final static String TAG = "DataTag"; // tag in message
+
+	public static void main(String args[]) {
+		Client myapp = new Client();
+		System.out.println("Starting Client peer ....");
+		myapp.startJxta();
+		myapp.startClient();
+		System.out.println("Good Bye ....");
+		System.exit(0);
+	}
+
+	public Client() { }
+
+	private void startJxta() {
 		try {
-		    myPipe = ....
-		    break;
-		} catch (java.io.IOException e) {
-		    // go try again;
+			System.setProperty( "net.jxta.tls.principal","USERNAME" );
+			System.setProperty( "net.jxta.tls.password","PASSWORD" );
+			System.setProperty("net.jxta.logging.Logging", "SEVERE");
 		}
-	    }
-	    if (myPipe == null) {
-		System.out.println("Error resolving pipe endpoint");
-		System.exit(1);
-	    }                        
-	    // create the data string to send to the server
-	    String data = "Hello my friend!";
-	            
-	    // create the pipe message and add the data with tag TAG
-	    ....
-	    // send the message to the service pipe and close the pipe
-	    ....
-	    System.out.println("message \"" + data + "\" sent to the Server");	            
-	} catch (Exception ex) {
-	    ex.printStackTrace();
-	    System.out.println("Client: Error sending message to the service");
-	}        
-    }
+		catch ( SecurityException se ) {
+			System.err.println( "a security manager exists" );
+		}
+		catch ( NullPointerException npe ) {
+			System.err.println( "key is null." );
+		}
+		catch ( IllegalArgumentException iae ) {
+			System.err.println( "key is empty." );
+		} 
+		try {
+			// Create, and Start the default jxta NetPeerGroup
+			netPeerGroup = new NetPeerGroupFactory().getInterface();
+		} 
+		catch (PeerGroupException e) {
+			// Could not instantiate the group, print the stack and exit
+			System.out.println("fatal error : group creation failure");
+			e.printStackTrace();
+			System.exit(1);
+		}
+
+		// Get the discovery, and pipe service
+		System.out.println("Getting DiscoveryService");
+		discoSvc = netPeerGroup.getDiscoveryService();
+		System.out.println("Getting PipeService");
+		pipeSvc = netPeerGroup.getPipeService();
+	}
+
+	// start the client
+	private void startClient() {
+		// Let's initialize the client
+		System.out.println("Start the Client");
+		// Let's try to locate the service advertisement SERVICE
+		// we will loop until we find it!
+		System.out.println("searching for the " + SERVICE + " service advertisement");
+		Enumeration<?> enumer = null;
+		while (true) {
+			try {
+				// let's look first in our local cache to see
+				// if we have it! We try to discover an advertisement
+				// which has the (Name, JXTASPEC:JXTA-EX1) tag value
+				//
+				enumer = discoSvc.getLocalAdvertisements(DiscoveryService.ADV, "Name", SERVICE);
+
+				// Found it! Stop searching and go send a message.
+				if ((enumer != null) && enumer.hasMoreElements()) break;
+
+				// We could not find anything in our local cache, so let's send a
+				// remote discovery request searching for the service advertisement
+				discoSvc.getRemoteAdvertisements(null, DiscoveryService.ADV, "Name", SERVICE, 0);
+
+				// The discovery is asynchronous as we do not know
+				// how long is going to take
+				try { // sleep as much as we want. Yes we
+					// could implement asynchronous listener pipe...
+					Thread.sleep(2000);
+				} 
+				catch (Exception e) {
+				}
+
+			} 
+			catch (IOException e) {
+				// found nothing!  move on
+			}
+			System.out.print(".");
+		}
+
+		System.out.println("We found the service advertisement:");
+
+		// Ok get the service advertisement as a ModuleSpecAdvertisement
+		ModuleSpecAdvertisement mdsadv = (ModuleSpecAdvertisement) enumer.nextElement();
+		try {
+			// get the advertisement as a plain text document form the spec advertisement. Use MimeMediaType "text/plain".
+			StructuredTextDocument<?> doc = (StructuredTextDocument<?>) mdsadv.getDocument(new MimeMediaType("text/plain"));
+
+			// let's print the advertisement as a plain text document
+			StringWriter out = new StringWriter();
+			doc.sendToWriter(out);
+			System.out.println(out.toString());
+			out.close();
+
+			// Get the pipe advertisement from the module spec advertisement -- need it to talk to the service
+			PipeAdvertisement pipeadv = mdsadv.getPipeAdvertisement();
+
+			if (pipeadv == null){
+				System.out.println("Error -- Null pipe advertisement!");
+				System.exit(1);
+			}
+
+			// create the output pipe endpoint to connect
+			// to the server, try 3 times to bind the pipe endpoint to
+			// the listening endpoint pipe of the service. Use a timeout, not an asynchronous event
+			myPipe = null;
+			for (int i=0; i<3; i++) {        
+				System.out.println("Trying to bind to pipe...");
+				try {
+					myPipe = pipeSvc.createOutputPipe(pipeadv, 3*1000);
+					break;
+				} catch (java.io.IOException e) {
+					// go try again;
+					System.err.println("resolving pipe endpoint ...");
+				}
+			}
+			if (myPipe == null) {
+				System.out.println("Error resolving pipe endpoint");
+				System.exit(1);
+			}                        
+			// create the data string to send to the server
+			String data = "Yow comment ca va les SARs ?";
+
+			// create the pipe message and add the data with tag TAG
+			msg = new Message();
+			StringMessageElement sme = new StringMessageElement(TAG, data, null);
+			msg.addMessageElement(sme);
+			
+			// send the message to the service pipe and close the pipe
+			myPipe.send(msg);
+			myPipe.close();
+			System.out.println("message \"" + data + "\" sent to the Server");	            
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			System.out.println("Client: Error sending message to the service");
+		}        
+	}
 }
