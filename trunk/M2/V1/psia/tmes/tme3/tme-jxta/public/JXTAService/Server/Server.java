@@ -140,7 +140,7 @@ public class Server  {
 			// advertisement. The module creates an input pipes to listen
 			// on this pipe endpoint.
 
-			mdadv.setName("JXTASPEC:JXTA-EX1");
+			mdadv.setName(SERVICE);
 			mdadv.setVersion("Version 1.0");
 			mdadv.setCreator("ac-team.com");
 			mdadv.setModuleSpecID(IDFactory.newModuleSpecID(mcID));
