@@ -97,7 +97,7 @@ public class Client {
 		// Let's try to locate the service advertisement SERVICE
 		// we will loop until we find it!
 		System.out.println("searching for the " + SERVICE + " service advertisement");
-		Enumeration enumer = null;
+		Enumeration<Advertisement> enumer = null;
 		while (true) {
 			try {
 				// let's look first in our local cache to see
