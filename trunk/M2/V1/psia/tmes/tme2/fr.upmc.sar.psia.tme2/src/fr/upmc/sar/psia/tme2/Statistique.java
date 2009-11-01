@@ -15,7 +15,8 @@ public class Statistique {
 	private BufferedWriter outMo;
 	private BufferedWriter outMa;
 
-	private static int  nbExperiences = Configuration.getInt("simulation.experiments");
+	private static int  cycle_moy = Configuration.getInt("CYCLES_MOY");
+
 	private static int           step = Configuration.getInt("control.monmodule.step");
 	private static int        nbJours = (Configuration.getInt("simulation.endtime") + 1) / step;
 
@@ -45,7 +46,7 @@ public class Statistique {
 
 	/**
 	 * Initialiser la liste contenant le nombre de 
-	 * morts/malades par unitŽ de temps (par jour par exemple)
+	 * morts/malades par unitï¿½ de temps (par jour par exemple)
 	 */
 	public void init(){
 		for(int i = 0; i < nbJours; i++) {
@@ -56,9 +57,9 @@ public class Statistique {
 	
 	
 	/**
-	 * Mise ˆ jour de la liste contenant le nombre de malades 
+	 * Mise ï¿½ jour de la liste contenant le nombre de malades 
 	 * par jour
-	 * @param day le numŽro du jour (0..365)
+	 * @param day le numï¿½ro du jour (0..365)
 	 * @param nbMalades Nombre de malades 
 	 */
 	public void saveNbMalades(int day, Double nbMalades){
@@ -66,8 +67,8 @@ public class Statistique {
 	}
 
 	/**
-	 * Mise ˆ jour de la liste contenant le nombre de morts 
-	 * @param day le numŽro du jour (0..365)
+	 * Mise ï¿½ jour de la liste contenant le nombre de morts 
+	 * @param day le numï¿½ro du jour (0..365)
 	 * @param nbMorts Nombre de morts
 	 */
 	public void saveNbMorts(int day, Double nbMorts){
@@ -75,15 +76,15 @@ public class Statistique {
 	}
 	
 	/**
-	 * Ajoute le nombre maximum de malades contaminŽs 
-	 * ˆ la liste statMaxMalades
+	 * Ajoute le nombre maximum de malades contaminï¿½s 
+	 * ï¿½ la liste statMaxMalades
 	 */
 	public void saveMaxMalades() {
 		statMaxMalades.add(Utils.getMax(statMalades));
 	}
 
 	/**
-	 * Ajoute le nombre maximum de morts ˆ la liste
+	 * Ajoute le nombre maximum de morts ï¿½ la liste
 	 * statMaxMorts 
 	 */
 	public void saveMaxMorts() {
@@ -92,23 +93,23 @@ public class Statistique {
 
 	
 	/**
-	 * Calculer la moyenne des morts ˆ une date
-	 * prŽcise 
+	 * Calculer la moyenne des morts ï¿½ une date
+	 * prï¿½cise 
 	 */
 	public void saveMoyMorts(){
 		for (int i = 0; i < nbJours; i++) {
-			statMorts.set(i, (statMorts.get(i) / nbExperiences));
+			statMorts.set(i, (statMorts.get(i) / cycle_moy));
 		}
 	}
 	
 	
 	/**
-	 * Sauvegarder la moyenne des malades ˆ une date prŽcise 
+	 * Sauvegarder la moyenne des malades ï¿½ une date prï¿½cise 
 	 * dans la liste statMalades
 	 */
 	public void saveMoyMalades(){
 		for (int i = 0; i < nbJours; i++) {
-			statMalades.set(i, (statMalades.get(i) / nbExperiences));
+			statMalades.set(i, (statMalades.get(i) / cycle_moy));
 		}		
 	}
 	
@@ -117,7 +118,7 @@ public class Statistique {
 	 * Ecriture des statistiques dans des fichiers sur 
 	 * le FS.
 	 * Ceci concerne la partie dans laquelle aucun 
-	 * individu n'est vaccinŽ
+	 * individu n'est vaccinï¿½
 	 */
 	public void writeStat() {
 		try {			
@@ -144,8 +145,8 @@ public class Statistique {
 	/**
 	 * Ecriture des statistiques dans des fichiers sur 
 	 * le FS.
-	 * Ceci concerne la partie o des individus
-	 * sont vaccinŽs
+	 * Ceci concerne la partie oï¿½ des individus
+	 * sont vaccinï¿½s
 	 */	
 	public void writeStatVaccinations() {
 		try {

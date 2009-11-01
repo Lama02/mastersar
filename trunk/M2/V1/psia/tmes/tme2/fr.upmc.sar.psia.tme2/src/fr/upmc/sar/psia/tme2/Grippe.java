@@ -1,9 +1,8 @@
 package fr.upmc.sar.psia.tme2;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.HashSet;
 
 import peersim.config.Configuration;
 import peersim.core.Network;
@@ -47,7 +46,8 @@ public class Grippe implements EDProtocol {
 	////////////////////////////////
 
 	// Voisins
-	private List<Node> voisins;
+	private Set<Grippe> voisins;
+	private Integer nbVoisins;
 	// Etat
 	private int etat;
 
@@ -57,7 +57,7 @@ public class Grippe implements EDProtocol {
 		this.transportPid = Configuration.getPid(prefix + ".transport");
 		this.pid = Configuration.getPid(prefix + ".myself");
 		this.transport = null;
-		this.voisins = new ArrayList<Node>();
+		this.voisins = new HashSet<Grippe>();
 	}
 
 	// Methode appelee lorsqu'un message est recu par le protocole Grippe du noeud
@@ -92,10 +92,22 @@ public class Grippe implements EDProtocol {
 		}
 	}
 
-	public List<Node> getVoisins() {
+	public Set<Grippe> getVoisins() {
 		return voisins;
 	}
+	
+	public Node getNode() {
+		return node;
+	}
+	
+	public void setNbVoisins() {
+		this.nbVoisins = MIN_VOISIN + random.nextInt(MAX_VOISIN - MIN_VOISIN) + 1;
+	}
 
+	public Integer getNbVoisins() {
+		return nbVoisins;
+	}
+	
 	//retourne le noeud courant
 	private Node getMyNode() {
 		return Network.get(this.nodeId);
@@ -109,14 +121,14 @@ public class Grippe implements EDProtocol {
 	public int getNodeId() {
 		return nodeId;
 	}
-
+	
 	public void initialierVoisin() {
 		try {
 			int nbNode = Network.size();
 			Set<Integer> setVoisins;
-			setVoisins = Utils.createSet(0, nbNode, MIN_VOISIN + random.nextInt(MAX_VOISIN - MIN_VOISIN) + 1);
+			setVoisins = Utils.createSet(0, nbNode, nbVoisins);//MIN_VOISIN + random.nextInt(MAX_VOISIN - MIN_VOISIN) + 1);
 			for(Integer i: setVoisins) {
-				this.voisins.add(Network.get(i));
+				this.voisins.add((Grippe)Network.get(i).getProtocol(pid));
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -133,8 +145,8 @@ public class Grippe implements EDProtocol {
 			if (random.nextDouble() < 0.25) {
 				synchronized (nbMalade) {nbMalade++;}
 				etat = MALADE;
-				for (Node dest: voisins) {
-					send(newMsg, dest);
+				for (Grippe dest: voisins) {
+					send(newMsg, dest.getNode());
 				}
 				newMsg = new Message(Message.MSG_GUERIR);
 				send(newMsg,node);
@@ -149,8 +161,8 @@ public class Grippe implements EDProtocol {
 			if (random.nextDouble() < 0.01) {
 				etat = MALADE;
 				synchronized (nbMalade) {nbMalade++;}
-				for (Node dest: voisins) {
-					send(newMsg, dest);
+				for (Grippe dest: voisins) {
+					send(newMsg, dest.getNode());
 				}
 				newMsg = new Message(Message.MSG_GUERIR);
 				send(newMsg,node);
