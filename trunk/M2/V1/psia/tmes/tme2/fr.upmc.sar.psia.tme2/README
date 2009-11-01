@@ -1,0 +1,38 @@
+##############################################################################
+#                                                                            #
+#                              Projet  PSIA:                                 #
+#                              -------------                                 #
+#                                                                            #
+#                                PeerSim                                     #
+#                                                                            #
+##############################################################################
+
+
+Auteur:
+=======
+   * ALAHYANE Rachid
+   * CHAOUKI  Monir
+
+Pre-requis:
+===========
+  * java-1.6.0-openjdk-1.6.0.0
+
+
+
+Présentation:
+=============
+
+
+Déploiement:
+============
+$ tar xzf XXX.tar.gz
+$ cd XXX
+$ make
+$ make run FILE=config_file.cfg
+
+
+
+
+
+Remarques:
+==========
