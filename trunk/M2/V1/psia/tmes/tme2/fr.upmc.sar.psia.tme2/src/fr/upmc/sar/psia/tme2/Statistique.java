@@ -69,14 +69,14 @@ public class Statistique {
 	 */
 	public void saveMoyMorts(){
 		for (int i = 0; i < nbJours; i++) {
-			saveNbMalades(i, (statMorts.get(i) / nbExperiences));
+			statMorts.set(i, (statMorts.get(i) / nbExperiences));
 		}
 	}
 	
 
 	public void saveMoyMalades(){
 		for (int i = 0; i < nbJours; i++) {
-			saveNbMalades(i, (statMalades.get(i) / nbExperiences));
+			statMalades.set(i, (statMalades.get(i) / nbExperiences));
 		}		
 	}
 	
