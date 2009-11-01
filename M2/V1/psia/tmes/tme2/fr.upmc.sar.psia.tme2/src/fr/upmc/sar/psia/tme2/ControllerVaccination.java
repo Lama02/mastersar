@@ -7,6 +7,8 @@ public class ControllerVaccination implements Control {
 
 	private Statistique statistique;
 	
+	private static int  cycle_moy = Configuration.getInt("CYCLES_MOY");
+
 	private static int   cptExpriences = 0;
 	private static int   cptJours      = 0;
 	private static int   nbExperiences = Configuration.getInt("simulation.experiments");
@@ -24,7 +26,7 @@ public class ControllerVaccination implements Control {
 		statistique.saveNbMalades(cptJours, Grippe.nbMalade);
 		statistique.saveNbMorts(cptJours, Grippe.nbMort);
 		cptJours++;
-		if (((cptExpriences %10 ) == 0) && (cptJours >= nbJours) ) {
+		if (((cptExpriences % cycle_moy ) == 0) && (cptJours >= nbJours) ) {
 			// on calcule la moyennes des malades par jour
 			statistique.saveMoyMalades();
 			// on calcule la moyennes des morts par jour
@@ -45,10 +47,6 @@ public class ControllerVaccination implements Control {
 					// si on est arrive a la derniere iteration 
 					statistique.writeStatVaccinations();
 				}
-			}else{
-				// le mode vaccination n'est pas active
-				// on sauvegarde les stats dans le fichier
-				statistique.writeStat();
 			}
 			
 		}
