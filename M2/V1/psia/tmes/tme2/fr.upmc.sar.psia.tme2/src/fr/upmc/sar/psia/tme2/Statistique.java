@@ -12,7 +12,6 @@ public class Statistique {
 	private static Statistique instance;
 	
 	public static double taux_vacc = 0.0;
-	
 	private BufferedWriter outMo;
 	private BufferedWriter outMa;
 
@@ -29,6 +28,10 @@ public class Statistique {
 
 	private Statistique() {}
 
+	/**
+	 * singleton 
+	 * @return L'instance de la classe Statistique
+	 */
 	public final synchronized static Statistique getInstance() {
 		if (instance == null) {
 			instance = new Statistique();
@@ -39,33 +42,58 @@ public class Statistique {
 		}
 		return instance;
 	}
-	
+
+	/**
+	 * Initialiser la liste contenant le nombre de 
+	 * morts/malades par unité de temps (par jour par exemple)
+	 */
 	public void init(){
 		for(int i = 0; i < nbJours; i++) {
 			statMalades.set(i, 0.0);
 			statMorts.set(i, 0.0);
 		}
 	}
-
+	
+	
+	/**
+	 * Mise à jour de la liste contenant le nombre de malades 
+	 * par jour
+	 * @param day le numéro du jour (0..365)
+	 * @param nbMalades Nombre de malades 
+	 */
 	public void saveNbMalades(int day, Double nbMalades){
 		statMalades.set(day, nbMalades + statMalades.get(day));
 	}
 
+	/**
+	 * Mise à jour de la liste contenant le nombre de morts 
+	 * @param day le numéro du jour (0..365)
+	 * @param nbMorts Nombre de morts
+	 */
 	public void saveNbMorts(int day, Double nbMorts){
 		statMorts.set(day, nbMorts + statMorts.get(day));
 	}
 	
+	/**
+	 * Ajoute le nombre maximum de malades contaminés 
+	 * à la liste statMaxMalades
+	 */
 	public void saveMaxMalades() {
 		statMaxMalades.add(Utils.getMax(statMalades));
 	}
 
+	/**
+	 * Ajoute le nombre maximum de morts à la liste
+	 * statMaxMorts 
+	 */
 	public void saveMaxMorts() {
 		statMaxMorts.add(Utils.getMax(statMorts));
 	}
 
 	
 	/**
-	 * Calculer la moyenne 
+	 * Calculer la moyenne des morts à une date
+	 * précise 
 	 */
 	public void saveMoyMorts(){
 		for (int i = 0; i < nbJours; i++) {
@@ -73,21 +101,30 @@ public class Statistique {
 		}
 	}
 	
-
+	
+	/**
+	 * Sauvegarder la moyenne des malades à une date précise 
+	 * dans la liste statMalades
+	 */
 	public void saveMoyMalades(){
 		for (int i = 0; i < nbJours; i++) {
 			statMalades.set(i, (statMalades.get(i) / nbExperiences));
 		}		
 	}
 	
+	
+	/**
+	 * Ecriture des statistiques dans des fichiers sur 
+	 * le FS.
+	 * Ceci concerne la partie dans laquelle aucun 
+	 * individu n'est vacciné
+	 */
 	public void writeStat() {
-		try {
-
+		try {			
 			outMo = new BufferedWriter(new FileWriter("./statistiqueMo.txt"));
 			outMo.close();
 			outMa = new BufferedWriter(new FileWriter("./statistiqueMa.txt"));
-			outMa.close();
-			
+			outMa.close();			
 			outMo = new BufferedWriter(new FileWriter("./statistiqueMo.txt",true));
 			outMa = new BufferedWriter(new FileWriter("./statistiqueMa.txt",true));
 			for (int i = 0; i < nbJours; i++) {
@@ -104,6 +141,12 @@ public class Statistique {
 		}
 	}
 
+	/**
+	 * Ecriture des statistiques dans des fichiers sur 
+	 * le FS.
+	 * Ceci concerne la partie où des individus
+	 * sont vaccinés
+	 */	
 	public void writeStatVaccinations() {
 		try {
 
