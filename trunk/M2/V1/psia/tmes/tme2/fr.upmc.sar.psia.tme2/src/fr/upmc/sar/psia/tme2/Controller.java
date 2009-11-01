@@ -13,6 +13,7 @@ public class Controller implements Control {
 	private static int            step = Configuration.getInt("control.monmodule.step");
 	private static int         nbJours = (Configuration.getInt("simulation.endtime") + 1) / step; // A Verifier pas tjs vrai
 
+	
 	public Controller(String prefix) {
 		statistique = Statistique.getInstance();
 		cptExpriences++;
