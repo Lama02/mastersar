@@ -11,4 +11,5 @@ run:
 	java -classpath $(CLASSPATH) peersim/Simulator $(FILE)
 
 clean:
-	rm -f `find -name "*.class"`
+	rm -f `find . -name "*.class"`
+	rm -fr bin

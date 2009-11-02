@@ -18,11 +18,6 @@ Pre-requis:
   * java-1.6.0-openjdk-1.6.0.0
 
 
-
-Présentation:
-=============
-
-
 Déploiement:
 ============
 $ tar xzf XXX.tar.gz
@@ -31,8 +26,6 @@ $ make
 $ make run FILE=config_file.cfg
 
 
-
-
-
-Remarques:
-==========
+Remarques :
+===========
+Pour plus d'informations sur le projet, lire le document rapport.pdf.
