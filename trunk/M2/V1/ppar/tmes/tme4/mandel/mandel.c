@@ -222,12 +222,15 @@ int main(int argc, char *argv[]) {
   }
   
   /* Traitement de la grille point par point */
-  for ( y = ymin, i = 0; i < h; y += yinc, i++) {	
+  y = ymin;
+#pragma omp parallel for private(x,j,y) shared(pgrid) ordered schedule (runtime)
+  for ( i = 0; i < h;  i++) {	
     for ( x = xmin, j = 0; j < w; x += xinc, j++) {
       // printf("%d\n", xy2color( x, y, prof));
       // printf("(x,y)=(%g;%g)\t (i,j)=(%d,%d)\n", x, y, i, j);
       *pgrid++ = xy2color( x, y, prof); 
     }
+    y += yinc;
   }
   
   /* Sauvegarde de la grille dans le fichier resultat "mandel.ras" */
