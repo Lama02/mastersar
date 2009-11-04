@@ -1,7 +1,6 @@
 /* Programme de multiplication de deux matrices carrees  */
 /* dans le main vous trouverez deux jeux de test. */
 
-
 #include<stdio.h>
 #include <stdlib.h>
 
