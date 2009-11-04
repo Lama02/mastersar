@@ -253,6 +253,7 @@ int convolution( filtre_t choix, unsigned char tab[],int nbl,int nbc) {
   }
   
   /* on laisse tomber les bords */
+#pragma omp parallele for private(j) shared (tmp)
   for(i=1 ; i<nbl-1 ; i++){
     for(j=1 ; j<nbc-1 ; j++){
       tmp[i*nbc+j] = filtre(
@@ -322,6 +323,7 @@ int main(int argc, char *argv[]) {
   w = r.ras.ras_width;
     
   /* La convolution a proprement parler */
+
   for(i=0 ; i < nbiter ; i++){
     convolution( filtre, r.data, h, w);
   } /* for i */
