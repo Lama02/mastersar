@@ -21,7 +21,7 @@ void matmul(int n, double *a, double *b, double *c)
 {
   int i,j,k;
   double s;
-
+#pragma omp parallel for private(j,s,k) shared(c) ordered schedule(runtime)
   for(i=0; i<n ; i++){
     for(j=0; j<n ; j++){
       s=0;
@@ -30,6 +30,16 @@ void matmul(int n, double *a, double *b, double *c)
       c[i*n+j]=s;
     }
   }
+  /*utiliser critical ou atomùique*/
+  /*code original*/
+  /*for(i=0; i<n ; i++){
+    for(j=0; j<n ; j++){
+      s=0;
+      for(k=0; k<n ; k++)
+	s+=a[i*n+k]*b[k*n+j];
+      c[i*n+j]=s;
+    }
+    }*/
 }
 
 
@@ -95,19 +105,19 @@ int main()
 
 
   /* affichage du premier carre 2x2 de la matrice c*/
-  for(i=0; i<2 ; i++){
+  /*for(i=0; i<2 ; i++){
     for(j=0; j<2 ; j++)
       printf("%+e  ",c[i*n+j]);
     printf("\n");
   }
-  printf("\n");
+  printf("\n");*/
   /* affichage du dernier carre 2x2 de la matrice c*/
-  for(i=n-2; i<n ; i++){
+  /*  for(i=n-2; i<n ; i++){
     for(j=n-2; j<n ; j++)
       printf("%+e  ",c[i*n+j]);
     printf("\n");
   }
-
+  */
   printf("\nTemps de calcul : %gs\n", t_stop - t_start);
 }
  
