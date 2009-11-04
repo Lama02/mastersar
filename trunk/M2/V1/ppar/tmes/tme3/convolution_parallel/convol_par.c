@@ -393,7 +393,7 @@ int main(int argc, char *argv[]) {
   printf(" [DEBUG] malloc ....\n");
   /* 
    * allocation du buffer qui contiendra les pixels 
-   * necessaire pour le calcul de la convolution 
+   * necessaires pour le calcul de la convolution 
    * sur le bloc recu
    */
   tmp = (unsigned char*) malloc(sizeof(unsigned char) *lh*w);
@@ -413,20 +413,20 @@ int main(int argc, char *argv[]) {
      * debut de leur buffer
      */
     MPI_Scatter(r.data, 
-		l,
+		l*w,
 		MPI_UNSIGNED_CHAR,
 		tmp+w,              /* on saute la premiere ligne */
-		l,
+		l*w,
 		MPI_UNSIGNED_CHAR,
 		0,
 		MPI_COMM_WORLD);
   }else{
     /* le premier precess met le bloc recu au debut de son buffer */
     MPI_Scatter(r.data, 
-		l,
+		l*w,
 		MPI_UNSIGNED_CHAR,
 		tmp,               /* on met au debut du buffer */
-		l,
+		l*w,
 		MPI_UNSIGNED_CHAR,
 		0,
 		MPI_COMM_WORLD);
@@ -548,19 +548,19 @@ int main(int argc, char *argv[]) {
    */ 
   if(my_rank == 0){
     MPI_Gather(tmp,
-	       l,
+	       l*w,
 	       MPI_UNSIGNED_CHAR,
 	       r.data,
-	       l,
+	       l*w,
 	       MPI_UNSIGNED_CHAR,
 	       0,
 	       MPI_COMM_WORLD);    
   }else{
     MPI_Gather(tmp+w,
-	       l,
+	       l*w,
 	       MPI_UNSIGNED_CHAR,
 	       r.data,
-	       l,
+	       l*w,
 	       MPI_UNSIGNED_CHAR,
 	       0,
 	       MPI_COMM_WORLD);

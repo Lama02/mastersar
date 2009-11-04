@@ -13,7 +13,7 @@ all: $(BIN)
 	$(CC) $(CFLAGS) -o $(BIN) $<
 
 run: $(BIN)
-	$(RUN) $(RUN_FLAGS) $(NB_PROCESS) $< femme10.ras 2  3
+	$(RUN) $(RUN_FLAGS) $(NB_PROCESS) $< femme10.ras 2  100
 
 clean:
 	rm -f $(BIN) *~ post-convolution_filtre*
