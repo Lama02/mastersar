@@ -1,0 +1,48 @@
+\documentclass[12pt,a4paper,titlepage]{report}
+\usepackage[utf8]{inputenc}     % accents dans la source
+\usepackage[T1]{fontenc}        % nouvelle norme latex
+\usepackage[normalem]{ulem}     % 
+\usepackage[french]{babel}      % supporter le français
+\usepackage{verbatim}           % coder en VERBATIM
+\usepackage{moreverb}                   % coder en VERBATIM
+\usepackage[pdftex]{graphicx, color}
+\graphicspath{{figs/}}
+\DeclareGraphicsExtensions{.jpg,.png}
+\usepackage{url}                %
+\usepackage{float}
+\usepackage{hyperref}           % utiliser les liens hypertextes
+\usepackage{color}              % utiliser les couleur 
+\usepackage{pifont}             % des symboles et des figures
+\usepackage{fancybox}           % carrés 
+\usepackage[a4paper,
+  rmargin=2cm,
+  lmargin=2cm,
+  tmargin=2cm,
+  bmargin=2cm]{geometry}  % mise en page 
+\usepackage{listings}           % du code dans latex
+\usepackage{fancyhdr}
+\usepackage{bibunits}
+
+
+
+\begin{document}
+\include{templates/title-template}
+\lhead{PPAR 2009}
+\rhead{Probleme des N-corps}
+\renewcommand\headrulewidth{2pt}
+
+\newpage
+\pagestyle{empty}
+\tableofcontents
+
+\newpage
+\chapter{Contexte et objectifs}
+\thispagestyle{fancy}
+\input{chapter_1/contextEtObjectifs}
+
+
+
+
+
+
+\end{document}
