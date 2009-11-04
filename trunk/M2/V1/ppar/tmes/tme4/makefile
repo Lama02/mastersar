@@ -1,6 +1,7 @@
 all: $(BIN)
 BIN=matmul
 
+
 mandel: mandel/mandel.c
 	gcc -fopenmp $< -o $@
 
