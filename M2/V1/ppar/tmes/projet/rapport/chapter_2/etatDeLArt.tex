@@ -1,1 +1,30 @@
-mqojsghvqfsobhv
+\par Comme nous allons parllèliser un code sequentiel existant,
+nous sommes dépendant du langage de ce code. Le code source fourni 
+étant du C, naturellement nous nous dirigerons vers une solution 
+de parallélisation MPI, que nous avons eu l'occasion de prendre 
+en main dans le cadre de ce module. Cependant reste le choix de la 
+version MPI que nous utiliserons.\\
+\par La version 1.3 nous fournissait une API permettant d'abstraire 
+l'architecture des noeuds et de communiquer avec eux facilement. C'est
+celle que nous avons utilisé en tp.\\
+\par La version 2.x effectue les mêmes operations que la version 1.3,
+mais permet de gérer un pool de threads et d'effectuer des communications
+unilatérales.\\
+\par Afin de paralléliser le code sur chaque noeud en utilisant des threads,
+deux choix s'offre a nous.
+Utiliser l'API POSIX ou l'API  OpenMP.\\
+La première est complètement gérer à partir de MPI-2.x mais nous serons sans doute
+obligé d'utiliser des verrous pour l'accès au donner partager par les threads.
+Alors que la seconde nous abstrait de ce genre de considérations, en permettant 
+des declarations de variable privées, visible uniquement du thread dans lequel elle
+est déclarée, ou publique visible de tout les threads.\\
+
+\par Nous utiliserons donc l'API OpenMP.\\
+
+\par Le $"cluster$" que nous utiliserons pour effectuer nos testes 
+est homogène, chaque machine a les mêmes processeurs, la même 
+quantité de mémoire, et les temps de communications seront sensiblement 
+les mêmes entre chaque noeud. De plus comme nous comptons recouvrir les temps de communications
+par le calcul et que nous allons utilisé l'API OpenMP  pour créer des
+threads nous n'utiliserons pas les nouvelles fonctionnalités offertes
+par MPI-2.x. Nous utiliserons donc la version 1.3 de MPI.\\
