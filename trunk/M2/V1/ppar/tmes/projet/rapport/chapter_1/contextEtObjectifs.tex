@@ -4,15 +4,15 @@ du Master 2 systèmes et applications réparties (SAR), nous devons réaliser
 la parallèlisation d'un programme permettant de modéliser la dynamique des galaxies.
 Ce problème d'astrophysique appelé aussi le problème des N-corps consiste à 
 simuler les interactions dans un espace en 3 dimensions de N corps les uns avec
-les autres.
-\par Dans un premier temps nous allons parallèliser le code sequentielle de manière 
+les autres.\\
+\par Dans un premier temps nous allons parallèliser le code sequentiel de manière 
 à le rendre exécutable sur un petit cluster de machine de l'ARI. Pour cela nous 
 utiliserons la bibliothèque MPI qui permet facilement de répartir les calcules sur 
 plusieurs machine. Pour cela nous définirons le stokage en memoire, l'architecture des
 communications entre chaques machines ; nous recouvrirons également les temps de 
-communication par le calcul, et nous rendrons les communications persistante.
+communication par le calcul, et nous rendrons les communications persistante.\\
 \par Une fois cela effectué nous utiliserons le faite que chaques noeuds (machines)
 possède un processeur multi-coeur, nous mettrons en place une parellèlisation hybride
-multi-processus/multi-threads en utilisant l'API OpenMP.
+multi-processus/multi-threads en utilisant l'API OpenMP.\\
 \par Une fois ceci effectué, une étude comparative des performances sera fournie,
-developpant et expliquant les différents resultats des performances obtenues.
+developpant et expliquant les différents resultats des performances obtenues.\\
