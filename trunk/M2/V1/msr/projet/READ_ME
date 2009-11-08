@@ -1,0 +1,13 @@
+Vous trouverez dans le répertoire MSR-env-projet:
+
+   (a)  le sujet au format pdf
+   (b)  les fichiers latex et eps pour rédiger un rapport (si vous le faites avec Latex)
+
+Pour compiler un rapport "vide" (le modèle que vous devez remplir), entrez dans le
+répertoire MSR-env-projet et tapez "make".
+
+"make clean" nettoie les fichiers générés par Latex
+
+"make superclean" nettoie également le rapport au format pdf.
+
+Bon travail!
