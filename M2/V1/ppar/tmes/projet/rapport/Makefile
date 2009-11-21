@@ -26,7 +26,7 @@ clean:
 	$(LATEX) $*.tex 
 	$(LATEX) $*.tex 
 	$(LATEX) $*.tex
-	rm *.out *.log *.toc *~ *.aux *.blg
+	@rm -f *.out *.log *.toc *~ *.aux *.blg
 
 
 %.ps : %.dvi
