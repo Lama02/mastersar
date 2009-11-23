@@ -56,6 +56,7 @@
 
 #ifdef _BODIES_SPLIT_DATA_
 
+
 void 
 bodies_Compute_own_interaction(bodies_t *FMB_RESTRICT p_b){
 
