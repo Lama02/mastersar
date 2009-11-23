@@ -2,13 +2,14 @@
 /* #include <stdlib.h> */
 /* #include <string.h> */
 #include <sys/stat.h>
+#include <mpi.h>
 
 #include "direct_method.h"
 #include "IO.h" 
 
 
 /* For FMB_Info.save: */
-#define RESULTS_DIR "/tmp/NBODY_direct_results_LOGINS/"
+#define RESULTS_DIR "/tmp/NBODY_direct_results_Rachid_et_cote/"
 #define RESULTS_FILE "results_"
 
 
@@ -55,6 +56,14 @@ int main(int argc, char **argv){
   double t_start = 0.0, t_end = 0.0;
 
 
+  /*variables MPI*/
+  MPI_Status status;
+  int rank;
+  int p;
+  int source;
+  int dest;
+  int tag = 0;
+
   /********************************* Options on command line: ***************************************/
   f_output = stdout; /* by default */
   parse_command(argc, argv, &data_file, &results_file);
@@ -79,8 +88,6 @@ int main(int argc, char **argv){
 
 
 
-
-
   /***************************** Bodies'positions and masses initialization: ****************/
   Direct_method_Data(data_file);
 
@@ -93,7 +100,12 @@ int main(int argc, char **argv){
 
 
 
+  /*initialisation MPI*/
+  MPI_Init (&argc, &argv);
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_size(MPI_COMM_WORLD,&p);
 
+  /*par ici on va envoyer les data a tout les process*/
 
 
 
@@ -213,7 +225,7 @@ int main(int argc, char **argv){
 
   Direct_method_Terminate();
 
-
+  MPI_Finalize();
   /********************** Close FILE* and free memory before exiting: ***********************/
   if (argc == 3)
     if (fclose(f_output) == EOF)

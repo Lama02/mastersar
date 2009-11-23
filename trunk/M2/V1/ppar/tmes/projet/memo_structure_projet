@@ -1,0 +1,189 @@
+typedef struct {
+  position_t position;
+  VALUES_T v; /* mass or charge of the body */
+  position_t force_vector;
+  position_t speed_vector;
+} body_t;
+
+/* The position fields are stored as an array 
+ * so that they are contiguous in memory: 
+ * this MIGHT be necessary for the direct computation with BLAS, 
+ * but this MIGHT be slower for the direct computation without BLAS!
+ * We therefore let the two possibilities ...  
+ *
+ * After testing: the position fields stored as arrays are not slower 
+ * for the direct computation without BLAS! */
+#ifdef _POSITION_T_STORED_WITH_ARRAY_ 
+#define POS_X 0
+#define POS_Y 1
+#define POS_Z 2
+typedef struct {
+  COORDINATES_T dat[3];
+} position_t;
+
+#else /* #ifdef _POSITION_T_STORED_WITH_ARRAY_ */
+
+typedef struct {
+  COORDINATES_T x;
+  COORDINATES_T y;
+  COORDINATES_T z;
+} position_t;
+
+#endif /* #ifdef _POSITION_T_STORED_WITH_ARRAY_ */
+
+
+/*! For the spherical coordinates we use the "physical" notation \n
+  for theta and phi. That is to say that phi is the longitudinal
+  coordinate whereas theta is the colatitudinal coordinate
+  (the colatitudinal coordinate "starts" from the z-axis 
+  whereas the latitudinal coordinate "starts" from the x-y plan 
+  (i.e. the equator for the earth). */
+typedef struct { /* (r, theta, phi) */
+  COORDINATES_T r;
+  COORDINATES_T th; /* for "theta": theta is in the range [0, Pi] */
+  COORDINATES_T ph; /* for "phi": phi is in the range ]-Pi, Pi] */
+} spherical_position_t;
+
+/* Size of 1 body = 88 bytes */
+typedef struct {
+  bodies_ind_t nb_bodies;
+  bodies_ind_t size_allocated;  /* WARNING: we use here the bit #BODIES_P2P_BIT_NB 
+				 * for P2P operations! */
+
+/*   thread_ind_t thread_owner; /\* for debugging only *\/ */
+  body_t *p_bodies;
+} body_array_t;
+
+typedef struct {
+  bodies_ind_t counter; /* At the beginning counter equals nb_bodies-2, 
+			 * and when counter equals -1 the iterator's current body 
+			 * is the last body of the arrays. */
+  body_array_t *p_corresponding_body_array; /* for 'body_array_it_Remove_current()' */
+  body_t *p_current_body;
+} body_array_it_t;
+
+
+
+/*! This structure is used to store (retrieve, update ...) the fields of the bodies \n
+  in each cell. Each field of a body is stored in a dedicated array. */
+typedef struct {
+  bodies_ind_t nb_bodies;
+  bodies_ind_t size_allocated;  /* WARNING: we use here the bit #BODIES_P2P_BIT_NB 
+				 * for P2P operations! */
+  /* Positions: */
+  COORDINATES_T *p_pos_x;
+  COORDINATES_T *p_pos_y;
+  COORDINATES_T *p_pos_z; 
+
+  /* Values: */
+  VALUES_T *p_values;
+
+  /* Force vectors: */
+  COORDINATES_T *p_fx;
+  COORDINATES_T *p_fy;
+  COORDINATES_T *p_fz;
+
+  /* Speed vectors: */
+  position_t *p_speed_vectors;
+
+} body_split_array_t;
+
+
+
+typedef struct {
+  bodies_ind_t counter; /* At the beginning counter equals nb_bodies-2, 
+			 * and when counter equals -1 the iterator's current body 
+			 * is the last body of the arrays. */
+  body_split_array_t *p_corresponding_body_split_array; /* for 'body_split_array_it_Remove_current()' */
+  /* A pointer on the current position in each array 
+   * (i.e. a pointer for each field of the current body): */
+  COORDINATES_T *p_current_pos_x;
+  COORDINATES_T *p_current_pos_y;
+  COORDINATES_T *p_current_pos_z;
+
+  VALUES_T *p_current_value;
+  COORDINATES_T *p_current_fx;
+  COORDINATES_T *p_current_fy;
+  COORDINATES_T *p_current_fz;
+  position_t *p_current_speed_vector;
+} body_split_array_it_t;
+
+/* Supported file formats: */
+typedef enum FMB_IO_format_t {
+  FMB_ASCII_format /* default */, 
+  FMB_ASCII_human_format /*like 'FMB_ASCII_format' but "human readable",
+			  * only for 'output_format' (not for 'input_format') */,  
+  FMB_binary_format, 
+  NEMO_format
+} FMB_IO_format_t;
+
+
+typedef struct FMB_IO_Info_t {
+
+  /*** 'info_display_level': ***/
+  /* 0 : no information displayed
+   * 1 : essential information displayed (i.e. no display of data, but display of the main steps, CPU times) 
+   * 2 : more information displayed (octree structure, info about parallelism : these information cost CPU time to be displayed)
+   * 3 : maximum information displayed */
+  int info_display_level;
+
+  /* input/output filenames: */
+  char *input_data_filename;
+  char *output_data_filename;
+
+  /* input/output file formats: */
+  FMB_IO_format_t input_format;
+  FMB_IO_format_t output_format;
+  bool input_format_from_cmd_line;
+  bool output_format_from_cmd_line;
+  
+  /* input/output streams: */
+  FILE *f_input_data;
+  FILE *f_output_data;
+
+  /* input/output streams: */
+  bool input_data_currently_used;
+  bool output_data_currently_used;
+
+  /* data files compression: */
+  bool are_input_data_bzipped2; 
+  bool are_output_data_bzipped2; 
+  bool are_input_data_gzipped; 
+  bool are_output_data_gzipped; 
+
+  /* input/output streams for gzipped files: */
+  gzFile f_input_gz_data;
+  gzFile f_output_gz_data;
+
+  /* buffer for gzipped file reading: */
+  char *gz_input_buf;
+  long gz_input_buf_len;
+
+  /* input/output secondary/tertiary streams for NEMO format: */
+  FILE *f_input_data2;
+  FILE *f_input_data3;
+  FILE *f_output_data2;
+  FILE *f_output_data3;
+  bool use_PhaseSpace_in_input; /* if TRUE: we use 'PhaseSpace', 
+				 * otherwise, we use 'Position' and 'Velocity'  
+				 * (only for NEMO format) */
+  bool use_PhaseSpace_in_output; /* same as 'use_PhaseSpace_in_output' but for writing */
+  bool is_Velocity_present_in_input; /* only for NEMO format */
+  bool is_Velocity_present_in_output; /* only for NEMO format */
+  bool is_input_coord_float; /* if TRUE: we use 'float' (single precision) for 'PhaseSpace' (or 'Position' and 'Velocity), 
+			      * otherwise, we use 'double' (double precision)   
+			      * (only for NEMO format) */
+  bool is_output_coord_float; /* same as 'is_input_coord_float' but for writing */
+  FILE *f_input_data_forces;
+
+  /* for FMB binary format: */
+  unsigned long FMB_binary_format_header;
+  
+
+  /* with/without decomposed data files: */
+  bool dump_proc_decomposition;
+  bool use_decomposed_data_files; 
+  bool proc_decomposition_with_empty_or_not; /* If FALSE we use "with_nb_particles". 
+					      * Default is: "with_nb_particles". */
+
+} FMB_IO_Info_t;

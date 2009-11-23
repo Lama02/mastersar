@@ -27,7 +27,7 @@ clean:
 	$(LATEX) $*.tex 
 	$(LATEX) $*.tex
 	@rm -f *.out *.log *.toc *~ *.aux *.blg
-
+	mv rapport.pdf rapport_PPAR_Alahyane_castellanos.pdf
 
 %.ps : %.dvi
 	$(DVIPS) $*.dvi -o $*.ps
