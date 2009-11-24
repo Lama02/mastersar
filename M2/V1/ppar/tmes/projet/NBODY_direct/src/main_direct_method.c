@@ -36,8 +36,8 @@ int parse_command(int argc,
 
    MAIN 
 
-**********************************************************************************************
-*********************************************************************************************/
+   **********************************************************************************************
+   *********************************************************************************************/
 
 int main(int argc, char **argv){
 
@@ -59,17 +59,17 @@ int main(int argc, char **argv){
   /*variables MPI*/
 
   
-    MPI_Status status;
-    int rank = 0;
-    int p = 0;
-    int source = 0;
-    int dest = 0;
-    int tag = 0;
+  MPI_Status status;
+  int rank = 0;
+  int p = 0;
+  int source = 0;
+  int dest = 0;
+  int tag = 0;
   
   /*variable de parallèlisation*/
   
-    bodies_t local_bodies;
-
+  bodies_t local_bodies;
+  REAL_T dt;
 
   /********************************* Options on command line: ***************************************/
   f_output = stdout; /* by default */
@@ -81,7 +81,7 @@ int main(int argc, char **argv){
   /******************************** Files and FILE* : ***************************************/
   if (INFO_DISPLAY(1)){
     fprintf(f_output, 
-	  "*** Compute own interactions of the box defined in \"%s\" ***.\n", 
+	    "*** Compute own interactions of the box defined in \"%s\" ***.\n", 
 	    data_file);
   }
 
@@ -185,7 +185,7 @@ int main(int argc, char **argv){
 		0,
 		MPI_COMM_WORLD);
     
-     MPI_Scatter(bodies.p_speed_vectors,
+    MPI_Scatter(bodies.p_speed_vectors,
 		bodies.size_allocated,
 		MPI_UNSIGNED_CHAR,
 		local_bodies.p_speed_vectors,
@@ -194,29 +194,41 @@ int main(int argc, char **argv){
 		0,
 		MPI_COMM_WORLD);
 
-     local_bodies.nb_bodies = local_bodies.size_allocated;
-		
-    printf("\n\n \t\t\t\t\t\t ****size allocated %ld, nb bodies %ld****\n\n\n",local_bodies.size_allocated,local_bodies.nb_bodies);
-    
+    local_bodies.nb_bodies = local_bodies.size_allocated;
 
+    
+    MPI_Bcast(&tend,
+	      1,
+	      MPI_FLOAT,
+	      0,
+	      MPI_COMM_WORLD);
+
+    dt = FMB_Info.dt;
+
+    MPI_Bcast(&dt,
+	      1,
+	      MPI_FLOAT,
+	      0,
+	      MPI_COMM_WORLD);
+       
+    printf("\n\n \t\t\t\t\t\t ****size allocated %ld, nb bodies %ld****\n\n\n",local_bodies.size_allocated,local_bodies.nb_bodies);        
   }
 
-
+  
   /******************************************************************************************/
   /********************************** Start of the simulation: ******************************/
   /******************************************************************************************/
-
-  while ( tnow-FMB_Info.dt < tend ) { 
-
-/********************* Direct method computation: ************************************/
-/*********************Direct metho Move : K-D-K **************************************/ 
+  while ( tnow-dt < tend ) { 
+    
+    /********************* Direct method computation: ************************************/
+    /*********************Direct metho Move : K-D-K **************************************/ 
     if(tnow!=0) {
 
       KnD_Direct_method_Move(FMB_Info.dt ); 
       
     
-  /***** Clear the forces and the potential of the bodies for the next time step: ********/
-    bodies_ClearFP(&bodies);
+      /***** Clear the forces and the potential of the bodies for the next time step: ********/
+      bodies_ClearFP(&bodies);
     }
 
     /* Start timer: */
@@ -238,7 +250,7 @@ int main(int argc, char **argv){
       unsigned long long nb_int = NB_OWN_INT(bodies_Nb_bodies(&bodies));
        
       fprintf(f_output, "\n#######################################################################\n");
-      fprintf(f_output, "Time now ( Step number) : %lf (%ld) \n",tnow,nb_steps );
+      fprintf(f_output, "Time now ( Step number) : %lf (%ld) process num : %d\n",tnow,nb_steps,rank );
       fprintf(f_output, "Computation time = %f seconds\n", t_end - t_start);
 
       fprintf(f_output, "Interactions computed: %llu\n", nb_int);
@@ -252,7 +264,7 @@ int main(int argc, char **argv){
 
 
     /************************* Save the positions and the forces: ***************************/
-    if (FMB_Info.save){
+    if (FMB_Info.save && rank == 0){
       
       if (results_file == NULL){
 	/* The 'results' filename has not been set yet: */
@@ -305,11 +317,13 @@ int main(int argc, char **argv){
 
 
 
-    tnow+=FMB_Info.dt ; 
+    tnow+=dt ; 
     nb_steps ++ ; 
 
   }  /* while ( tnow-FMB_Info.dt <= tend )  */
-
+       
+    
+    
   /******************************************************************************************/
   /********************************** End of the simulation: ********************************/
   /******************************************************************************************/
@@ -348,8 +362,8 @@ int main(int argc, char **argv){
 
    usage
 
-**********************************************************************************************
-*********************************************************************************************/
+   **********************************************************************************************
+   *********************************************************************************************/
 
 void usage(){
   char mes[300] = "";
@@ -363,7 +377,7 @@ void usage(){
 
 
   fprintf(stderr, "\nDescription of the short options:\n"); 
-/*   fprintf(stderr, "\t -v \t\t\t Display the version.\n"); */
+  /*   fprintf(stderr, "\t -v \t\t\t Display the version.\n"); */
   fprintf(stderr, "\t -h \t\t\t Display this message.\n"); 
   fprintf(stderr, "\t -i 'level' \t\t Info display level (0, 1 or 2).\n");
   fprintf(stderr, "\t -o 'output_filename' \t Otherwise stdout.\n");
@@ -404,8 +418,8 @@ void usage(){
 
    parse_command
 
-**********************************************************************************************
-*********************************************************************************************/
+   **********************************************************************************************
+   *********************************************************************************************/
 
 
 /* Long option codes for 'val' field of struct option. 
@@ -437,43 +451,43 @@ int parse_command(int argc,
 
   
   struct option longopts[] = {
-			      {"soft",
-			       required_argument,
-			       NULL, 
-			       LONGOPT_CODE_SOFT},
-			      {"dt",
-			       required_argument,
-			       NULL, 
-			       LONGOPT_CODE_DT},
-			      {"tend",
-			       required_argument,
-			       NULL, 
-			       LONGOPT_CODE_TEND},
-			      {"save",
-			       no_argument,
-                               NULL,
-			       LONGOPT_CODE_SAVE},
-			      {"sum",
-			       no_argument,
-			       NULL, 
-			       LONGOPT_CODE_SUM},
-			      {"it",
-			       required_argument,
-			       NULL, 
-			       LONGOPT_CODE_IT},
-			      {"ot",
-			       required_argument,
-			       NULL, 
-			       LONGOPT_CODE_OT},
-			      {"in",
-			       required_argument,
-			       NULL, 
-			       LONGOPT_CODE_IN},
-			      {"out",
-			       required_argument,
-			       NULL, 
-			       LONGOPT_CODE_OUT},
- 			      {0}}; /* last element of the array  */
+    {"soft",
+     required_argument,
+     NULL, 
+     LONGOPT_CODE_SOFT},
+    {"dt",
+     required_argument,
+     NULL, 
+     LONGOPT_CODE_DT},
+    {"tend",
+     required_argument,
+     NULL, 
+     LONGOPT_CODE_TEND},
+    {"save",
+     no_argument,
+     NULL,
+     LONGOPT_CODE_SAVE},
+    {"sum",
+     no_argument,
+     NULL, 
+     LONGOPT_CODE_SUM},
+    {"it",
+     required_argument,
+     NULL, 
+     LONGOPT_CODE_IT},
+    {"ot",
+     required_argument,
+     NULL, 
+     LONGOPT_CODE_OT},
+    {"in",
+     required_argument,
+     NULL, 
+     LONGOPT_CODE_IN},
+    {"out",
+     required_argument,
+     NULL, 
+     LONGOPT_CODE_OUT},
+    {0}}; /* last element of the array  */
   
 
   
