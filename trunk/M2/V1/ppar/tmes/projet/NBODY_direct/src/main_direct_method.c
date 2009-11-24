@@ -57,12 +57,19 @@ int main(int argc, char **argv){
 
 
   /*variables MPI*/
-  MPI_Status status;
-  int rank;
-  int p;
-  int source;
-  int dest;
-  int tag = 0;
+
+  
+    MPI_Status status;
+    int rank = 0;
+    int p = 0;
+    int source = 0;
+    int dest = 0;
+    int tag = 0;
+  
+  /*variable de parallèlisation*/
+  
+    bodies_t local_bodies;
+
 
   /********************************* Options on command line: ***************************************/
   f_output = stdout; /* by default */
@@ -104,10 +111,95 @@ int main(int argc, char **argv){
   MPI_Init (&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   MPI_Comm_size(MPI_COMM_WORLD,&p);
+  
+  /*initialisation des variables des process*/
+  bodies_Initialize(&local_bodies,bodies.size_allocated/p);
 
-  /*par ici on va envoyer les data a tout les process*/
+  /*par ici on va envoyer les data à tout les process*/
+  {
+    if (rank==0)
+      printf("\n\n \t\t\t\t\t\t ****size allocated %ld, nb bodies %ld****\n\n\n",bodies.size_allocated,bodies.nb_bodies);
+    
+    MPI_Scatter(bodies.p_pos_x,
+		bodies.size_allocated,
+		MPI_LONG,
+		local_bodies.p_pos_x,
+		bodies.size_allocated,
+		MPI_LONG,
+		0,
+		MPI_COMM_WORLD);
+		
+    MPI_Scatter(bodies.p_pos_y,
+		bodies.size_allocated,
+		MPI_LONG,
+		local_bodies.p_pos_y,
+		bodies.size_allocated,
+		MPI_LONG,
+		0,
+		MPI_COMM_WORLD);
+    
+    MPI_Scatter(bodies.p_pos_z,
+		bodies.size_allocated,
+		MPI_LONG,
+		local_bodies.p_pos_z,
+		bodies.size_allocated,
+		MPI_LONG,
+		0,
+		MPI_COMM_WORLD);
+    
+
+    MPI_Scatter(bodies.p_fx,
+		bodies.size_allocated,
+		MPI_LONG,
+		local_bodies.p_fx,
+		bodies.size_allocated,
+		MPI_LONG,
+		0,
+		MPI_COMM_WORLD);
+		
+    MPI_Scatter(bodies.p_fy,
+		bodies.size_allocated,
+		MPI_LONG,
+		local_bodies.p_fy,
+		bodies.size_allocated,
+		MPI_LONG,
+		0,
+		MPI_COMM_WORLD);
+    
+    MPI_Scatter(bodies.p_fz,
+		bodies.size_allocated,
+		MPI_LONG,
+		local_bodies.p_fz,
+		bodies.size_allocated,
+		MPI_LONG,
+		0,
+		MPI_COMM_WORLD);
 
 
+    MPI_Scatter(bodies.p_values,
+		bodies.size_allocated,
+		MPI_LONG,
+		local_bodies.p_values,
+		bodies.size_allocated,
+		MPI_LONG,
+		0,
+		MPI_COMM_WORLD);
+    
+     MPI_Scatter(bodies.p_speed_vectors,
+		bodies.size_allocated,
+		MPI_UNSIGNED_CHAR,
+		local_bodies.p_speed_vectors,
+		bodies.size_allocated,
+		MPI_UNSIGNED_CHAR,
+		0,
+		MPI_COMM_WORLD);
+
+     local_bodies.nb_bodies = local_bodies.size_allocated;
+		
+    printf("\n\n \t\t\t\t\t\t ****size allocated %ld, nb bodies %ld****\n\n\n",local_bodies.size_allocated,local_bodies.nb_bodies);
+    
+
+  }
 
 
   /******************************************************************************************/

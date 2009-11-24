@@ -49,7 +49,7 @@
 
 /*********** Bodies'data storing: ***********/
 /* Storing the different data of a 'body' in the same array or in separate ones. */
-#define _BODIES_SPLIT_DATA_
+#define _BODIES_SPLIT_DATA_ 
 
 
 
