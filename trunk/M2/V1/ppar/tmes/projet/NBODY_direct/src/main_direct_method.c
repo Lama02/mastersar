@@ -1,4 +1,4 @@
-/* #include <stdio.h> */
+/* #include <stdio.h>  */
 /* #include <stdlib.h> */
 /* #include <string.h> */
 #include <sys/stat.h>
@@ -51,14 +51,12 @@ int main(int argc, char **argv){
   char *data_file = NULL;
   char *results_file = NULL;
   VALUES_T total_potential_energy = 0.0;
-
+  
   /* Timers: */
   double t_start = 0.0, t_end = 0.0;
-
-
-  /*variables MPI*/
-
   
+  
+  /*variables MPI*/
   MPI_Status status;
   int rank = 0;
   int p = 0;
@@ -66,38 +64,31 @@ int main(int argc, char **argv){
   int dest = 0;
   int tag = 0;
   
-  /*variable de parallèlisation*/
-  
+  /* variable de parallèlisation */
   bodies_t local_bodies;
   REAL_T dt;
-
-  /********************************* Options on command line: ***************************************/
+  
+  /*************************** Options on command line: ********************************/
   f_output = stdout; /* by default */
   parse_command(argc, argv, &data_file, &results_file);
   
-
-
-
+  
   /******************************** Files and FILE* : ***************************************/
   if (INFO_DISPLAY(1)){
     fprintf(f_output, 
 	    "*** Compute own interactions of the box defined in \"%s\" ***.\n", 
 	    data_file);
   }
-
-
-
-
-
+  
   Direct_method_Init();
-
-
-
-
-
+  
+  
+  
+  
+  
   /***************************** Bodies'positions and masses initialization: ****************/
   Direct_method_Data(data_file);
-
+  
   tend=FMB_Info.tend;
   if (INFO_DISPLAY(1)){ 
     fprintf(f_output, "Start Time : %lf \t End Time : %lf \t dt : %lf \n",tstart, tend, FMB_Info.dt);
@@ -122,66 +113,66 @@ int main(int argc, char **argv){
     
     MPI_Scatter(bodies.p_pos_x,
 		bodies.size_allocated,
-		MPI_LONG,
+		MPI_FLOAT,
 		local_bodies.p_pos_x,
 		bodies.size_allocated,
-		MPI_LONG,
+		MPI_FLOAT,
 		0,
 		MPI_COMM_WORLD);
 		
     MPI_Scatter(bodies.p_pos_y,
 		bodies.size_allocated,
-		MPI_LONG,
+		MPI_FLOAT,
 		local_bodies.p_pos_y,
 		bodies.size_allocated,
-		MPI_LONG,
+		MPI_FLOAT,
 		0,
 		MPI_COMM_WORLD);
     
     MPI_Scatter(bodies.p_pos_z,
 		bodies.size_allocated,
-		MPI_LONG,
+		MPI_FLOAT,
 		local_bodies.p_pos_z,
 		bodies.size_allocated,
-		MPI_LONG,
+		MPI_FLOAT,
 		0,
 		MPI_COMM_WORLD);
     
 
     MPI_Scatter(bodies.p_fx,
 		bodies.size_allocated,
-		MPI_LONG,
+		MPI_FLOAT,
 		local_bodies.p_fx,
 		bodies.size_allocated,
-		MPI_LONG,
+		MPI_FLOAT,
 		0,
 		MPI_COMM_WORLD);
 		
     MPI_Scatter(bodies.p_fy,
 		bodies.size_allocated,
-		MPI_LONG,
+		MPI_FLOAT,
 		local_bodies.p_fy,
 		bodies.size_allocated,
-		MPI_LONG,
+		MPI_FLOAT,
 		0,
 		MPI_COMM_WORLD);
     
     MPI_Scatter(bodies.p_fz,
 		bodies.size_allocated,
-		MPI_LONG,
+		MPI_FLOAT,
 		local_bodies.p_fz,
 		bodies.size_allocated,
-		MPI_LONG,
+		MPI_FLOAT,
 		0,
 		MPI_COMM_WORLD);
 
 
     MPI_Scatter(bodies.p_values,
 		bodies.size_allocated,
-		MPI_LONG,
+		MPI_FLOAT,
 		local_bodies.p_values,
 		bodies.size_allocated,
-		MPI_LONG,
+		MPI_FLOAT,
 		0,
 		MPI_COMM_WORLD);
     
