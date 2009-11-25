@@ -5,6 +5,17 @@
 #---------------------------------------------------------------------------------------#
 
 
+################################### Execution options ###################################
+RUN = mpirun
+RUN_FLAGS = --hostfile $${MPI_HOSTFILE_PATH}
+NB_PROCESS = -c 5
+IN_FILE = ../data/baredisk_2048-plummer_2048.nemo
+TEND = 10.0
+DT = 0.1
+SOFT = 0.01
+
+
+
 
 
 ################################### High-level options ##################################
@@ -67,7 +78,7 @@ CC=mpicc
 # For the compiler:
 LIB_DIR=
 INC_DIR= 
-LIBRARIES=-lm 
+LIBRARIES=-lm
 
 WARNINGS=-Wall #-Winline
 #WARNINGS = -w #for icc
@@ -284,6 +295,9 @@ $(OBJ)%.o: $(NBODY_DIRECT_SRC)%.c $(NBODY_DIRECT_INC)%.h
 #---------------------------------------------------------------------------------------#
 #----------------------------------- Auxiliary targets: --------------------------------#
 #---------------------------------------------------------------------------------------#
+
+run: $(BIN)NBODY_direct
+	$(RUN) $(RUN_FLAGS) $(NB_PROCESS) $< --in=$(IN_FILE) --tend=$(TEND) --dt=$(DT) --soft=$(SOFT) --sum 
 
 net.o: 
 	@echo ""
