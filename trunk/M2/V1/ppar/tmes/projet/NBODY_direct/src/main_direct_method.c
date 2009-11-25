@@ -31,6 +31,13 @@ int parse_command(int argc,
 
 
 
+/* variable de parallèlisation */
+//bodies_t local_bodies;
+REAL_T dt;
+  
+
+
+
 /*********************************************************************************************
 **********************************************************************************************
 
@@ -63,11 +70,13 @@ int main(int argc, char **argv){
   int source = 0;
   int dest = 0;
   int tag = 0;
+
+  /*variable de topologie*/
+  int next;
+  int prev;
   
-  /* variable de parallèlisation */
-  bodies_t local_bodies;
-  REAL_T dt;
-  
+  /*variable de parallesisation*/
+  long nb_bodies_local;
   /*************************** Options on command line: ********************************/
   f_output = stdout; /* by default */
   parse_command(argc, argv, &data_file, &results_file);
@@ -98,111 +107,141 @@ int main(int argc, char **argv){
 
 
 
+
   /*initialisation MPI*/
   MPI_Init (&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   MPI_Comm_size(MPI_COMM_WORLD,&p);
-  
-  /*initialisation des variables des process*/
-  bodies_Initialize(&local_bodies,bodies.size_allocated/p);
 
-  /*par ici on va envoyer les data à tout les process*/
+  /*initialisation des variables des process*/
+
+  next = (rank+1) % p;
+  prev = (rank-1) % p;
+
+  if (rank == 0)
+    nb_bodies_local = bodies.size_allocated/p;
+
+  //debug   printf("proc : %d , tmp : %ld\n",rank, nb_bodies_local);
+
+  /*par ici on va envoyer les datas à tout les process*/
   {
     if (rank==0)
-      printf("\n\n \t\t\t\t\t\t ****size allocated %ld, nb bodies %ld****\n\n\n",bodies.size_allocated,bodies.nb_bodies);
+      printf("\n\n \t\t\t\t\t\t ****size allocated %ld, nb bodies %ld**** proc rank : %d\n\n\n", 
+	     bodies.size_allocated,bodies.nb_bodies,rank);
+
+    //on envoie le nombre que chaque noued gerera
+    MPI_Bcast(&nb_bodies_local,
+	      1,
+	      MPI_LONG,
+	      0,
+	      MPI_COMM_WORLD);
     
+
+    if(rank != 0){
+    bodies_Initialize(&bodies,nb_bodies_local);
+    bodies.size_allocated = nb_bodies_local;    
+    }
+    bodies.nb_bodies = nb_bodies_local;
+    printf("\n\n \t\t\t\t\t\t ****size allocated %ld, nb bodies %ld**** proc rank : %d \n\n\n",
+	   bodies.size_allocated,bodies.nb_bodies,rank);
+    //repartition des pos_x
     MPI_Scatter(bodies.p_pos_x,
-		bodies.size_allocated,
+		nb_bodies_local,
 		MPI_FLOAT,
-		local_bodies.p_pos_x,
-		bodies.size_allocated,
+		bodies.p_pos_x,
+		nb_bodies_local,
 		MPI_FLOAT,
 		0,
 		MPI_COMM_WORLD);
 		
+    //repartition des pos_y
     MPI_Scatter(bodies.p_pos_y,
-		bodies.size_allocated,
+		nb_bodies_local,
 		MPI_FLOAT,
-		local_bodies.p_pos_y,
-		bodies.size_allocated,
+		bodies.p_pos_y,
+		nb_bodies_local,
 		MPI_FLOAT,
 		0,
 		MPI_COMM_WORLD);
     
+    //repartition des pos_z
     MPI_Scatter(bodies.p_pos_z,
-		bodies.size_allocated,
+		nb_bodies_local,
 		MPI_FLOAT,
-		local_bodies.p_pos_z,
-		bodies.size_allocated,
+		bodies.p_pos_z,
+		nb_bodies_local,
 		MPI_FLOAT,
 		0,
 		MPI_COMM_WORLD);
     
-
+    //repartition des fx
     MPI_Scatter(bodies.p_fx,
-		bodies.size_allocated,
+		nb_bodies_local,
 		MPI_FLOAT,
-		local_bodies.p_fx,
-		bodies.size_allocated,
+		bodies.p_fx,
+		nb_bodies_local,
 		MPI_FLOAT,
 		0,
 		MPI_COMM_WORLD);
 		
+    //repartition des fy
     MPI_Scatter(bodies.p_fy,
-		bodies.size_allocated,
+		nb_bodies_local,
 		MPI_FLOAT,
-		local_bodies.p_fy,
-		bodies.size_allocated,
+		bodies.p_fy,
+		nb_bodies_local,
 		MPI_FLOAT,
 		0,
 		MPI_COMM_WORLD);
     
+    //repartition des fz
     MPI_Scatter(bodies.p_fz,
-		bodies.size_allocated,
+		nb_bodies_local,
 		MPI_FLOAT,
-		local_bodies.p_fz,
-		bodies.size_allocated,
+		bodies.p_fz,
+		nb_bodies_local,
 		MPI_FLOAT,
 		0,
 		MPI_COMM_WORLD);
 
-
+    //repartition des values
     MPI_Scatter(bodies.p_values,
-		bodies.size_allocated,
+		nb_bodies_local,
 		MPI_FLOAT,
-		local_bodies.p_values,
-		bodies.size_allocated,
+		bodies.p_values,
+		nb_bodies_local,
 		MPI_FLOAT,
 		0,
-		MPI_COMM_WORLD);
-    
+		MPI_COMM_WORLD);    
+
+    //repartition des spped_vector
     MPI_Scatter(bodies.p_speed_vectors,
-		bodies.size_allocated,
+		nb_bodies_local,
 		MPI_UNSIGNED_CHAR,
-		local_bodies.p_speed_vectors,
-		bodies.size_allocated,
+		bodies.p_speed_vectors,
+		nb_bodies_local,
 		MPI_UNSIGNED_CHAR,
 		0,
-		MPI_COMM_WORLD);
-
-    local_bodies.nb_bodies = local_bodies.size_allocated;
-
+		MPI_COMM_WORLD);  
     
+    //envoi de la date de fin
     MPI_Bcast(&tend,
 	      1,
 	      MPI_FLOAT,
 	      0,
 	      MPI_COMM_WORLD);
 
-    dt = FMB_Info.dt;
 
+    //envoi du pas de temps
+    dt = FMB_Info.dt;
     MPI_Bcast(&dt,
 	      1,
 	      MPI_FLOAT,
 	      0,
 	      MPI_COMM_WORLD);
-       
-    printf("\n\n \t\t\t\t\t\t ****size allocated %ld, nb bodies %ld****\n\n\n",local_bodies.size_allocated,local_bodies.nb_bodies);        
+        
+
+
   }
 
   
@@ -213,27 +252,26 @@ int main(int argc, char **argv){
     
     /********************* Direct method computation: ************************************/
     /*********************Direct metho Move : K-D-K **************************************/ 
-    if(tnow!=0) {
-
-      KnD_Direct_method_Move(FMB_Info.dt ); 
-      
     
-      /***** Clear the forces and the potential of the bodies for the next time step: ********/
-      bodies_ClearFP(&bodies);
-    }
+      if(tnow!=0){	
+	KnD_Direct_method_Move(FMB_Info.dt ); 
+	/***** Clear the forces and the potential of the bodies for the next time step: ********/
+	bodies_ClearFP(&bodies);
+      }
+      
+      /* Start timer: */
+      t_start = my_gettimeofday();
+      
+      /* Computation: */
+      Direct_method_Compute();
+      
+      /* End timer: */
+      t_end = my_gettimeofday();
 
-    /* Start timer: */
-    t_start = my_gettimeofday();
+      if (tnow !=0)
+	K_Direct_method_Move(FMB_Info.dt);
 
-    /* Computation: */
-    Direct_method_Compute();
    
-    /* End timer: */
-    t_end = my_gettimeofday();
-
-    if (tnow !=0)K_Direct_method_Move(FMB_Info.dt);
-
-
 
 
     /****************** Save & display the total time used for this step: *******************/
