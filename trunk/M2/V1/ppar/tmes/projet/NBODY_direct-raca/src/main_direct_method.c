@@ -51,6 +51,78 @@ bodies_t bodies_old;
 
    **********************************************************************************************
    *********************************************************************************************/
+void mpi_scatter(bodies_t * p_b_s, bodies_t * p_b_r, long nb_bodies){
+  MPI_Scatter(p_b_s->p_pos_x,
+	      nb_bodies,
+	      MPI_FLOAT,
+	      p_b_r->p_pos_x,
+	      nb_bodies,
+	      MPI_FLOAT,
+	      ROOT,
+	      MPI_COMM_WORLD);    
+  MPI_Scatter(p_b_s->p_pos_y,
+	      nb_bodies,
+	      MPI_FLOAT,
+	      p_b_r->p_pos_y,
+	      nb_bodies,
+	      MPI_FLOAT,
+	      0,
+	      MPI_COMM_WORLD);
+  MPI_Scatter(p_b_s->p_pos_z,
+	      nb_bodies,
+	      MPI_FLOAT,
+	      p_b_r->p_pos_z,
+	      nb_bodies,
+	      MPI_FLOAT,
+	      0,
+	      MPI_COMM_WORLD);
+    
+
+  MPI_Scatter(p_b_s->p_fx,
+	      nb_bodies,
+	      MPI_FLOAT,
+	      p_b_r->p_fx,
+	      nb_bodies,
+	      MPI_FLOAT,
+	      0,
+	      MPI_COMM_WORLD);
+  MPI_Scatter(p_b_s->p_fy,
+	      nb_bodies,
+	      MPI_FLOAT,
+	      p_b_r->p_fy,
+	      nb_bodies,
+	      MPI_FLOAT,
+	      0,
+	      MPI_COMM_WORLD);
+  MPI_Scatter(p_b_s->p_fz,
+	      nb_bodies,
+	      MPI_FLOAT,
+	      p_b_r->p_fz,
+	      nb_bodies,
+	      MPI_FLOAT,
+	      0,
+	      MPI_COMM_WORLD);
+
+
+  MPI_Scatter(p_b_s->p_values,
+	      nb_bodies,
+	      MPI_FLOAT,
+	      p_b_r->p_values,
+	      nb_bodies,
+	      MPI_FLOAT,
+	      0,
+	      MPI_COMM_WORLD);
+    
+  MPI_Scatter(p_b_s->p_speed_vectors,
+	      nb_bodies*sizeof(position_t),
+	      MPI_UNSIGNED_CHAR,
+	      p_b_r->p_speed_vectors,
+	      nb_bodies*sizeof(position_t),
+	      MPI_UNSIGNED_CHAR,
+	      0,
+	      MPI_COMM_WORLD);
+}
+
 
 void rassemblement(){
 #ifdef _DEBUG_
@@ -156,11 +228,6 @@ int main(int argc, char **argv){
   /* Timers: */
   double t_start = 0.0, t_end = 0.0;
   
-  
-  
-  
-
-  
   /* initialisation MPI */
   MPI_Init (&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
@@ -186,8 +253,6 @@ int main(int argc, char **argv){
     
     
     
-    
-    
     /***************************** Bodies'positions and masses initialization: ****************/
     Direct_method_Data(data_file);
     
@@ -206,8 +271,10 @@ int main(int argc, char **argv){
 #endif
   } //  if (rank == ROOT) 
   
-    /********************************** Debut Partage des données: ******************************/
-    // diffuser le nombre de corps local à tous le monde
+    
+
+  /********************************** Debut Partage des données: ******************************/
+  /* Diffuser le nombre de corps local à tous le monde */
 #ifdef _DEBUG_
   printf("\t [DEBUG] +++++++++++ Proc %d \t Diffusion de local_nb_bodies... \n", rank);
 #endif
@@ -235,87 +302,26 @@ int main(int argc, char **argv){
 	    ROOT,
 	    MPI_COMM_WORLD);
   
-  
-  /* Initialisation des variables des process */
+  /* Initialisation du tableau local_bodies 
+   * il ne faut pas oublier de modifier la valeur
+   * de la variable local_bodies.nb_bodies
+   */
   bodies_Initialize(&local_bodies, local_nb_bodies);
+  
   /* Tous les corps sont dans le tableau local_bodies */
   local_bodies.nb_bodies = local_nb_bodies;
   
+#ifdef _DEBUG_
+  printf("\t [DEBUG] +++++++++++ Proc %d \t Debut des scatter \n", rank);
+#endif
 
-  MPI_Scatter(bodies.p_pos_x,
-	      local_nb_bodies,
-	      MPI_FLOAT,
-	      local_bodies.p_pos_x,
-	      local_nb_bodies,
-	      MPI_FLOAT,
-	      ROOT,
-	      MPI_COMM_WORLD);    
-  MPI_Scatter(bodies.p_pos_y,
-	      local_nb_bodies,
-	      MPI_FLOAT,
-	      local_bodies.p_pos_y,
-	      local_nb_bodies,
-	      MPI_FLOAT,
-	      0,
-	      MPI_COMM_WORLD);
-  MPI_Scatter(bodies.p_pos_z,
-	      local_nb_bodies,
-	      MPI_FLOAT,
-	      local_bodies.p_pos_z,
-	      local_nb_bodies,
-	      MPI_FLOAT,
-	      0,
-	      MPI_COMM_WORLD);
-    
-
-  MPI_Scatter(bodies.p_fx,
-	      local_nb_bodies,
-	      MPI_FLOAT,
-	      local_bodies.p_fx,
-	      local_nb_bodies,
-	      MPI_FLOAT,
-	      0,
-	      MPI_COMM_WORLD);
-  MPI_Scatter(bodies.p_fy,
-	      local_nb_bodies,
-	      MPI_FLOAT,
-	      local_bodies.p_fy,
-	      local_nb_bodies,
-	      MPI_FLOAT,
-	      0,
-	      MPI_COMM_WORLD);
-  MPI_Scatter(bodies.p_fz,
-	      local_nb_bodies,
-	      MPI_FLOAT,
-	      local_bodies.p_fz,
-	      local_nb_bodies,
-	      MPI_FLOAT,
-	      0,
-	      MPI_COMM_WORLD);
-
-
-  MPI_Scatter(bodies.p_values,
-	      local_nb_bodies,
-	      MPI_FLOAT,
-	      local_bodies.p_values,
-	      local_nb_bodies,
-	      MPI_FLOAT,
-	      0,
-	      MPI_COMM_WORLD);
-    
-  MPI_Scatter(bodies.p_speed_vectors,
-	      local_nb_bodies*sizeof(position_t),
-	      MPI_UNSIGNED_CHAR,
-	      local_bodies.p_speed_vectors,
-	      local_nb_bodies*sizeof(position_t),
-	      MPI_UNSIGNED_CHAR,
-	      0,
-	      MPI_COMM_WORLD);
+  /* Partage du tableau bodies avec les autres sites */
+  mpi_scatter(&bodies, &local_bodies, local_nb_bodies);
+  
   /********************************** Fin Partage des données: ******************************/
 
 #ifdef _DEBUG_
-  printf("\t ************************** [DEBUG] +++++++++++ Proc %d \t Fin des scatter \n", rank);
-    
+  printf("\t [DEBUG] +++++++++++ Proc %d \t Fin des scatter \n", rank);
   printf("\t [DEBUG] +++++++++++ Proc %d \t local_bodies.p_pos_x[1]:%f \n", rank, local_bodies.p_pos_x[1]);
 #endif
     
@@ -327,7 +333,7 @@ int main(int argc, char **argv){
   while ( tnow-FMB_Info.dt < tend ) { 
     
 #ifdef _DEBUG_
-    printf("\t ## [DEBUG] +++++++++++ Proc %d \t Debut de la simulation. tnow : %f \t tnow : %f\n", rank, tnow, tend);
+    printf("\t [DEBUG] +++++++++++ Proc %d \t Debut de la simulation. tnow : %f \t tnow : %f\n", rank, tnow, tend);
 #endif
     
     /* utiliser le tableau bodies pour les calculs */
@@ -335,7 +341,6 @@ int main(int argc, char **argv){
     bodies = local_bodies;
     
     
-      
     /********************* Direct method computation: ************************************/
     /*********************Direct metho Move : K-D-K **************************************/ 
  
@@ -351,6 +356,7 @@ int main(int argc, char **argv){
 #ifdef _DEBUG_
     printf("\t [DEBUG] +++++++++++ Proc %d \t Lancement des calculs \n", rank);
 #endif
+    
     /* Computation: */
     Direct_method_Compute();
    
@@ -360,7 +366,7 @@ int main(int argc, char **argv){
     if (tnow !=0)K_Direct_method_Move(FMB_Info.dt);
     
     /* 
-     * je remet les pointeurs des tableaux à leur état d'origine
+     * je remet le pointeur du tableau boà leur état d'origine
      * 
      */
     if (rank == ROOT) bodies = bodies_old ;

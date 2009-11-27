@@ -67,7 +67,7 @@ void mpi_irecv(bodies_t * p_b_tmp, long nb_bodies, int pred, MPI_Request * reqr)
 	    0,
 	    MPI_COMM_WORLD,
 	    reqr);
-  
+
   MPI_Irecv(p_b_tmp->p_fx,
 	    nb_bodies,
 	    MPI_FLOAT,
@@ -90,6 +90,7 @@ void mpi_irecv(bodies_t * p_b_tmp, long nb_bodies, int pred, MPI_Request * reqr)
 	    MPI_COMM_WORLD,
 	    reqr);
   
+
   MPI_Irecv(p_b_tmp->p_values,
 	    nb_bodies,
 	    MPI_FLOAT,
@@ -151,7 +152,7 @@ void mpi_send(bodies_t * p_b2, long nb_bodies, int succ){
 	   succ,
 	   0,
 	   MPI_COMM_WORLD);
-  
+
   MPI_Send(p_b2->p_values,
 	   nb_bodies,
 	   MPI_FLOAT,
@@ -234,7 +235,7 @@ bodies_Compute_own_interaction(bodies_t *FMB_RESTRICT p_b){
   COORDINATES_T *FMB_RESTRICT p_fx2;
   COORDINATES_T *FMB_RESTRICT p_fy2;
   COORDINATES_T *FMB_RESTRICT p_fz2;
-
+  
 
   /* 
    * Var utiles pour le premier tableau b.
@@ -271,32 +272,15 @@ bodies_Compute_own_interaction(bodies_t *FMB_RESTRICT p_b){
   printf("\t [DEBUG] +++++++++++ Proc %d \t p_b2->p_pos_x[1] : %f \t p_b2->nb_bodies : %ld \t nb_bodies : %ld\n", rank, p_b2->p_pos_x[1], p_b2->nb_bodies, nb_bodies);
   printf("\t [DEBUG] +++++++++++ Proc %d \t Je suis dans la fonction bodies_Compute_own_interaction \n", rank);
 #endif
-
+  
   /* on boucle tant qu'il y a des données à recevoir 
-   * avec p sites. On doit attendre p-2 receptions
-   * ATTENTION une reception est déjà effectuée dans 
-   * la partie précedente
+   * avec p sites. On doit attendre p-1 receptions
    */
   while (etape < p){
 
 #ifdef _DEBUG_
     printf("\t [DEBUG] +++++++++++ ########### Proc %d \t Debut de l'iteration %d \n", rank, etape);
 #endif
-    
-    /* la première iteration se fera en utilisant 
-     * les deux tableaux b et b2 où b2 pointent lui 
-     * meme sur b. Pour les autres itérations b2 contiendra 
-     * l'ancienne valeur de b_tmp. (en faisant un switch) 
-     */
-
-
-    //    if (etape == 0){ 
-      /* on sauvegarde la valeur du pointeur p_b2,
-       * il sera utilisé durant les prochaines itération
-       */
-    //      p_b2_old = p_b2; 
-    // p_b2 = p_b;
-    //}  
     
     /* on commence a recevoir les messages.*/
 #ifdef _DEBUG_
@@ -336,8 +320,7 @@ bodies_Compute_own_interaction(bodies_t *FMB_RESTRICT p_b){
   
     p_fz = p_b->p_fz;
     p_fz2 = p_b2->p_fz;
-  
-
+    
     if (etape == 0){
 #ifdef _DEBUG_
       printf("\t [DEBUG] +++++++++++ Proc %d \t Debut de la %deme iteration\n", rank, etape);
@@ -346,7 +329,6 @@ bodies_Compute_own_interaction(bodies_t *FMB_RESTRICT p_b){
       /*
        * Cette boucle n'est correcte que pour la première itération.
        * En effet, le j par exemple dois commencer de 0 au lieu de i+1
-       * pour les autres steps
        */
       for(i=0; i<n-1; i++){
 	pix = p_px[i];
@@ -357,7 +339,7 @@ bodies_Compute_own_interaction(bodies_t *FMB_RESTRICT p_b){
 	fix = p_fx[i];
 	fiy = p_fy[i];
 	fiz = p_fz[i];
-      
+	
     
 	for (j=i+1;	 j<n;	 j++){
 	  pjx = p_px2[j];
@@ -376,7 +358,7 @@ bodies_Compute_own_interaction(bodies_t *FMB_RESTRICT p_b){
 					 p_pot[j], /* pas utilise */
 					 eps_soft_square);
 	}//    for (j=i+1;	 j<n;	 j++){
-    
+	
 	/* la macro s'occupe de calculer les nouvelles valeurs de fix, fiy, fiz 
 	 * puis stocke les nouveaux résultats dans les deux tableaux
 	 */    
@@ -403,8 +385,7 @@ bodies_Compute_own_interaction(bodies_t *FMB_RESTRICT p_b){
 	fix = p_fx[i];
 	fiy = p_fy[i];
 	fiz = p_fz[i];
-	  
-    
+	
 	for (j=0;	 j<n;	 j++){
 	  pjx = p_px2[j];
 	  pjy = p_py2[j];
@@ -422,7 +403,7 @@ bodies_Compute_own_interaction(bodies_t *FMB_RESTRICT p_b){
 					 p_pot[j], /* pas utilise */
 					 eps_soft_square);
 	}//    for (j=0;	 j<n;	 j++){
-    
+	
 	/* la macro s'occupe de calculer les nouvelles valeurs de fix, fiy, fiz */    
 	p_fx[i] = fix; 
 	p_fy[i] = fiy;
@@ -449,7 +430,6 @@ bodies_Compute_own_interaction(bodies_t *FMB_RESTRICT p_b){
 
     
     /*------   Attente de la reception non bloquante   ------*/      
-    /* attendre la reception non blocante lancée précedemment */
 #ifdef _DEBUG_
     printf("\t [DEBUG] +++++++++++ Proc %d \t Attente de la reception.... \n", rank);
 #endif
@@ -460,30 +440,19 @@ bodies_Compute_own_interaction(bodies_t *FMB_RESTRICT p_b){
     
     /*------   Permutation de tableaux   ------*/      
     /* on swich les deux tableaux b2 et b_tmp, comme ca on utilisera 
-     * les résultats envoyés par mon prédecesseur recu dans b_tmp
+     * les résultats envoyés par mon prédecesseur.
+     * Ces résultats sont recus dans le tableau b_tmp
      */
 
-    /* si je suis à la fin de la première itération  
-     * je remet le pointeur de p_b2 à sa place ;)
-     * il ne pointe plus vers p_b mais vers son 
-     * ancienne valeur stockée dans p_b2_old
-     */
-    /*
-    if (etape == 0){
-      p_b2 = p_b2_old;
-    }
-    */
-    
     /* on ne switch */
     p_b2_old = p_b2;
     p_b2 = p_b_tmp;
     p_b_tmp = p_b2_old;
     
-    
-    /* incrémente le nombre d'itérations */
 #ifdef _DEBUG_
     printf("\t [DEBUG] +++++++++++ Proc %d \t Fin de l'etape %d \n", rank, etape);    
 #endif
+    /* incrémente le nombre d'itérations */
     etape++;
 
   } // while (etape < p-1){
@@ -493,6 +462,10 @@ bodies_Compute_own_interaction(bodies_t *FMB_RESTRICT p_b){
 #endif
 }
 #else /* #ifdef _BODIES_SPLIT_DATA_ */
+
+
+
+
 
 void 
 bodies_Compute_own_interaction(bodies_t *FMB_RESTRICT p_b){
