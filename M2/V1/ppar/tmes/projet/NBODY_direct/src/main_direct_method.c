@@ -42,6 +42,7 @@ int mpi_tag = 0;
 
 /*variable de parallesisation*/
 long nb_bodies_local;
+long nb_bodies_total;
 REAL_T dt;
 bodies_t p_b1;
 bodies_t p_b2;
@@ -120,6 +121,8 @@ int main(int argc, char **argv){
     if (rank==0)
       printf("\t\t\t\t\t\t ****size allocated %ld, nb bodies %ld**** proc rank : %d\n", 
 	     bodies.size_allocated,bodies.nb_bodies,rank);
+
+    nb_bodies_total = bodies.nb_bodies;
 
     //on envoie le nombre que chaque noued gerera
     MPI_Bcast(&nb_bodies_local,
@@ -289,11 +292,93 @@ int main(int argc, char **argv){
 
       
     }
-
+    
+    /*barriere de synchro pour s'assurer que toute les données ont été effectivement caculée
+     on peut aussi la mettre dans le if pour qu'elle le que si on veut sauvegarder*/
+    MPI_Barrier(MPI_COMM_WORLD);
 
     /************************* Save the positions and the forces: ***************************/
     if (FMB_Info.save && rank == 0){
+      //repartition des pos_x
+      MPI_Gather(bodies.p_pos_x,
+		 nb_bodies_local,
+		 MPI_FLOAT,
+		 bodies.p_pos_x,
+		 nb_bodies_local,
+		 MPI_FLOAT,
+		 0,
+		 MPI_COMM_WORLD);
       
+      //repartition des pos_y
+      MPI_Gather(bodies.p_pos_y,
+		  nb_bodies_local,
+		  MPI_FLOAT,
+		  bodies.p_pos_y,
+		  nb_bodies_local,
+		  MPI_FLOAT,
+		  0,
+		  MPI_COMM_WORLD);
+      
+      //repartition des pos_z
+      MPI_Gather(bodies.p_pos_z,
+		  nb_bodies_local,
+		  MPI_FLOAT,
+		  bodies.p_pos_z,
+		  nb_bodies_local,
+		  MPI_FLOAT,
+		  0,
+		  MPI_COMM_WORLD);
+      
+      //repartition des fx
+      MPI_Gather(bodies.p_fx,
+		  nb_bodies_local,
+		  MPI_FLOAT,
+		  bodies.p_fx,
+		  nb_bodies_local,
+		  MPI_FLOAT,
+		  0,
+		  MPI_COMM_WORLD);
+      
+      //repartition des fy
+      MPI_Gather(bodies.p_fy,
+		  nb_bodies_local,
+		  MPI_FLOAT,
+		  bodies.p_fy,
+		  nb_bodies_local,
+		  MPI_FLOAT,
+		  0,
+		  MPI_COMM_WORLD);
+      
+      //repartition des fz
+      MPI_Gather(bodies.p_fz,
+		  nb_bodies_local,
+		  MPI_FLOAT,
+		  bodies.p_fz,
+		  nb_bodies_local,
+		  MPI_FLOAT,
+		  0,
+		  MPI_COMM_WORLD);
+      
+      //repartition des values
+      MPI_Gather(bodies.p_values,
+		  nb_bodies_local,
+		  MPI_FLOAT,
+		  bodies.p_values,
+		  nb_bodies_local,
+		  MPI_FLOAT,
+		  0,
+		  MPI_COMM_WORLD);    
+      
+      //repartition des spped_vector
+      MPI_Gather(bodies.p_speed_vectors,
+		  nb_bodies_local,
+		  MPI_UNSIGNED_CHAR,
+		  bodies.p_speed_vectors,
+		  nb_bodies_local,
+		  MPI_UNSIGNED_CHAR,
+		  0,
+		  MPI_COMM_WORLD);       
+
       if (results_file == NULL){
 	/* The 'results' filename has not been set yet: */
 #define TMP_STRING_LENGTH 10
@@ -349,8 +434,9 @@ int main(int argc, char **argv){
     nb_steps ++ ; 
 
   }  /* while ( tnow-FMB_Info.dt <= tend )  */
-       
-    
+  
+  /*barriere de fin de prog pas obligatoire*/
+  MPI_Barrier(MPI_COMM_WORLD);
     
   /******************************************************************************************/
   /********************************** End of the simulation: ********************************/
