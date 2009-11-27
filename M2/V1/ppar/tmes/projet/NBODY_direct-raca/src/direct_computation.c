@@ -105,7 +105,9 @@ void mpi_irecv(bodies_t * p_b_tmp, long nb_bodies, int pred, MPI_Request * reqr)
 	    0,
 	    MPI_COMM_WORLD,
 	    reqr);
+#ifdef _DEBUG_
   printf("\t [DEBUG] +++++++++++ Proc %d \t Dans la fonction mpi_irecv \t p_b_tmp->p_pos_x[1] : %f \t p_b_tmp->nb_bodies : %ld \t nb_bodies : %ld\n",rank, p_b_tmp->p_pos_x[1], p_b_tmp->nb_bodies, nb_bodies);
+#endif
   /*------ Fin de reception non bloquante ------*/
 }
 
@@ -163,7 +165,9 @@ void mpi_send(bodies_t * p_b2, long nb_bodies, int succ){
 	   succ,
 	   0,
 	   MPI_COMM_WORLD);
+#ifdef _DEBUG_
   printf("\t [DEBUG] +++++++++++ Proc %d \t Dans la fonction mpi_send \t p_b2->p_pos_x[1] : %f \t p_b2->nb_bodies : %ld \t nb_bodies : %ld\n",rank, p_b2->p_pos_x[1], p_b2->nb_bodies, nb_bodies);
+#endif
   
   /*------ Debut de reception non bloquante ------*/
 }
@@ -262,11 +266,12 @@ bodies_Compute_own_interaction(bodies_t *FMB_RESTRICT p_b){
   /* copie du tableau p_b dans p_b2 */
   bodies_Affect(p_b2, p_b);
   
+#ifdef _DEBUG_
   printf("\t [DEBUG] +++++++++++ Proc %d \t p_b->p_pos_x[1] : %f \t p_b->nb_bodies : %ld \t nb_bodies : %ld \t p : %d\n",rank, p_b->p_pos_x[1], p_b->nb_bodies, nb_bodies, p);
   printf("\t [DEBUG] +++++++++++ Proc %d \t p_b2->p_pos_x[1] : %f \t p_b2->nb_bodies : %ld \t nb_bodies : %ld\n", rank, p_b2->p_pos_x[1], p_b2->nb_bodies, nb_bodies);
-  
   printf("\t [DEBUG] +++++++++++ Proc %d \t Je suis dans la fonction bodies_Compute_own_interaction \n", rank);
-  
+#endif
+
   /* on boucle tant qu'il y a des données à recevoir 
    * avec p sites. On doit attendre p-2 receptions
    * ATTENTION une reception est déjà effectuée dans 
@@ -274,7 +279,9 @@ bodies_Compute_own_interaction(bodies_t *FMB_RESTRICT p_b){
    */
   while (etape < p){
 
+#ifdef _DEBUG_
     printf("\t [DEBUG] +++++++++++ ########### Proc %d \t Debut de l'iteration %d \n", rank, etape);
+#endif
     
     /* la première iteration se fera en utilisant 
      * les deux tableaux b et b2 où b2 pointent lui 
@@ -292,16 +299,22 @@ bodies_Compute_own_interaction(bodies_t *FMB_RESTRICT p_b){
     //}  
     
     /* on commence a recevoir les messages.*/
+#ifdef _DEBUG_
     printf("\t [DEBUG] +++++++++++ Proc %d \t Avant le Irecv \n", rank);
+#endif
     /* je reçoie en mode non bloquant 
      * les resultats de mon pred dans 
      * le tableau b_tmp
      */
     mpi_irecv(p_b_tmp, nb_bodies, pred, &reqr);
+#ifdef _DEBUG_
     printf("\t [DEBUG] +++++++++++ Proc %d \t Apres le Irecv \n", rank);
+#endif
     
 
+#ifdef _DEBUG_
     printf("\t [DEBUG] +++++++++++ Proc %d \t Debut des calculs \n", rank);
+#endif
     /*------ Partie calculs ------*/
     p_px = p_b->p_pos_x;
     p_px2 = p_b2->p_pos_x;
@@ -326,7 +339,9 @@ bodies_Compute_own_interaction(bodies_t *FMB_RESTRICT p_b){
   
 
     if (etape == 0){
+#ifdef _DEBUG_
       printf("\t [DEBUG] +++++++++++ Proc %d \t Debut de la %deme iteration\n", rank, etape);
+#endif
       /*------ Debut de la premiere iteration de calcul ------*/
       /*
        * Cette boucle n'est correcte que pour la première itération.
@@ -371,10 +386,14 @@ bodies_Compute_own_interaction(bodies_t *FMB_RESTRICT p_b){
       }//    for(i=0; i<n-1; i++){   
       /*------ Fin de la premiere iteration de calcul ------*/  
 
+#ifdef _DEBUG_
       printf("\t [DEBUG] +++++++++++ Proc %d \t Fin de la %deme iteration \n", rank, etape);
+#endif
 
     }else{// if (etape == 0)
+#ifdef _DEBUG_
       printf("\t [DEBUG] +++++++++++ Proc %d \t Debut de l'iteration %d \n", rank, etape);
+#endif
       for(i=0; i<n; i++){
 	pix = p_px[i];
 	piy = p_py[i];
@@ -409,25 +428,35 @@ bodies_Compute_own_interaction(bodies_t *FMB_RESTRICT p_b){
 	p_fy[i] = fiy;
 	p_fz[i] = fiz;   
       }// for(i=0; i<n; i++){   
+#ifdef _DEBUG_
       printf("\t [DEBUG] +++++++++++ Proc %d \t Fin de l'iteration %d \n", rank, etape);
+#endif
     }// if (etape == 0)
     
     
     /* on commence a envoyer les messages.*/
+#ifdef _DEBUG_
     printf("\t [DEBUG] +++++++++++ Proc %d \t Avant le Send \n", rank);
+#endif
     /* j'envoie le contenu de mon tableau b2 
      * à mon successeur ((rank +1) mod p) 
      */
     mpi_send(p_b2, nb_bodies, succ);
+#ifdef _DEBUG_
     printf("\t [DEBUG] +++++++++++ Proc %d \t Apres le Send \n", rank);
+#endif
     
 
     
     /*------   Attente de la reception non bloquante   ------*/      
     /* attendre la reception non blocante lancée précedemment */
+#ifdef _DEBUG_
     printf("\t [DEBUG] +++++++++++ Proc %d \t Attente de la reception.... \n", rank);
+#endif
     MPI_Wait(&reqr, &status1);
+#ifdef _DEBUG_
     printf("\t [DEBUG] +++++++++++ Proc %d \t Fin de la reception\n", rank);
+#endif
     
     /*------   Permutation de tableaux   ------*/      
     /* on swich les deux tableaux b2 et b_tmp, comme ca on utilisera 
@@ -452,12 +481,16 @@ bodies_Compute_own_interaction(bodies_t *FMB_RESTRICT p_b){
     
     
     /* incrémente le nombre d'itérations */
+#ifdef _DEBUG_
     printf("\t [DEBUG] +++++++++++ Proc %d \t Fin de l'etape %d \n", rank, etape);    
+#endif
     etape++;
 
   } // while (etape < p-1){
 
+#ifdef _DEBUG_
   printf("\t [DEBUG] +++++++++++ Proc %d \t Fin de la fonction bodies_Compute_own_interaction \n", rank);
+#endif
 }
 #else /* #ifdef _BODIES_SPLIT_DATA_ */
 
