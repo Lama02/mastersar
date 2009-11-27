@@ -36,7 +36,7 @@ int parse_command(int argc,
 
 
 /* variable de parallèlisation */
-bodies_t local_bodies;
+bodies_t  local_bodies;
 long local_nb_bodies;
 bodies_t bodies_old;
 
@@ -359,10 +359,10 @@ int main(int argc, char **argv){
     
     /* Computation: */
     Direct_method_Compute();
-   
+    
     /* End timer: */
     t_end = my_gettimeofday();
-
+    
     if (tnow !=0)K_Direct_method_Move(FMB_Info.dt);
     
     /* 
