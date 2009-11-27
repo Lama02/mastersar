@@ -389,6 +389,7 @@ void Direct_method_Compute_Par(int nb_proc,bodies_t* current, bodies_t * next, i
 	     0,
 	     MPI_COMM_WORLD);
 
+  if(my_rank == 0)
   printf("\t\t\t\t\t****************reducex = %f, reducey = %f, reducez = %f\n",reducex,reducey,reducez);
 
 
