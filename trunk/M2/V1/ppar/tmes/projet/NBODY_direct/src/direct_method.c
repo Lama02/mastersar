@@ -1,3 +1,4 @@
+#include <mpi.h>
 #include "direct_method.h"
 #include "IO.h" 
 
@@ -25,6 +26,141 @@ void bzip2_file(const char *filename);
 
 
 
+void mpi_recv(bodies_t * p_b_tmp, long nb_bodies, int pred){
+  MPI_Status status;
+  MPI_Recv(p_b_tmp->p_pos_x,
+	   nb_bodies,
+	   MPI_FLOAT,
+	   pred,
+	   0,
+	   MPI_COMM_WORLD,
+	   &status);
+  MPI_Recv(p_b_tmp->p_pos_y,
+	   nb_bodies,
+	   MPI_FLOAT,
+	   pred,
+	   0,
+	   MPI_COMM_WORLD,
+	   &status);
+
+  MPI_Recv(p_b_tmp->p_pos_z,
+	   nb_bodies,
+	   MPI_FLOAT,
+	   pred,
+	   0,
+	   MPI_COMM_WORLD,
+	   &status);
+  
+  MPI_Recv(p_b_tmp->p_fx,
+	   nb_bodies,
+	   MPI_FLOAT,
+	   pred,
+	   0,
+	   MPI_COMM_WORLD,
+	   &status);
+
+  MPI_Recv(p_b_tmp->p_fy,
+	   nb_bodies,
+	   MPI_FLOAT,
+	   pred,
+	   0,
+	   MPI_COMM_WORLD,
+	   &status);
+
+  MPI_Recv(p_b_tmp->p_fz,
+	   nb_bodies,
+	   MPI_FLOAT,
+	   pred,
+	   0,
+	   MPI_COMM_WORLD,
+	   &status);
+  
+  MPI_Recv(p_b_tmp->p_values,
+	   nb_bodies,
+	   MPI_FLOAT,
+	   pred,
+	   0,
+	   MPI_COMM_WORLD,
+	   &status);
+  
+  MPI_Recv(p_b_tmp->p_speed_vectors,
+	   nb_bodies*sizeof(position_t),
+	   MPI_FLOAT,
+	   pred,
+	   0,
+	   MPI_COMM_WORLD,
+	   &status);
+}
+
+
+
+void mpi_isend(bodies_t * p_b2, long nb_bodies, int succ, MPI_Request *reqr){
+  MPI_Isend(p_b2->p_pos_x,
+	    nb_bodies,
+	    MPI_FLOAT,
+	    succ,
+	    0,
+	    MPI_COMM_WORLD, 
+	    reqr);
+
+  MPI_Isend(p_b2->p_pos_y,
+	    nb_bodies,
+	    MPI_FLOAT,
+	    succ,
+	    0,
+	    MPI_COMM_WORLD,
+	    reqr);
+
+  MPI_Isend(p_b2->p_pos_z,
+	    nb_bodies,
+	    MPI_FLOAT,
+	    succ,
+	    0,
+	    MPI_COMM_WORLD, 
+	    reqr);
+
+  MPI_Isend(p_b2->p_fx,
+	    nb_bodies,
+	    MPI_FLOAT,
+	    succ,
+	    0,
+	    MPI_COMM_WORLD, 
+	    reqr);
+  
+  MPI_Isend(p_b2->p_fy,
+	    nb_bodies,
+	    MPI_FLOAT,
+	    succ,
+	    0,
+	    MPI_COMM_WORLD,
+	    reqr);
+
+  MPI_Isend(p_b2->p_fz,
+	    nb_bodies,
+	    MPI_FLOAT,
+	    succ,
+	    0,
+	    MPI_COMM_WORLD,
+	    reqr);
+  
+  MPI_Isend(p_b2->p_values,
+	    nb_bodies,
+	    MPI_FLOAT,
+	    succ,
+	    0,
+	    MPI_COMM_WORLD, 
+	    reqr);
+  
+  MPI_Isend(p_b2->p_speed_vectors,
+	    nb_bodies*sizeof(position_t),
+	    MPI_FLOAT,
+	    succ,
+	    0,
+	    MPI_COMM_WORLD, 
+	    reqr);
+}
+
+
 
 
 
@@ -33,8 +169,8 @@ void bzip2_file(const char *filename);
 
    Direct_method_Init
 
-**********************************************************************************************
-*********************************************************************************************/
+   **********************************************************************************************
+   *********************************************************************************************/
 void Direct_method_Init(){
 
   /* Checking: */
@@ -63,8 +199,8 @@ void Direct_method_Init(){
 
    Direct_method_Data
 
-**********************************************************************************************
-*********************************************************************************************/
+   **********************************************************************************************
+   *********************************************************************************************/
 void Direct_method_Data(char *data_file){
   bodies_ind_t k;
   bodies_ind_t nb_bodies; 
@@ -97,7 +233,7 @@ void Direct_method_Data(char *data_file){
       FMB_error("In Direct_method_Data(): FMB_IO_Scan_body() failed for body #%i\n", k);
     }
 
-/*     if (k<100){ body_Display(&body_tmp, f_output); }  */
+    /*     if (k<100){ body_Display(&body_tmp, f_output); }  */
     
     bodies_Add(&bodies, &body_tmp);
   }
@@ -114,15 +250,15 @@ void Direct_method_Data(char *data_file){
 
 /*********************************************************************************************
  ********************************************************************************************
-**********************************************************************************************
+ **********************************************************************************************
 
  Direct_method_Data_bodies
 
-**********************************************************************************************
-*********************************************************************************************/
- /* Same as Direct_method_Data() but we use the position and values
-  * of all bodies stored in 'p_b' (instead of the bodies stored
-  * in the file "data_file" in Direct_method_Data()). */
+ **********************************************************************************************
+ *********************************************************************************************/
+/* Same as Direct_method_Data() but we use the position and values
+ * of all bodies stored in 'p_b' (instead of the bodies stored
+ * in the file "data_file" in Direct_method_Data()). */
 void Direct_method_Data_bodies(bodies_t *p_b){
   
   bodies_it_t it;
@@ -151,27 +287,117 @@ void Direct_method_Data_bodies(bodies_t *p_b){
 
    Direct_method_Compute
 
-**********************************************************************************************
-*********************************************************************************************/
+   **********************************************************************************************
+   *********************************************************************************************/
 void Direct_method_Compute(){
 
-    /********************* Without reciprocity: *******************************************/
-    /* bodies_Compute_own_interaction_no_mutual() is not implemented ... */
+  /********************* Without reciprocity: *******************************************/
+  /* bodies_Compute_own_interaction_no_mutual() is not implemented ... */
 
-    /********************* With reciprocity: **********************************************/
-    /* Compute the force and the potential: */
-    bodies_Compute_own_interaction(&bodies);        
+  /********************* With reciprocity: **********************************************/
+  /* Compute the force and the potential: */
+  bodies_Compute_own_interaction(&bodies);        
 
 
-    /**************** Possible scaling with CONSTANT_INTERACTION_FACTOR: ********************/
-    /* We can also use CONSTANT_INTERACTION_FACTOR only for the total potential energy ... */
+  /**************** Possible scaling with CONSTANT_INTERACTION_FACTOR: ********************/
+  /* We can also use CONSTANT_INTERACTION_FACTOR only for the total potential energy ... */
 #ifdef _USE_CONSTANT_INTERACTION_FACTOR_
-    bodies_Scale_with_CONSTANT_INTERACTION_FACTOR(&bodies);
+  bodies_Scale_with_CONSTANT_INTERACTION_FACTOR(&bodies);
 #endif /* #ifdef _USE_CONSTANT_INTERACTION_FACTOR_ */
 
 
 }
 
+
+
+void Direct_method_Compute_Par(int nb_proc,bodies_t* current, bodies_t * next, int my_rank){
+  int pas = 2;
+  bodies_t * tmp;
+  MPI_Request reqr;
+  MPI_Status status;
+  int source = (my_rank+1)%nb_proc;
+  int dest = my_rank==0?15:(my_rank-1)%nb_proc;
+  long nb_local_bodies=bodies.nb_bodies ;
+  int i = 0;
+  float  reducex = 0;
+  float  reducey = 0;
+  float  reducez = 0;
+  float  rx = 0;
+  float  ry = 0;
+  float  rz = 0;
+
+
+  /* pas == 0 on calcule les interactions entre les particules locales*/
+  bodies_Compute_own_interaction(&bodies);      
+
+  /* pas == 1 on calcule les interactions entre les particules locales et celles recuent,
+   on envoie celles locales au noeud suivant*/
+  mpi_isend(&bodies,nb_local_bodies,dest,&reqr);
+  mpi_recv(next,nb_local_bodies,source);
+  //  printf("%d calcule, source : %d, dest : %d, nb_proc %d\n",my_rank,source,dest,nb_proc);
+  bodies_Compute_own_interaction_par(current,&bodies);
+  MPI_Wait(&reqr, &status);
+  /*on inverse les tableau*/
+  tmp=current;
+  current=next;
+  next=tmp;
+
+  while(pas < nb_proc){
+    /*on emet les datas au suivant*/
+    mpi_isend(&bodies,nb_local_bodies,dest,&reqr);   
+    /*on recoit les datas du precedent*/
+    mpi_recv(next,nb_local_bodies,source);
+    /*on calcule les interactions*/
+    //    printf("%d calcule, source : %d, dest : %d, nb_proc %d\n",my_rank,source,dest,nb_proc);
+    bodies_Compute_own_interaction_par(current,&bodies);      
+    MPI_Wait(&reqr, &status);
+    /*on inverse les tableau*/
+    tmp=current;
+    current=next;
+    next=tmp;
+    
+    pas++;
+  }
+
+  for(i=0;i< bodies.nb_bodies;i++){
+    rx+=bodies.p_fx[i];
+    ry+=bodies.p_fy[i];
+    rz+=bodies.p_fz[i];
+  }
+  
+  MPI_Reduce(&rx,
+	     &reducex,
+	     1,
+	     MPI_FLOAT,
+	     MPI_SUM,
+	     0,
+	     MPI_COMM_WORLD);
+
+  MPI_Reduce(&ry,
+	     &reducey,
+	     1,
+	     MPI_FLOAT,
+	     MPI_SUM,
+	     0,
+	     MPI_COMM_WORLD);
+
+  MPI_Reduce(&rz,
+	     &reducez,
+	     1,
+	     MPI_FLOAT,
+	     MPI_SUM,
+	     0,
+	     MPI_COMM_WORLD);
+
+  printf("\t\t\t\t\t****************reducex = %f, reducey = %f, reducez = %f\n",reducex,reducey,reducez);
+
+
+#ifdef _USE_CONSTANT_INTERACTION_FACTOR_
+  bodies_Scale_with_CONSTANT_INTERACTION_FACTOR(&bodies);
+#endif /* #ifdef _USE_CONSTANT_INTERACTION_FACTOR_ */
+
+
+}
 
 
 
@@ -186,18 +412,18 @@ void Direct_method_Compute(){
 
    Direct_method_Move : Leapfrog integrator ( Kick Drift Kick )  
 
-**********************************************************************************************
-*********************************************************************************************/
+   **********************************************************************************************
+   *********************************************************************************************/
 
 void KnD_Direct_method_Move(REAL_T dt ){
   /**** Kick N Drift ***/
-	bodies_it_t it;
- for (bodies_it_Initialize(&it, &bodies);
-      bodies_it_Is_valid(&it);
-      bodies_it_Go2Next(&it)){
-   bodies_Kick_Move(&it,dt);
-   bodies_Drift_Move(&it,dt); 
- }
+  bodies_it_t it;
+  for (bodies_it_Initialize(&it, &bodies);
+       bodies_it_Is_valid(&it);
+       bodies_it_Go2Next(&it)){
+    bodies_Kick_Move(&it,dt);
+    bodies_Drift_Move(&it,dt); 
+  }
 }
 
 void K_Direct_method_Move(REAL_T dt ){
@@ -224,8 +450,8 @@ void K_Direct_method_Move(REAL_T dt ){
 
    Direct_method_Terminate
 
-**********************************************************************************************
-*********************************************************************************************/
+   **********************************************************************************************
+   *********************************************************************************************/
 void Direct_method_Terminate(){
 
   bodies_Free(&bodies);
@@ -269,8 +495,8 @@ void Direct_method_Terminate(){
 
    sum
 
-**********************************************************************************************
-*********************************************************************************************/
+   **********************************************************************************************
+   *********************************************************************************************/
 void Direct_method_Sum(char *results_file,
 		       unsigned long step_number_value,
 		       bodies_t *p_bodies, 
@@ -309,8 +535,8 @@ void Direct_method_Sum(char *results_file,
 
    save 
 
-**********************************************************************************************
-*********************************************************************************************/
+   **********************************************************************************************
+   *********************************************************************************************/
 void Direct_method_Dump_bodies(char *results_filename,
 			       unsigned long step_number_value,
 			       bodies_t *p_bodies){

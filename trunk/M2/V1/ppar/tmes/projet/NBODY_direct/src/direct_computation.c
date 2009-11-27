@@ -12,9 +12,9 @@
 
    Without Matrices
 
-**********************************************************************************************
-**********************************************************************************************
-*********************************************************************************************/
+   **********************************************************************************************
+   **********************************************************************************************
+   *********************************************************************************************/
 
 /* All the following functions use the mutual interaction principle (i.e. reciprocity). */
 
@@ -25,15 +25,15 @@
 /* #define _CHECK_IF_POSITION_ARE_TOO_CLOSE_ */
 #ifdef _CHECK_IF_POSITION_ARE_TOO_CLOSE_
 #define CHECK_IF_POSITION_ARE_TOO_CLOSE(pos_x_tgt, pos_y_tgt, pos_z_tgt, pos_x_src, pos_y_src, pos_z_src) { \
-  if (position_Are_too_close(pos_x_tgt, pos_y_tgt, pos_z_tgt, pos_x_src, pos_y_src, pos_z_src)){            \
-    fprintf(f_output, "In file direct_computation.c: the two position are too close:\n");                   \
-    pos_xyz_Display(pos_x_tgt, pos_y_tgt, pos_z_tgt, f_output, low);	\
-    fprintf(f_output, "\t and \t");					\
-    pos_xyz_Display(pos_x_src, pos_y_src, pos_z_src, f_output, low);	\
-    fprintf(f_output, "\n");						\
-    FMB_ERROR_BRIEF();							\
-  }									\
-}
+    if (position_Are_too_close(pos_x_tgt, pos_y_tgt, pos_z_tgt, pos_x_src, pos_y_src, pos_z_src)){ \
+      fprintf(f_output, "In file direct_computation.c: the two position are too close:\n"); \
+      pos_xyz_Display(pos_x_tgt, pos_y_tgt, pos_z_tgt, f_output, low);	\
+      fprintf(f_output, "\t and \t");					\
+      pos_xyz_Display(pos_x_src, pos_y_src, pos_z_src, f_output, low);	\
+      fprintf(f_output, "\n");						\
+      FMB_ERROR_BRIEF();						\
+    }									\
+  }
 #else 
 #define CHECK_IF_POSITION_ARE_TOO_CLOSE(pos_x_tgt, pos_y_tgt, pos_z_tgt, pos_x_src, pos_y_src, pos_z_src) 
 #endif 
@@ -50,8 +50,8 @@
 
    bodies_Compute_own_interaction
 
-**********************************************************************************************
-*********************************************************************************************/
+   **********************************************************************************************
+   *********************************************************************************************/
 
 
 #ifdef _BODIES_SPLIT_DATA_
@@ -118,6 +118,97 @@ bodies_Compute_own_interaction(bodies_t *FMB_RESTRICT p_b){
     p_fx[i] = fix;    
     p_fy[i] = fiy;
     p_fz[i] = fiz;   
+  }
+}
+
+
+void 
+bodies_Compute_own_interaction_par(bodies_t *FMB_RESTRICT p_b,bodies_t *FMB_RESTRICT bodies){
+
+  bodies_ind_t i,j;
+  bodies_ind_t n = bodies_Nb_bodies(p_b);
+
+  FMB_CONST COORDINATES_T *FMB_RESTRICT p_px;
+  FMB_CONST COORDINATES_T *FMB_RESTRICT p_py;
+  FMB_CONST COORDINATES_T *FMB_RESTRICT p_pz;
+  FMB_CONST VALUES_T *FMB_RESTRICT p_val;
+
+  VALUES_T val_i, val_j;
+
+  COORDINATES_T *FMB_RESTRICT p_fx;
+  COORDINATES_T *FMB_RESTRICT p_fy;
+  COORDINATES_T *FMB_RESTRICT p_fz;
+  COORDINATES_T fix, fiy, fiz;
+
+
+
+  FMB_CONST COORDINATES_T *FMB_RESTRICT p_px2;
+  FMB_CONST COORDINATES_T *FMB_RESTRICT p_py2;
+  FMB_CONST COORDINATES_T *FMB_RESTRICT p_pz2;
+  FMB_CONST VALUES_T *FMB_RESTRICT p_val2;
+
+
+  COORDINATES_T *FMB_RESTRICT p_fx2;
+  COORDINATES_T *FMB_RESTRICT p_fy2;
+  COORDINATES_T *FMB_RESTRICT p_fz2;
+  COORDINATES_T fix2, fiy2, fiz2;
+
+  COORDINATES_T pix, piy, piz, pjx, pjy, pjz;
+  REAL_T eps_soft_square = FMB_Info.eps_soft_square;
+
+
+
+  p_px = p_b->p_pos_x;
+  p_py = p_b->p_pos_y;
+  p_pz = p_b->p_pos_z;
+
+  p_val = bodies_Get_p_value(p_b, 0);
+  p_fx = p_b->p_fx;
+  p_fy = p_b->p_fy;
+  p_fz = p_b->p_fz;
+
+
+  p_px2 = bodies->p_pos_x;
+  p_py2 = bodies->p_pos_y;
+  p_pz2 = bodies->p_pos_z;
+  
+  p_val2 = bodies_Get_p_value(bodies, 0);
+  p_fx2 = bodies->p_fx;
+  p_fy2 = bodies->p_fy;
+  p_fz2 = bodies->p_fz;
+
+  for(i=0; i<n-1; i++){
+    pix = p_px2[i];
+    piy = p_py2[i];
+    piz = p_pz2[i];
+    val_i = p_val2[i];
+
+    fix = p_fx2[i];
+    fiy = p_fy2[i];
+    fiz = p_fz2[i];
+
+
+    for (j=i+1;	 j<n; j++){
+      pjx = p_px[j];
+      pjy = p_py[j];
+      pjz = p_pz[j];
+      val_j = p_val[j];
+
+      CHECK_IF_POSITION_ARE_TOO_CLOSE(pix, piy, piz, pjx, pjy, pjz);       
+      DIRECT_COMPUTATION_MUTUAL_SOFT(pix, piy, piz,
+				     pjx, pjy, pjz,
+				     val_i,
+				     val_j,
+				     fix, fiy, fiz,
+				     p_fx[j], p_fy[j], p_fz[j],
+				     pot_i,
+				     p_pot[j],
+				     eps_soft_square);
+    }
+
+    p_fx2[i] = fix;    
+    p_fy2[i] = fiy;
+    p_fz2[i] = fiz;
   }
 }
 

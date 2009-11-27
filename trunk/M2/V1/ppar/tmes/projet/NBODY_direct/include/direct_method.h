@@ -7,6 +7,7 @@
 
 
 
+
 /***************************** Global variables: *******************************/
 /* We recall here the declarations of some useful global variables. */
 
@@ -26,6 +27,7 @@ void Direct_method_Data_bodies(bodies_t *p_b);
 void Direct_method_Data(char *data_file);
 
 void Direct_method_Compute();
+void Direct_method_Compute_Par(int nb_proc,bodies_t* current, bodies_t * next,int my_rank);
 
 void Direct_method_Move();
 void KnD_Direct_method_Move(REAL_T dt ) ; 

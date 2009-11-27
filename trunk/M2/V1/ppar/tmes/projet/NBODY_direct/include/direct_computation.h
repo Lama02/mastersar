@@ -27,6 +27,7 @@ void bodies_Compute_direct_interaction(bodies_t *FMB_RESTRICT p_b_target,
 
 /*! The mutual interaction principle is always used in 'bodies_Compute_own_interaction()'. */
 void bodies_Compute_own_interaction(bodies_t *FMB_RESTRICT p_b);
+void bodies_Compute_own_interaction_par(bodies_t *FMB_RESTRICT p_b,bodies_t *FMB_RESTRICT bodies);
 
 void bodies_Compute_own_interaction_for_first_ones(bodies_t *FMB_RESTRICT p_b,
 					      bodies_ind_t nmax);

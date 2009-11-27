@@ -8,6 +8,7 @@
 #include "IO.h" 
 
 
+
 /* For FMB_Info.save: */
 #define RESULTS_DIR "/tmp/NBODY_direct_results_Rachid_et_cote/"
 #define RESULTS_FILE "results_"
@@ -31,11 +32,22 @@ int parse_command(int argc,
 
 
 
-/* variable de parallèlisation */
-//bodies_t local_bodies;
-REAL_T dt;
-  
 
+/*variables MPI*/
+MPI_Status status;
+int rank = 0;
+int mpi_p = 0;
+int mpi_tag = 0;
+
+
+/*variable de parallesisation*/
+long nb_bodies_local;
+REAL_T dt;
+bodies_t p_b1;
+bodies_t p_b2;
+bodies_t *current_b;
+bodies_t *next_b;
+  
 
 
 /*********************************************************************************************
@@ -63,20 +75,7 @@ int main(int argc, char **argv){
   double t_start = 0.0, t_end = 0.0;
   
   
-  /*variables MPI*/
-  MPI_Status status;
-  int rank = 0;
-  int p = 0;
-  int source = 0;
-  int dest = 0;
-  int tag = 0;
 
-  /*variable de topologie*/
-  int next;
-  int prev;
-  
-  /*variable de parallesisation*/
-  long nb_bodies_local;
   /*************************** Options on command line: ********************************/
   f_output = stdout; /* by default */
   parse_command(argc, argv, &data_file, &results_file);
@@ -111,22 +110,15 @@ int main(int argc, char **argv){
   /*initialisation MPI*/
   MPI_Init (&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&p);
+  MPI_Comm_size(MPI_COMM_WORLD,&mpi_p);
 
   /*initialisation des variables des process*/
-
-  next = (rank+1) % p;
-  prev = (rank-1) % p;
-
-  if (rank == 0)
-    nb_bodies_local = bodies.size_allocated/p;
-
-  //debug   printf("proc : %d , tmp : %ld\n",rank, nb_bodies_local);
-
-  /*par ici on va envoyer les datas à tout les process*/
   {
+    if (rank == 0)
+      nb_bodies_local = bodies.size_allocated/mpi_p;
+    
     if (rank==0)
-      printf("\n\n \t\t\t\t\t\t ****size allocated %ld, nb bodies %ld**** proc rank : %d\n\n\n", 
+      printf("\t\t\t\t\t\t ****size allocated %ld, nb bodies %ld**** proc rank : %d\n", 
 	     bodies.size_allocated,bodies.nb_bodies,rank);
 
     //on envoie le nombre que chaque noued gerera
@@ -136,13 +128,19 @@ int main(int argc, char **argv){
 	      0,
 	      MPI_COMM_WORLD);
     
+    bodies_Initialize(&p_b1,nb_bodies_local);
+    bodies_Initialize(&p_b2,nb_bodies_local);
+    p_b1.size_allocated = nb_bodies_local;
+    p_b2.size_allocated = nb_bodies_local;
+    current_b = &p_b1;
+    next_b = &p_b2;
 
     if(rank != 0){
-    bodies_Initialize(&bodies,nb_bodies_local);
-    bodies.size_allocated = nb_bodies_local;    
+      bodies_Initialize(&bodies,nb_bodies_local);
+      bodies.size_allocated = nb_bodies_local;    
     }
     bodies.nb_bodies = nb_bodies_local;
-    printf("\n\n \t\t\t\t\t\t ****size allocated %ld, nb bodies %ld**** proc rank : %d \n\n\n",
+    printf("\t\t\t\t\t\t ****size allocated %ld, nb bodies %ld**** proc rank : %d \n",
 	   bodies.size_allocated,bodies.nb_bodies,rank);
     //repartition des pos_x
     MPI_Scatter(bodies.p_pos_x,
@@ -258,19 +256,20 @@ int main(int argc, char **argv){
 	/***** Clear the forces and the potential of the bodies for the next time step: ********/
 	bodies_ClearFP(&bodies);
       }
-      
-      /* Start timer: */
-      t_start = my_gettimeofday();
-      
-      /* Computation: */
-      Direct_method_Compute();
-      
-      /* End timer: */
-      t_end = my_gettimeofday();
-
-      if (tnow !=0)
-	K_Direct_method_Move(FMB_Info.dt);
-
+           
+	/* Start timer: */
+	t_start = my_gettimeofday();
+	
+	
+	/* Computation: */
+	Direct_method_Compute_Par(mpi_p,&p_b1,&p_b2,rank);
+	
+	/* End timer: */
+	t_end = my_gettimeofday();
+	
+	if (tnow !=0)
+	  K_Direct_method_Move(FMB_Info.dt);
+	
    
 
 
@@ -357,7 +356,8 @@ int main(int argc, char **argv){
   /********************************** End of the simulation: ********************************/
   /******************************************************************************************/
 
-
+  bodies_Free(&p_b1);
+  bodies_Free(&p_b2);
   Direct_method_Terminate();
 
   MPI_Finalize();
