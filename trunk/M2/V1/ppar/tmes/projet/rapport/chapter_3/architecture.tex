@@ -1,16 +1,69 @@
-\section{Prarllèlisation}
-
-\section{Topologie}
-
+\section{Parallèlisation}
+\par Dans un premier temps il est necessaire de trouver les points de parallèlisation 
+du programme séquentiel. Pour ce faire il est nécessaire de bien connaitre l'algorithme 
+utilisé.\\
+l'algorithme séquentiel consiste à stocker les corps dans un tableau de structures ou une structure 
+de tableaux (selon si la constante \_BODIES\_SPLIT\_DATA\_ est définies ou pas), à parcourir 
+cette structure et à calculer une à une les interactions entre deux corps, puis à les déplacer.\\
+\par l'interet de la parallèlisation est de pouvoir répartir la structure de donnée sur tout les
+noeuds du système afin d'alléger la mémoire utilisée par chaque noeud, et ainsi augmenter le 
+nombre de corps de la simulation.\\
+Une fois ceci fait il faut que malgrés la séparation des données nous réussissions a calculer
+les interactions entre chaque corps. Nous pouvons décidé d'utiliser une architecture centralisé 
+ou distribué, sachant que nous devons effectuer une sauvegarde à chaque pas de temps si l'option 
+d'éxécution --save est présente.\\
+\par L'avantage de la solution centralisée c'est qu'un processus (maître) distribue le travail aux autres
+(les esclaves). Ainsi ce la permet de distribuer plus de travail aux noeud plus puissant et moins aux
+plus lent ; ce qui ne nous concerne pas étant donnée que les noeud sont considérés homogènes
+(même puissance).\\
+L'inconvénient est que cette solution fonctionne trés bien avec un petit nombre de noeuds et qu'elle 
+ne tient pas le passage à l'échelle.\\
+Ce pendant pour effectuer les sauvegardes de chaque pas de temps ce sera la solution adoptée. 
+Toutes les valeurs calculées seront rapatriées vers le processus 0 qui se chargera d'effectuer 
+l'écriture  dans le fichier cible.\\
+\par Quant à la solution distribuée elle passe trés bien à l'échelle, mais il est difficile de
+la rendre adaptable dynamiquement et s'utilise préférenciellement dans une architecture homogène.
+\\C'est ainsi que fonctionnera le calcule des interactions des corps. Au temps t=0, chaque noeud 
+calcule les interactions entre les corps dont il dispose localement. Au temps t=0+dt on envoie chaque
+processus envoie à autre noeud les données qu'il a calculé et reçoit les données d'un corps
+calculées d'un autre noeud. On réitère cette operation p-2 fois ainsi chaque processus a
+calculé les interactions avec tout les corps du dystème.\\
 
 \section{Structures}
-Dans le fichier include/config.h nous allons modifier la macro du pres processeur \_BODIES\_SPLIT\_DATA\_ .
-Cettte macro definira le choix de la structure utilisée pour stocker les corps en mémoire.
-il éxiste deux choix : \\
-tableau de structures\\
-structure de tableaux\\
+\par Le programme séquentiel nous donne le choix de la représentation en mémoires des 
+corps. Grace à la macro \_BODIES\_SPLIT\_DATA\_ selon si elle est définie ou non 
+les corps sont stockés soit dans une structure de tableau, soit dans un tableau de structure.\\
+En mémoire un tableau de structure est représenté sous forme d'un tableau de pointeur référençant 
+des structures, ce qui implique que les données ne sont pas contigues en mémoire. Alors qu'avec une 
+structure de tableau, ces derniers leur données sont contigues.\\
+Pour faciliter les accès mémoire des fonctions MPI\_Gatheret(), MPI\_Scatter(), nous avons fait le 
+choix d'utiliser les structures de tableau. Cependant ce choix permet également lors des calcules
+de facilité l'accès aux dnnées, notamment lors de la parallèlisation de chaque processus en processus 
+léger avec l'API Open\_MP.\\
+
+\section{Topologie}
+\par Dans le paragraphe $"Parallèlisation$" nous avons développé la manière dont se déroulerait 
+le programme parallèlisé. Les machines à notre disposition sont reliées par un switch 
+réseau ce qui nous permet d'adopter n'importe quelle topologie pour éxécuter notre 
+programme. Il ne nous reste qu'a adopter la bonne.\\
+Quelles sont les topologies que nous pouvons mettre en place :
+\begin{enumerate}
+\item Etoile
+\item Anneau
+\item Thor 2D
+\item Thor 3D
+\item Hypercube (car nous avons 16 machines dans certaine salle)
+\end{enumerate}
+D'après l'algorithme parallèlisé que nous avons choisie à chaque itération nous faisons p
+envoie de messages et toujours au même processus, de le sujet nous propose de mettre en
+place une topologie en anneau. La solution d'une topologie en anneau se pésente donc
+naturellement.\\
+
+\section{Vérifications}
+
 
 \section{Optimisations}
-
+\subsection{communication}
+\subsection{Accès mémoire}
 
 
