@@ -8,14 +8,14 @@
 ################################### Execution options ###################################
 RUN = mpirun
 RUN_FLAGS = --hostfile $${MPI_HOSTFILE_PATH}
-NB_PROCESS = -c 2
+NB_PROCESS = -c 4
 IN_FILE = ../data/baredisk_2048-plummer_2048.nemo
+#IN_FILE = ../data/baredisk_64-plummer_64.nemo
 TEND = 10.0
 DT = 0.1
 SOFT = 0.01
-
-
-
+NBOBDY_FLAGS = --save
+MY_GCC_FLAGS =  -D_DEBUG=0 
 
 
 ################################### High-level options ##################################
@@ -156,7 +156,8 @@ endif
 
 CFLAGS = $(WARNINGS) \
 	$(OPTIM_FLAGS) \
-	$(GNU_FLAGS) 
+	$(GNU_FLAGS) \
+	$(MY_GCC_FLAGS)
 
 
 ### gprof:
@@ -297,7 +298,7 @@ $(OBJ)%.o: $(NBODY_DIRECT_SRC)%.c $(NBODY_DIRECT_INC)%.h
 #---------------------------------------------------------------------------------------#
 
 run: $(BIN)NBODY_direct
-	$(RUN) $(RUN_FLAGS) $(NB_PROCESS) $< --in=$(IN_FILE) --tend=$(TEND) --dt=$(DT) --soft=$(SOFT) --sum 
+	$(RUN) $(RUN_FLAGS) $(NB_PROCESS) $< --in=$(IN_FILE) --tend=$(TEND) --dt=$(DT) --soft=$(SOFT) --sum $(NBOBDY_FLAGS)
 
 net.o: 
 	@echo ""

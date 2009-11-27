@@ -52,76 +52,78 @@ bodies_t bodies_old;
    **********************************************************************************************
    *********************************************************************************************/
 
-  void rassemblement(){
-    printf("\t ############ [DEBUG] +++++++++++ Proc %d \t Dans la fonction rassemblement\n",rank);
-    MPI_Gather(local_bodies.p_pos_x,
-	       local_nb_bodies,
-	       MPI_FLOAT,
-	       bodies.p_pos_x,
-	       local_nb_bodies,
-	       MPI_FLOAT,
-	       ROOT,
-	       MPI_COMM_WORLD);   
-    MPI_Gather(local_bodies.p_pos_y,
-	       local_nb_bodies,
-	       MPI_FLOAT,
-	       bodies.p_pos_y,
-	       local_nb_bodies,
-	       MPI_FLOAT,
-	       ROOT,
-	       MPI_COMM_WORLD);   
-    MPI_Gather(local_bodies.p_pos_y,
-	       local_nb_bodies,
-	       MPI_FLOAT,
-	       bodies.p_pos_y,
-	       local_nb_bodies,
-	       MPI_FLOAT,
-	       ROOT,
-	       MPI_COMM_WORLD);   
+void rassemblement(){
+#ifdef _DEBUG_
+  printf("\t ############ [DEBUG] +++++++++++ Proc %d \t Dans la fonction rassemblement\n",rank);
+#endif
+  MPI_Gather(local_bodies.p_pos_x,
+	     local_nb_bodies,
+	     MPI_FLOAT,
+	     bodies.p_pos_x,
+	     local_nb_bodies,
+	     MPI_FLOAT,
+	     ROOT,
+	     MPI_COMM_WORLD);   
+  MPI_Gather(local_bodies.p_pos_y,
+	     local_nb_bodies,
+	     MPI_FLOAT,
+	     bodies.p_pos_y,
+	     local_nb_bodies,
+	     MPI_FLOAT,
+	     ROOT,
+	     MPI_COMM_WORLD);   
+  MPI_Gather(local_bodies.p_pos_y,
+	     local_nb_bodies,
+	     MPI_FLOAT,
+	     bodies.p_pos_y,
+	     local_nb_bodies,
+	     MPI_FLOAT,
+	     ROOT,
+	     MPI_COMM_WORLD);   
     
-    MPI_Gather(local_bodies.p_fx,
-	       local_nb_bodies,
-	       MPI_FLOAT,
-	       bodies.p_fx,
-	       local_nb_bodies,
-	       MPI_FLOAT,
-	       ROOT,
-	       MPI_COMM_WORLD);   
-    MPI_Gather(local_bodies.p_fy,
-	       local_nb_bodies,
-	       MPI_FLOAT,
-	       bodies.p_fy,
-	       local_nb_bodies,
-	       MPI_FLOAT,
-	       ROOT,
-	       MPI_COMM_WORLD);   
-    MPI_Gather(local_bodies.p_fz,
-	       local_nb_bodies,
-	       MPI_FLOAT,
-	       bodies.p_fz,
-	       local_nb_bodies,
-	       MPI_FLOAT,
-	       ROOT,
-	       MPI_COMM_WORLD);   
+  MPI_Gather(local_bodies.p_fx,
+	     local_nb_bodies,
+	     MPI_FLOAT,
+	     bodies.p_fx,
+	     local_nb_bodies,
+	     MPI_FLOAT,
+	     ROOT,
+	     MPI_COMM_WORLD);   
+  MPI_Gather(local_bodies.p_fy,
+	     local_nb_bodies,
+	     MPI_FLOAT,
+	     bodies.p_fy,
+	     local_nb_bodies,
+	     MPI_FLOAT,
+	     ROOT,
+	     MPI_COMM_WORLD);   
+  MPI_Gather(local_bodies.p_fz,
+	     local_nb_bodies,
+	     MPI_FLOAT,
+	     bodies.p_fz,
+	     local_nb_bodies,
+	     MPI_FLOAT,
+	     ROOT,
+	     MPI_COMM_WORLD);   
 
-    MPI_Gather(local_bodies.p_values,
-	       local_nb_bodies,
-	       MPI_FLOAT,
-	       bodies.p_values,
-	       local_nb_bodies,
-	       MPI_FLOAT,
-	       ROOT,
-	       MPI_COMM_WORLD);   
+  MPI_Gather(local_bodies.p_values,
+	     local_nb_bodies,
+	     MPI_FLOAT,
+	     bodies.p_values,
+	     local_nb_bodies,
+	     MPI_FLOAT,
+	     ROOT,
+	     MPI_COMM_WORLD);   
     
-    MPI_Gather(local_bodies.p_speed_vectors,
-	       local_nb_bodies*sizeof(position_t),
-	       MPI_UNSIGNED_CHAR,
-	       bodies.p_speed_vectors,
-	       local_nb_bodies*sizeof(position_t),
-	       MPI_UNSIGNED_CHAR,
-	       ROOT,
-	       MPI_COMM_WORLD);   
-  }
+  MPI_Gather(local_bodies.p_speed_vectors,
+	     local_nb_bodies*sizeof(position_t),
+	     MPI_UNSIGNED_CHAR,
+	     bodies.p_speed_vectors,
+	     local_nb_bodies*sizeof(position_t),
+	     MPI_UNSIGNED_CHAR,
+	     ROOT,
+	     MPI_COMM_WORLD);   
+}
 
 
 
@@ -198,19 +200,25 @@ int main(int argc, char **argv){
     
     /* Nombre de corps pour chaque noeud */
     local_nb_bodies = bodies.nb_bodies/p;
+#ifdef _DEBUG_
     printf("\t [DEBUG] +++++++++++ Proc %d \t bodies : size allocated %ld \t nb bodies %ld \n", rank, bodies.size_allocated,bodies.nb_bodies);
     printf("\t [DEBUG] +++++++++++ Proc %d \t bodies.p_pos_x[1]:%f \n", rank, bodies.p_pos_x[1]);
+#endif
   } //  if (rank == ROOT) 
   
     /********************************** Debut Partage des données: ******************************/
     // diffuser le nombre de corps local à tous le monde
+#ifdef _DEBUG_
   printf("\t [DEBUG] +++++++++++ Proc %d \t Diffusion de local_nb_bodies... \n", rank);
+#endif
   MPI_Bcast(&local_nb_bodies,
 	    1,
 	    MPI_LONG,
 	    ROOT,
 	    MPI_COMM_WORLD);
+#ifdef _DEBUG_
   printf("\t [DEBUG] +++++++++++ Proc %d \t Diffusion de FMB_Info... \n", rank);
+#endif
   MPI_Bcast(&FMB_Info,
 	    sizeof(FMB_Info_t),
 	    MPI_UNSIGNED_CHAR,
@@ -305,9 +313,11 @@ int main(int argc, char **argv){
 	      MPI_COMM_WORLD);
   /********************************** Fin Partage des données: ******************************/
 
-  printf("\t [DEBUG] +++++++++++ Proc %d \t Fin des scatter \n", rank);
+#ifdef _DEBUG_
+  printf("\t ************************** [DEBUG] +++++++++++ Proc %d \t Fin des scatter \n", rank);
     
   printf("\t [DEBUG] +++++++++++ Proc %d \t local_bodies.p_pos_x[1]:%f \n", rank, local_bodies.p_pos_x[1]);
+#endif
     
 
 
@@ -316,7 +326,9 @@ int main(int argc, char **argv){
   /******************************************************************************************/
   while ( tnow-FMB_Info.dt < tend ) { 
     
+#ifdef _DEBUG_
     printf("\t ## [DEBUG] +++++++++++ Proc %d \t Debut de la simulation. tnow : %f \t tnow : %f\n", rank, tnow, tend);
+#endif
     
     /* utiliser le tableau bodies pour les calculs */
     bodies_old = bodies;
@@ -336,7 +348,9 @@ int main(int argc, char **argv){
     
     /* Start timer: */
     t_start = my_gettimeofday();
+#ifdef _DEBUG_
     printf("\t [DEBUG] +++++++++++ Proc %d \t Lancement des calculs \n", rank);
+#endif
     /* Computation: */
     Direct_method_Compute();
    
@@ -359,83 +373,87 @@ int main(int argc, char **argv){
     /* Rassmbble des résultats de calculs 
      * partiels de tout le monde. 
      */
+#ifdef _DEBUG_
     printf("\t [DEBUG] +++++++++++ Proc %d \t Rassemblement... \n", rank);
+#endif
     rassemblement();    
+#ifdef _DEBUG_
     printf("\t [DEBUG] +++++++++++ Proc %d \t Fin du rassemblement \n", rank);
+#endif
     
     
     if(rank == 0){
-    
-    /****************** Save & display the total time used for this step: *******************/
-    if (INFO_DISPLAY(1)){
-      unsigned long long nb_int = NB_OWN_INT(bodies_Nb_bodies(&bodies));
       
-      fprintf(f_output, "\n#######################################################################\n");
-      fprintf(f_output, "Time now ( Step number) : %lf (%ld) process num : %d\n",tnow,nb_steps,rank );
-      fprintf(f_output, "Computation time = %f seconds\n", t_end - t_start);
-      
-      fprintf(f_output, "Interactions computed: %llu\n", nb_int);
-      fprintf(f_output, "  Nb interactions / second: %.3f\n", ((double) nb_int) / (t_end - t_start));
-
-      fprintf(f_output, "  Gflop/s = %.3f (11.5 flop with mutual) \n",
-	      ((((double) nb_int) / (t_end - t_start)) * 11.5 /* 23 flops divided by 2 since mutual */) / (1000000000.0));
-    }
+      /****************** Save & display the total time used for this step: *******************/
+      if (INFO_DISPLAY(1)){
+	unsigned long long nb_int = NB_OWN_INT(bodies_Nb_bodies(&bodies));
+	
+	fprintf(f_output, "\n#######################################################################\n");
+	fprintf(f_output, "Time now ( Step number) : %lf (%ld) process num : %d\n",tnow,nb_steps,rank );
+	fprintf(f_output, "Computation time = %f seconds\n", t_end - t_start);
+	
+	fprintf(f_output, "Interactions computed: %llu\n", nb_int);
+	fprintf(f_output, "  Nb interactions / second: %.3f\n", ((double) nb_int) / (t_end - t_start));
+	
+	fprintf(f_output, "  Gflop/s = %.3f (11.5 flop with mutual) \n",
+		((((double) nb_int) / (t_end - t_start)) * 11.5 /* 23 flops divided by 2 since mutual */) / (1000000000.0));
+      }
     
     
-    /************************* Save the positions and the forces: ***************************/
-    if (FMB_Info.save && rank == 0){
-      
-      if (results_file == NULL){
-	/* The 'results' filename has not been set yet: */
+      /************************* Save the positions and the forces: ***************************/
+      if (FMB_Info.save && rank == 0){
+	
+	if (results_file == NULL){
+	  /* The 'results' filename has not been set yet: */
 #define TMP_STRING_LENGTH 10
-	char step_number_string[TMP_STRING_LENGTH];
-	int  results_file_length = 0;
+	  char step_number_string[TMP_STRING_LENGTH];
+	  int  results_file_length = 0;
 	
-	/* Find the relative filename in 'data_file': */
-	char *rel_data_file = strrchr(data_file, '/') + 1 ; /* find last '/' and go to the next character */
+	  /* Find the relative filename in 'data_file': */
+	  char *rel_data_file = strrchr(data_file, '/') + 1 ; /* find last '/' and go to the next character */
+	  
+	  results_file_length = strlen(RESULTS_DIR) + 
+	    strlen(RESULTS_FILE) + 
+	    strlen(rel_data_file) +  
+	    TMP_STRING_LENGTH + 
+	    1 /* for '\0' */ ; 
 	
-	results_file_length = strlen(RESULTS_DIR) + 
-	  strlen(RESULTS_FILE) + 
-	  strlen(rel_data_file) +  
-	  TMP_STRING_LENGTH + 
-	  1 /* for '\0' */ ; 
-	
-	results_file = (char *) FMB_malloc_with_check(results_file_length * sizeof(char));
-	
-	strncpy(step_number_string, "", TMP_STRING_LENGTH);
-	sprintf(step_number_string, "_%lu", nb_steps ); 
-	
-	strncpy(results_file, "", results_file_length);
-	strcpy(results_file, RESULTS_DIR); 
-	strcat(results_file, RESULTS_FILE); 
-	strcat(results_file, rel_data_file); 
-	strcat(results_file, step_number_string); 
+	  results_file = (char *) FMB_malloc_with_check(results_file_length * sizeof(char));
+	  
+	  strncpy(step_number_string, "", TMP_STRING_LENGTH);
+	  sprintf(step_number_string, "_%lu", nb_steps ); 
+	  
+	  strncpy(results_file, "", results_file_length);
+	  strcpy(results_file, RESULTS_DIR); 
+	  strcat(results_file, RESULTS_FILE); 
+	  strcat(results_file, rel_data_file); 
+	  strcat(results_file, step_number_string); 
 #undef TMP_STRING_LENGTH
-      }
-    
-      /* Create directory RESULTS_DIR: */
-      {	struct stat filestat;
-	if (stat (RESULTS_DIR, &filestat) != 0) {
-	  /* The directory RESULTS_DIR does not exist, we create it: */
-	  mkdir(RESULTS_DIR, 0700); 
 	}
+	
+	/* Create directory RESULTS_DIR: */
+	{	struct stat filestat;
+	  if (stat (RESULTS_DIR, &filestat) != 0) {
+	    /* The directory RESULTS_DIR does not exist, we create it: */
+	    mkdir(RESULTS_DIR, 0700); 
+	  }
+	}
+	
+	Direct_method_Dump_bodies(results_file, nb_steps, &bodies);
+	
+	FMB_free(results_file);
+	results_file= NULL ; 
+	
       }
-
-      Direct_method_Dump_bodies(results_file, nb_steps, &bodies);
-
-      FMB_free(results_file);
-      results_file= NULL ; 
       
-    }
+      /************************** Sum of forces and potential: ***************************/
+      if (FMB_Info.sum){
+	Direct_method_Sum(NULL, nb_steps, &bodies, total_potential_energy);
+      }
+      
 
-    /************************** Sum of forces and potential: ***************************/
-    if (FMB_Info.sum){
-      Direct_method_Sum(NULL, nb_steps, &bodies, total_potential_energy);
-    }
-
-
-  } //if(rank == 0)
-
+    } //if(rank == 0)
+    
     tnow+=FMB_Info.dt ; 
     nb_steps ++ ; 
     
