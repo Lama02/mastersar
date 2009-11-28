@@ -217,11 +217,11 @@ int main(int argc, char **argv){
 
     //repartition des spped_vector
     MPI_Scatter(bodies.p_speed_vectors,
-		nb_bodies_local,
-		MPI_UNSIGNED_CHAR,
+		3*nb_bodies_local,
+		MPI_FLOAT,
 		bodies.p_speed_vectors,
-		nb_bodies_local,
-		MPI_UNSIGNED_CHAR,
+		3*nb_bodies_local,
+		MPI_FLOAT,
 		0,
 		MPI_COMM_WORLD);  
     
