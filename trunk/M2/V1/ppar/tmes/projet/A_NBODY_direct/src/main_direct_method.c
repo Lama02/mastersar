@@ -2,11 +2,11 @@
 /* #include <stdlib.h> */
 /* #include <string.h> */
 #include <sys/stat.h>
-#include <mpi.h>
+
 
 #include "direct_method.h"
 #include "IO.h" 
-
+#include "var_mpi.h"
 
 /* For FMB_Info.save: */
 #define RESULTS_DIR "/tmp/NBODY_direct_results_rachid_cote/"
@@ -19,22 +19,16 @@
 /*********************************************************************************************
 **********************************************************************************************/
 
-/*variables MPI*/
-MPI_Status status;
-int rank = 0;
-int mpi_p = 0;
-int mpi_tag = 0;
-
 
 /*variable de parallesisation*/
 long nb_bodies_local; //nombre de corps local au noeud
 long nb_bodies_total; //nombre de corps dans le systeme
-REAL_T dt;           
+
 bodies_t p_b1;       //dtructure qui servira de tampon pour les emission et les reception
 bodies_t p_b2;       //structure qui servira de tampon pour les emission et les reception
 bodies_t *current_b; //pointeur vers les structures tampon
 bodies_t *next_b;    //pointeur vers les structures tampon
-REAL_T tstart ,tend , tnow ; 
+REAL_T tstart ,tend , tnow, dt ; 
 
 /*********************************************************************************************
 **********************************************************************************************/
@@ -56,12 +50,16 @@ void initialize_node(){
   /*on initialise les structure tampon*/
   bodies_Initialize(&p_b1,nb_bodies_local);
   bodies_Initialize(&p_b2,nb_bodies_local);
+
   current_b = &p_b1;
   next_b = &p_b2;
+  p_b1.nb_bodies = nb_bodies_local;
+  p_b2.nb_bodies = nb_bodies_local;
   
   /*on initialise la stucture bodies sauf pour le proc 0 qui l'a deja faite*/
   if(rank != 0){
     bodies_Initialize(&bodies,nb_bodies_local);
+    bodies.nb_bodies = nb_bodies_local;    
     bodies.size_allocated = nb_bodies_local;    
   }
 }
@@ -386,7 +384,7 @@ int main(int argc, char **argv){
     t_start = my_gettimeofday();
 
     /* Computation: */
-    Direct_method_Compute();
+    Direct_method_Compute_Par(current_b, next_b);
    
     /* End timer: */
     t_end = my_gettimeofday();
@@ -422,7 +420,7 @@ int main(int argc, char **argv){
       gather_to_root();
     }
     if (FMB_Info.save && rank == 0){    
-
+      bodies.nb_bodies = nb_bodies_total;
       if (results_file == NULL){
 	/* The 'results' filename has not been set yet: */
 #define TMP_STRING_LENGTH 10
@@ -463,7 +461,7 @@ int main(int argc, char **argv){
 
       FMB_free(results_file);
       results_file= NULL ; 
-      
+      bodies.nb_bodies = nb_bodies_local;
     }
 
     /************************** Sum of forces and potential: ***************************/
@@ -472,15 +470,16 @@ int main(int argc, char **argv){
       if(!FMB_Info.save){
 	get_forces();
       }
-      //on met le nombre de corps à n
+
       if(rank == 0){
+	//on met le nombre de corps à n
 	bodies.nb_bodies = nb_bodies_total;
 	Direct_method_Sum(NULL, nb_steps, &bodies, total_potential_energy);     
-      }            
-      //on remet le nombre de corps à n/p
-      if(rank == 0){
+	//on remet le nombre de corps à n/p
 	bodies.nb_bodies = nb_bodies_local;
-      }
+      }            
+
+
     }
 
 
