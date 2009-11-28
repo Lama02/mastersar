@@ -27,8 +27,8 @@ Toutes les valeurs calculées seront rapatriées vers le processus 0 qui se char
 l'écriture  dans le fichier cible.\\
 \par Quant à la solution distribuée elle passe trés bien à l'échelle, mais il est difficile de
 la rendre adaptable dynamiquement et s'utilise préférenciellement dans une architecture homogène.
-\\C'est ainsi que fonctionnera le calcule des interactions des corps. Au temps t=0, chaque noeud 
-calcule les interactions entre les corps dont il dispose localement. Au temps t=0+dt on envoie chaque
+\\C'est ainsi que fonctionnera le calcule des interactions des corps. Au temps $t=0$, chaque noeud 
+calcule les interactions entre les corps dont il dispose localement. Au temps $t=0+dt$ on envoie chaque
 processus envoie à autre noeud les données qu'il a calculé et reçoit les données d'un corps
 calculées d'un autre noeud. On réitère cette operation p-2 fois ainsi chaque processus a
 calculé les interactions avec tout les corps du dystème.\\
@@ -38,17 +38,30 @@ calculé les interactions avec tout les corps du dystème.\\
 \par Le programme séquentiel nous donne le choix de la représentation en mémoires des 
 corps. Grace à la macro \_BODIES\_SPLIT\_DATA\_ selon si elle est définie ou non 
 les corps sont stockés soit dans une structure de tableau, soit dans un tableau de structure.\\
-En mémoire un tableau de structure est représenté sous forme d'un tableau de pointeur référençant 
-des structures, ce qui implique que les données ne sont pas contigues en mémoire. Alors qu'avec une 
-structure de tableau, ces derniers leur données sont contigues.\\
-Pour faciliter les accès mémoire des fonctions MPI\_Gatheret(), MPI\_Scatter(), nous avons fait le 
+
+\par Le fait d'utiliser un tableau de structure fera qu'a l'initisation au lieu de faire huit 
+MPI\_scatter() (un pour cahque champs dans le cas de tableau de strucures) on en fera qu'un seul,
+mais cela induit qu'à chaque echange de messaqge entre les processus on envera trop de données.
+Deplus en envoyant un $"gros"$ message, on a plus de chance de passer les emission et reception en mode
+synchrone (cf section recouvrement des communications). On pourrait penser qu'avec un tableau de structure,
+comme les donnée sont contigue en mémoire on gagnera du temps par raport au defaut de page. Mais 
+nous n'utilisons pas tout les champs pour effectuer les calculs.
+
+\par L'avantage de la représentation des corps en structure de tableaux fait que des données d'un même
+type seront contigue en mémoire. Typiquement tout les p\_posx seront contigues. Deplus les messages, 
+même s'il y en a plus qui transitent, seront de plus petites taille et permettent de simuler des 
+interactions avec un plus grand nombre de corps avant de passer en mode de communication synchrone.
+Cette structure permet également de selectionné les champs de données à transmettre. Globalement 
+on transmettra moins de quantité d'information.
+
+\par Pour faciliter les accès mémoire des fonctions MPI\_Gatheret(), MPI\_Scatter(), nous avons fait le 
 choix d'utiliser les structures de tableau. Cependant ce choix permet également lors des calcules
 de facilité l'accès aux dnnées, notamment lors de la parallèlisation de chaque processus en processus 
 léger avec l'API Open\_MP.\\
 
 \section{Topologie}
 
-\par Dans le paragraphe $"Parallèlisation$" nous avons développé la manière dont se déroulerait 
+\par Dans le paragraphe $"Parallelisation"$ nous avons développé la manière dont se déroulerait 
 le programme parallèlisé. Les machines à notre disposition sont reliées par un switch 
 réseau ce qui nous permet d'adopter n'importe quelle topologie pour éxécuter notre 
 programme. Il ne nous reste qu'a adopter la bonne.\\
@@ -88,8 +101,8 @@ Par induction sur N corps on obtient que :
   \end{center}
 \end{quote}
 
-\par Il en découle un invariant pour notre programme de calcul d'interactions entre N corps.\\
-A un instant t, avant et apres que le calcul des interactions entre les corps ait été fais 
+\par Il en découle un invariant pour notre programme parallèle de calcul d'interactions entre N corps.\\
+A un instant t, avant et apres que le calcul d'un $dt$ des interactions entre les corps ait été fais 
 on a :
 \begin{quote}
   \begin{center}
@@ -107,7 +120,53 @@ la taille en octet sur laquelle sont représenté les nombres, on a:
 Nous prendrons $\epsilon = 10^{-4}$.
 
 \section{Optimisations}
+
+\par Dans un programme parallèle deux facteurs de gain de rapidité rentre en compte : 
+\begin{enumerate}
+\item les temps de communication 
+\item les temps des accès mémoire
+\end{enumerate}
+
 \subsection{communication}
+
+\par Afin de gagner du temps on peut recouvrir les temps de communication par du calcul.\\
+Ainsi pendant que l'on envoie les données concernant les corps que l'on utilise pour le calcul
+courant, et que l'on reçoit les données concernant les corps du prochain calcul, on peut effectuer 
+le calcul des interactions entre les corps locaux et les corps que l'on emet.\\
+
+\par En utilisant la primitives MPI\_Isend() afin de faire un envoie asynchrone et la primitive
+MPI\_Recv() pour faire une reception non bloquante. Après le calcule on utilise la primitive 
+MPI\_Wait() pour s'assurer de la reception par le processus de rang \textit{rank+1} des données 
+que l'on lui a envoyé.\\
+
+\par Le problème avec les primitives d'emission et de reception de message MPI est que si le message 
+à envoyer ou à recevoir dépasse la taille du tampon de reception interne à l'API MPI,
+elles basculent en mode synchrone ce qui empèche de recouvrire les temps de communication
+par le calcul. (A l'ARI les tampon sont de taille 64 Ko environ).\\
+
+\par Donc si on a :
+\begin{quote}
+  \begin{center}
+    $\frac{n}{p}\cdot \frac{t_{corps}}{MAX(t_{champ})} \rangle T_{tampon\_mpi}$    
+  \end{center}
+\end{quote}
+avec $n$ nombre de corps du système, $p$ nombre de processus, $t_{corps}$ taille en octet d'un corps,
+$MAX(t_{champ})$ maximum en octet de la taille des champs de la structure représentant un corps,
+et $T_{tampon\_mpi}$ taille en octet du tampon de l'API MPI,\\
+alors les communication deviennent synchrone et le recouvrement des temps de communication pas le calcul devient 
+impossible.\\
+
 \subsection{Accès mémoire}
 
+\par Pour diminuer les accès mémoire et gagner en temps d'éxécution, nous avons décrit précédement
+comment utiliser le NFS de l'ARI pour optimiser le chargement en mémoire du fichier de test
+des interactions.\\
+
+\par Nous avons également fais un choix de représentation des données en mémoire, à savoir une structure 
+de tableaux.\\
+
+\par L'idéal serait de faire en sorte que lors de l'éxécution de notre programme les données et le code 
+soient chargés en mémoire et y tiennent intégralement afin de limiter les accès disque.
+Il s'ensuit que si l'on effectue des sauvegardes à chaque $dt$ de l'état des particules, les 
+accès disque générés par celles-ci ralentissent considérablement l'éxécution du programme.\\
 
