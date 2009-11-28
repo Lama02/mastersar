@@ -2,18 +2,284 @@
 /* #include <stdlib.h> */
 /* #include <string.h> */
 #include <sys/stat.h>
+#include <mpi.h>
 
 #include "direct_method.h"
 #include "IO.h" 
 
 
 /* For FMB_Info.save: */
-#define RESULTS_DIR "/tmp/NBODY_direct_results_LOGINS/"
+#define RESULTS_DIR "/tmp/NBODY_direct_results_rachid_cote/"
 #define RESULTS_FILE "results_"
 
 
 /*** For timers: ***/
 #include <sys/time.h>
+
+/*********************************************************************************************
+**********************************************************************************************/
+
+/*variables MPI*/
+MPI_Status status;
+int rank = 0;
+int mpi_p = 0;
+int mpi_tag = 0;
+
+
+/*variable de parallesisation*/
+long nb_bodies_local; //nombre de corps local au noeud
+long nb_bodies_total; //nombre de corps dans le systeme
+REAL_T dt;           
+bodies_t p_b1;       //dtructure qui servira de tampon pour les emission et les reception
+bodies_t p_b2;       //structure qui servira de tampon pour les emission et les reception
+bodies_t *current_b; //pointeur vers les structures tampon
+bodies_t *next_b;    //pointeur vers les structures tampon
+REAL_T tstart ,tend , tnow ; 
+
+/*********************************************************************************************
+**********************************************************************************************/
+void initialize_node(){
+  /*calcul du nombre de corps par noeud*/
+  if (rank == 0)
+    nb_bodies_local = bodies.size_allocated/mpi_p;
+
+  
+  nb_bodies_total = bodies.nb_bodies;
+
+  /*on diffuse le nombre de corps sue devra gerer chaque noeud*/
+  MPI_Bcast(&nb_bodies_local,
+	    1,
+	    MPI_LONG,
+	    0,
+	    MPI_COMM_WORLD);
+  
+  /*on initialise les structure tampon*/
+  bodies_Initialize(&p_b1,nb_bodies_local);
+  bodies_Initialize(&p_b2,nb_bodies_local);
+  current_b = &p_b1;
+  next_b = &p_b2;
+  
+  /*on initialise la stucture bodies sauf pour le proc 0 qui l'a deja faite*/
+  if(rank != 0){
+    bodies_Initialize(&bodies,nb_bodies_local);
+    bodies.size_allocated = nb_bodies_local;    
+  }
+}
+void scatter_to_nodes(){
+  //repartition des pos_x
+  MPI_Scatter(bodies.p_pos_x,
+	      nb_bodies_local,
+	      MPI_FLOAT,
+	      bodies.p_pos_x,
+	      nb_bodies_local,
+	      MPI_FLOAT,
+	      0,
+	      MPI_COMM_WORLD);
+		
+  //repartition des pos_y
+  MPI_Scatter(bodies.p_pos_y,
+	      nb_bodies_local,
+	      MPI_FLOAT,
+	      bodies.p_pos_y,
+	      nb_bodies_local,
+	      MPI_FLOAT,
+	      0,
+	      MPI_COMM_WORLD);
+    
+  //repartition des pos_z
+  MPI_Scatter(bodies.p_pos_z,
+	      nb_bodies_local,
+	      MPI_FLOAT,
+	      bodies.p_pos_z,
+	      nb_bodies_local,
+	      MPI_FLOAT,
+	      0,
+	      MPI_COMM_WORLD);
+    
+  //repartition des fx
+  MPI_Scatter(bodies.p_fx,
+	      nb_bodies_local,
+	      MPI_FLOAT,
+	      bodies.p_fx,
+	      nb_bodies_local,
+	      MPI_FLOAT,
+	      0,
+	      MPI_COMM_WORLD);
+		
+  //repartition des fy
+  MPI_Scatter(bodies.p_fy,
+	      nb_bodies_local,
+	      MPI_FLOAT,
+	      bodies.p_fy,
+	      nb_bodies_local,
+	      MPI_FLOAT,
+	      0,
+	      MPI_COMM_WORLD);
+    
+  //repartition des fz
+  MPI_Scatter(bodies.p_fz,
+	      nb_bodies_local,
+	      MPI_FLOAT,
+	      bodies.p_fz,
+	      nb_bodies_local,
+	      MPI_FLOAT,
+	      0,
+	      MPI_COMM_WORLD);
+
+  //repartition des values
+  MPI_Scatter(bodies.p_values,
+	      nb_bodies_local,
+	      MPI_FLOAT,
+	      bodies.p_values,
+	      nb_bodies_local,
+	      MPI_FLOAT,
+	      0,
+	      MPI_COMM_WORLD);    
+
+  //repartition des spped_vector
+  MPI_Scatter(bodies.p_speed_vectors,
+	      3*nb_bodies_local,
+	      MPI_FLOAT,
+	      bodies.p_speed_vectors,
+	      3*nb_bodies_local,
+	      MPI_FLOAT,
+	      0,
+	      MPI_COMM_WORLD);  
+    
+  //envoi de la date de fin
+  MPI_Bcast(&tend,
+	    1,
+	    MPI_FLOAT,
+	    0,
+	    MPI_COMM_WORLD);
+
+
+  //envoi du pas de temps
+  dt = FMB_Info.dt;
+  MPI_Bcast(&dt,
+	    1,
+	    MPI_FLOAT,
+	    0,
+	    MPI_COMM_WORLD);
+  bodies.nb_bodies = nb_bodies_local;
+}
+
+void gather_to_root(){
+  //recuperation des pos_x
+  MPI_Gather(bodies.p_pos_x,
+	     nb_bodies_local,
+	     MPI_FLOAT,
+	     bodies.p_pos_x,
+	     nb_bodies_local,
+	     MPI_FLOAT,
+	     0,
+	     MPI_COMM_WORLD);
+      
+  //recuperation des pos_y
+  MPI_Gather(bodies.p_pos_y,
+	     nb_bodies_local,
+	     MPI_FLOAT,
+	     bodies.p_pos_y,
+	     nb_bodies_local,
+	     MPI_FLOAT,
+	     0,
+	     MPI_COMM_WORLD);
+      
+  //recuperation des pos_z
+  MPI_Gather(bodies.p_pos_z,
+	     nb_bodies_local,
+	     MPI_FLOAT,
+	     bodies.p_pos_z,
+	     nb_bodies_local,
+	     MPI_FLOAT,
+	     0,
+	     MPI_COMM_WORLD);
+      
+  //recuperation des fx
+  MPI_Gather(bodies.p_fx,
+	     nb_bodies_local,
+	     MPI_FLOAT,
+	     bodies.p_fx,
+	     nb_bodies_local,
+	     MPI_FLOAT,
+	     0,
+	     MPI_COMM_WORLD);
+      
+  //recuperation des fy
+  MPI_Gather(bodies.p_fy,
+	     nb_bodies_local,
+	     MPI_FLOAT,
+	     bodies.p_fy,
+	     nb_bodies_local,
+	     MPI_FLOAT,
+	     0,
+	     MPI_COMM_WORLD);
+      
+  //recuperation des fz
+  MPI_Gather(bodies.p_fz,
+	     nb_bodies_local,
+	     MPI_FLOAT,
+	     bodies.p_fz,
+	     nb_bodies_local,
+	     MPI_FLOAT,
+	     0,
+	     MPI_COMM_WORLD);
+      
+  //recuperation des values
+  MPI_Gather(bodies.p_values,
+	     nb_bodies_local,
+	     MPI_FLOAT,
+	     bodies.p_values,
+	     nb_bodies_local,
+	     MPI_FLOAT,
+	     0,
+	     MPI_COMM_WORLD);    
+      
+  //recuperation des spped_vector
+  MPI_Gather(bodies.p_speed_vectors,
+	     3*nb_bodies_local,
+	     MPI_FLOAT,
+	     bodies.p_speed_vectors,
+	     3*nb_bodies_local,
+	     MPI_FLOAT,
+	     0,
+	     MPI_COMM_WORLD);
+}
+void get_forces(){
+  //recuperation des fx
+  MPI_Gather(bodies.p_fx,
+	     nb_bodies_local,
+	     MPI_FLOAT,
+	     bodies.p_fx,
+	     nb_bodies_local,
+	     MPI_FLOAT,
+	     0,
+	     MPI_COMM_WORLD);
+      
+  //recuperation des fy
+  MPI_Gather(bodies.p_fy,
+	     nb_bodies_local,
+	     MPI_FLOAT,
+	     bodies.p_fy,
+	     nb_bodies_local,
+	     MPI_FLOAT,
+	     0,
+	     MPI_COMM_WORLD);
+      
+  //recuperation des fz
+  MPI_Gather(bodies.p_fz,
+	     nb_bodies_local,
+	     MPI_FLOAT,
+	     bodies.p_fz,
+	     nb_bodies_local,
+	     MPI_FLOAT,
+	     0,
+	     MPI_COMM_WORLD);
+}
+
+/*********************************************************************************************
+**********************************************************************************************/
+
 double my_gettimeofday(){
   struct timeval tmp_time;
   gettimeofday(&tmp_time, NULL);
@@ -35,14 +301,13 @@ int parse_command(int argc,
 
    MAIN 
 
-**********************************************************************************************
-*********************************************************************************************/
+   **********************************************************************************************
+   *********************************************************************************************/
 
 int main(int argc, char **argv){
 
 
   long nb_steps = 0;
-  REAL_T tstart ,tend , tnow ; 
   tstart = 0 ; 
   tnow = tstart ; 
   tend = 0.001 ; 
@@ -65,20 +330,11 @@ int main(int argc, char **argv){
   /******************************** Files and FILE* : ***************************************/
   if (INFO_DISPLAY(1)){
     fprintf(f_output, 
-	  "*** Compute own interactions of the box defined in \"%s\" ***.\n", 
+	    "*** Compute own interactions of the box defined in \"%s\" ***.\n", 
 	    data_file);
   }
 
-
-
-
-
   Direct_method_Init();
-
-
-
-
-
 
 
   /***************************** Bodies'positions and masses initialization: ****************/
@@ -90,11 +346,22 @@ int main(int argc, char **argv){
     fprintf(f_output, "Number of steps: %lu\n", (unsigned long) ((tend-tstart)/FMB_Info.dt));
   }
  
+  /***************************** Initialisation parallele  **************** ****************/
 
-
-
-
-
+  /*initialisation MPI*/
+  MPI_Init (&argc, &argv);
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_size(MPI_COMM_WORLD,&mpi_p);
+  
+  if(rank!=0)
+    Direct_method_Init();
+  
+  initialize_node();
+  scatter_to_nodes();
+  
+  
+  
+  
 
 
 
@@ -104,15 +371,15 @@ int main(int argc, char **argv){
 
   while ( tnow-FMB_Info.dt < tend ) { 
 
-/********************* Direct method computation: ************************************/
-/*********************Direct metho Move : K-D-K **************************************/ 
+    /********************* Direct method computation: ************************************/
+    /*********************Direct metho Move : K-D-K **************************************/ 
     if(tnow!=0) {
 
       KnD_Direct_method_Move(FMB_Info.dt ); 
       
     
-  /***** Clear the forces and the potential of the bodies for the next time step: ********/
-    bodies_ClearFP(&bodies);
+      /***** Clear the forces and the potential of the bodies for the next time step: ********/
+      bodies_ClearFP(&bodies);
     }
 
     /* Start timer: */
@@ -130,11 +397,12 @@ int main(int argc, char **argv){
 
 
     /****************** Save & display the total time used for this step: *******************/
+
     if (INFO_DISPLAY(1)){
       unsigned long long nb_int = NB_OWN_INT(bodies_Nb_bodies(&bodies));
        
       fprintf(f_output, "\n#######################################################################\n");
-      fprintf(f_output, "Time now ( Step number) : %lf (%ld) \n",tnow,nb_steps );
+      fprintf(f_output, "Time now ( Step number) : %lf (%ld) , process %d\n",tnow,nb_steps,rank );
       fprintf(f_output, "Computation time = %f seconds\n", t_end - t_start);
 
       fprintf(f_output, "Interactions computed: %llu\n", nb_int);
@@ -148,8 +416,13 @@ int main(int argc, char **argv){
 
 
     /************************* Save the positions and the forces: ***************************/
-    if (FMB_Info.save){
-      
+    
+    /*on recupere les données de chaque noeud du systeme*/
+    if(FMB_Info.save){
+      gather_to_root();
+    }
+    if (FMB_Info.save && rank == 0){    
+
       if (results_file == NULL){
 	/* The 'results' filename has not been set yet: */
 #define TMP_STRING_LENGTH 10
@@ -195,10 +468,20 @@ int main(int argc, char **argv){
 
     /************************** Sum of forces and potential: ***************************/
     if (FMB_Info.sum){
-      Direct_method_Sum(NULL, nb_steps, &bodies, total_potential_energy);
+      //on verifie si l'option save n'est pas deja active
+      if(!FMB_Info.save){
+	get_forces();
+      }
+      //on met le nombre de corps à n
+      if(rank == 0){
+	bodies.nb_bodies = nb_bodies_total;
+	Direct_method_Sum(NULL, nb_steps, &bodies, total_potential_energy);     
+      }            
+      //on remet le nombre de corps à n/p
+      if(rank == 0){
+	bodies.nb_bodies = nb_bodies_local;
+      }
     }
-
-
 
 
     tnow+=FMB_Info.dt ; 
@@ -206,21 +489,29 @@ int main(int argc, char **argv){
 
   }  /* while ( tnow-FMB_Info.dt <= tend )  */
 
+  
+  MPI_Barrier(MPI_COMM_WORLD);
+  fprintf(f_output, "*#*#1 process %d sort du while\n",rank);
+   
   /******************************************************************************************/
   /********************************** End of the simulation: ********************************/
   /******************************************************************************************/
 
-
+  MPI_Barrier(MPI_COMM_WORLD);
   Direct_method_Terminate();
+  fprintf(f_output, "*#*#2 process %d direct terminate\n",rank);
 
 
+  MPI_Barrier(MPI_COMM_WORLD);
+  fprintf(f_output, "*#*#3 process %d se termine correctement\n",rank);    
+  MPI_Finalize();
   /********************** Close FILE* and free memory before exiting: ***********************/
   if (argc == 3)
     if (fclose(f_output) == EOF)
       perror("fclose(f_output)");
   
   FMB_free(data_file);
-
+  fprintf(f_output, "*#*#4 le programme se termine corectement; %d\n",rank);    
   /****************************************** EXIT ******************************************/
   exit(EXIT_SUCCESS);
 }
@@ -244,8 +535,8 @@ int main(int argc, char **argv){
 
    usage
 
-**********************************************************************************************
-*********************************************************************************************/
+   **********************************************************************************************
+   *********************************************************************************************/
 
 void usage(){
   char mes[300] = "";
@@ -259,7 +550,7 @@ void usage(){
 
 
   fprintf(stderr, "\nDescription of the short options:\n"); 
-/*   fprintf(stderr, "\t -v \t\t\t Display the version.\n"); */
+  /*   fprintf(stderr, "\t -v \t\t\t Display the version.\n"); */
   fprintf(stderr, "\t -h \t\t\t Display this message.\n"); 
   fprintf(stderr, "\t -i 'level' \t\t Info display level (0, 1 or 2).\n");
   fprintf(stderr, "\t -o 'output_filename' \t Otherwise stdout.\n");
@@ -300,8 +591,8 @@ void usage(){
 
    parse_command
 
-**********************************************************************************************
-*********************************************************************************************/
+   **********************************************************************************************
+   *********************************************************************************************/
 
 
 /* Long option codes for 'val' field of struct option. 
@@ -333,43 +624,43 @@ int parse_command(int argc,
 
   
   struct option longopts[] = {
-			      {"soft",
-			       required_argument,
-			       NULL, 
-			       LONGOPT_CODE_SOFT},
-			      {"dt",
-			       required_argument,
-			       NULL, 
-			       LONGOPT_CODE_DT},
-			      {"tend",
-			       required_argument,
-			       NULL, 
-			       LONGOPT_CODE_TEND},
-			      {"save",
-			       no_argument,
-                               NULL,
-			       LONGOPT_CODE_SAVE},
-			      {"sum",
-			       no_argument,
-			       NULL, 
-			       LONGOPT_CODE_SUM},
-			      {"it",
-			       required_argument,
-			       NULL, 
-			       LONGOPT_CODE_IT},
-			      {"ot",
-			       required_argument,
-			       NULL, 
-			       LONGOPT_CODE_OT},
-			      {"in",
-			       required_argument,
-			       NULL, 
-			       LONGOPT_CODE_IN},
-			      {"out",
-			       required_argument,
-			       NULL, 
-			       LONGOPT_CODE_OUT},
- 			      {0}}; /* last element of the array  */
+    {"soft",
+     required_argument,
+     NULL, 
+     LONGOPT_CODE_SOFT},
+    {"dt",
+     required_argument,
+     NULL, 
+     LONGOPT_CODE_DT},
+    {"tend",
+     required_argument,
+     NULL, 
+     LONGOPT_CODE_TEND},
+    {"save",
+     no_argument,
+     NULL,
+     LONGOPT_CODE_SAVE},
+    {"sum",
+     no_argument,
+     NULL, 
+     LONGOPT_CODE_SUM},
+    {"it",
+     required_argument,
+     NULL, 
+     LONGOPT_CODE_IT},
+    {"ot",
+     required_argument,
+     NULL, 
+     LONGOPT_CODE_OT},
+    {"in",
+     required_argument,
+     NULL, 
+     LONGOPT_CODE_IN},
+    {"out",
+     required_argument,
+     NULL, 
+     LONGOPT_CODE_OUT},
+    {0}}; /* last element of the array  */
   
 
   
