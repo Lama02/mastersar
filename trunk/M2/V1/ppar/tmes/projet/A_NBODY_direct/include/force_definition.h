@@ -91,12 +91,37 @@
 }
 
 
-
-
-
-
-
-
+#define DIRECT_COMPUTATION_MUTUAL_SOFT_PAR(pxt, pyt, pzt,		\
+					   pxs, pys, pzs,		\
+					   v_target,			\
+					   v_src,			\
+					   fxt, fyt, fzt,		\
+					   fxs, fys, fzs,		\
+					   unused1,			\
+					   unused2,			\
+					   eps_soft_square){		\
+    COORDINATES_T dx = UNIT_VECTOR_COMPONENT(pxt, pxs);			\
+    COORDINATES_T dy = UNIT_VECTOR_COMPONENT(pyt, pys);			\
+    COORDINATES_T dz = UNIT_VECTOR_COMPONENT(pzt, pzs);			\
+    COORDINATES_T inv_square_distance;					\
+    COORDINATES_T inv_distance;						\
+    COORDINATES_T fx, fy, fz;						\
+    									\
+									\
+    inv_square_distance = 1.0/ (dx*dx + dy*dy + dz*dz + eps_soft_square); \
+    inv_distance = FMB_SQRT(inv_square_distance);			\
+    									\
+    inv_distance *= (v_target) * (v_src);				\
+    inv_square_distance *= inv_distance;				\
+    									\
+    fx = dx * inv_square_distance;					\
+    fy = dy * inv_square_distance;					\
+    fz = dz * inv_square_distance;					\
+    fxt += fx;								\
+    fyt += fy;								\
+    fzt += fz;								\
+    									\
+  }
 
 #endif /* #ifndef FORCE_DEFINITION_H */
 

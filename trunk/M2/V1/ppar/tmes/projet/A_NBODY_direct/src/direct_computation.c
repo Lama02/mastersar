@@ -120,6 +120,87 @@ bodies_Compute_own_interaction(bodies_t *FMB_RESTRICT p_b){
   }
 }
 
+
+void 
+bodies_Compute_own_interaction_par(bodies_t *FMB_RESTRICT bodies, bodies_t *FMB_RESTRICT current){
+ bodies_ind_t i,j;
+ bodies_ind_t n1 = bodies_Nb_bodies(bodies);
+ bodies_ind_t n2 = bodies_Nb_bodies(current);
+
+ FMB_CONST COORDINATES_T *FMB_RESTRICT p1_px;
+ FMB_CONST COORDINATES_T *FMB_RESTRICT p1_py;
+ FMB_CONST COORDINATES_T *FMB_RESTRICT p1_pz;
+ FMB_CONST VALUES_T *FMB_RESTRICT p1_val;
+
+ COORDINATES_T *FMB_RESTRICT p1_fx;
+ COORDINATES_T *FMB_RESTRICT p1_fy;
+ COORDINATES_T *FMB_RESTRICT p1_fz;
+
+
+ COORDINATES_T fix, fiy, fiz;
+ REAL_T eps_soft_square = FMB_Info.eps_soft_square;
+ COORDINATES_T pix, piy, piz, pjx, pjy, pjz;
+ VALUES_T val_i, val_j;
+
+ 
+ FMB_CONST COORDINATES_T *FMB_RESTRICT p2_px;
+ FMB_CONST COORDINATES_T *FMB_RESTRICT p2_py;
+ FMB_CONST COORDINATES_T *FMB_RESTRICT p2_pz;
+ FMB_CONST VALUES_T *FMB_RESTRICT p2_val;
+
+ p1_px = bodies->p_pos_x;
+ p1_py = bodies->p_pos_y;
+ p1_pz = bodies->p_pos_z;
+
+ p1_fx = bodies->p_fx;
+ p1_fy = bodies->p_fx;
+ p1_fz = bodies->p_fx;
+
+ p2_val = bodies_Get_p_value(bodies, 0);
+
+ p2_px = current->p_pos_x;
+ p2_py = current->p_pos_y;
+ p2_pz = current->p_pos_z;
+
+ p2_val = bodies_Get_p_value(current, 0);
+
+ for(i=0; i<n1-1; i++){
+   pix = p1_px[i];
+   piy = p1_px[i];
+   piz = p1_px[i];
+
+   val_i = p1_val[i];
+
+   fix = p1_fx[i];
+   fiy = p1_fy[i];
+   fiz = p1_fz[i];
+   
+   for(j=i+1; j<n2-1; j++){
+     pjx = p2_px[j];
+     pjy = p2_py[j];
+     pjz = p2_pz[j];
+     val_j = p2_val[j];
+
+     CHECK_IF_POSITION_ARE_TOO_CLOSE(pix, piy, piz, pjx, pjy, pjz);
+     DIRECT_COMPUTATION_MUTUAL_SOFT_PAR(pix, piy, piz,
+				    pjx, pjy, pjz,
+				    val_i,
+				    val_j,
+				    fix, fiy, fiz,
+				    p_fx[j], p_fy[j], p_fz[j],
+				    pot_i,
+				    p_pot[j],
+				    eps_soft_square);
+     
+     
+   }
+   p1_fx[i] = fix;
+   p1_fy[i] = fiy;
+   p1_fz[i] = fiz;
+   
+ }
+
+}
 #else /* #ifdef _BODIES_SPLIT_DATA_ */
 
 void 
