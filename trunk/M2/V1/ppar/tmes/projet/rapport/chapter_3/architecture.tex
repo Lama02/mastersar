@@ -1,17 +1,21 @@
 \section{Parallèlisation}
+
 \par Dans un premier temps il est necessaire de trouver les points de parallèlisation 
 du programme séquentiel. Pour ce faire il est nécessaire de bien connaitre l'algorithme 
 utilisé.\\
 l'algorithme séquentiel consiste à stocker les corps dans un tableau de structures ou une structure 
 de tableaux (selon si la constante \_BODIES\_SPLIT\_DATA\_ est définies ou pas), à parcourir 
 cette structure et à calculer une à une les interactions entre deux corps, puis à les déplacer.\\
+
 \par l'interet de la parallèlisation est de pouvoir répartir la structure de donnée sur tout les
 noeuds du système afin d'alléger la mémoire utilisée par chaque noeud, et ainsi augmenter le 
 nombre de corps de la simulation.\\
+
 Une fois ceci fait il faut que malgrés la séparation des données nous réussissions a calculer
 les interactions entre chaque corps. Nous pouvons décidé d'utiliser une architecture centralisé 
 ou distribué, sachant que nous devons effectuer une sauvegarde à chaque pas de temps si l'option 
 d'éxécution --save est présente.\\
+
 \par L'avantage de la solution centralisée c'est qu'un processus (maître) distribue le travail aux autres
 (les esclaves). Ainsi ce la permet de distribuer plus de travail aux noeud plus puissant et moins aux
 plus lent ; ce qui ne nous concerne pas étant donnée que les noeud sont considérés homogènes
@@ -30,6 +34,7 @@ calculées d'un autre noeud. On réitère cette operation p-2 fois ainsi chaque 
 calculé les interactions avec tout les corps du dystème.\\
 
 \section{Structures}
+
 \par Le programme séquentiel nous donne le choix de la représentation en mémoires des 
 corps. Grace à la macro \_BODIES\_SPLIT\_DATA\_ selon si elle est définie ou non 
 les corps sont stockés soit dans une structure de tableau, soit dans un tableau de structure.\\
@@ -42,6 +47,7 @@ de facilité l'accès aux dnnées, notamment lors de la parallèlisation de chaq
 léger avec l'API Open\_MP.\\
 
 \section{Topologie}
+
 \par Dans le paragraphe $"Parallèlisation$" nous avons développé la manière dont se déroulerait 
 le programme parallèlisé. Les machines à notre disposition sont reliées par un switch 
 réseau ce qui nous permet d'adopter n'importe quelle topologie pour éxécuter notre 
@@ -54,13 +60,51 @@ Quelles sont les topologies que nous pouvons mettre en place :
 \item Thor 3D
 \item Hypercube (car nous avons 16 machines dans certaine salle)
 \end{enumerate}
-D'après l'algorithme parallèlisé que nous avons choisie à chaque itération nous faisons p
+
+D'après l'algorithme parallèlisé que nous avons choisi à chaque itération nous faisons p
 envoie de messages et toujours au même processus, de le sujet nous propose de mettre en
 place une topologie en anneau. La solution d'une topologie en anneau se pésente donc
 naturellement.\\
+La topologie en étoile sera utilisé uniquement pour la répartition des données à 
+l'initialisation et la récupération des calculs pour la sauvegarde.\\ 
+L'utilisation des autres topologies seraient over-engeneering dans le cadre de cet
+algorithme.
 
 \section{Vérifications}
 
+\par Pour vérifier que le programme effectue des calculs juste sur les particules on peut se baser, 
+sur le principe de la troisième loi de Newton :
+\begin{quote}
+\textit{Tout corps A exerçant une force sur un corps B subit 
+une force d'intensité égale, de même direction mais de sens opposé, exercée par le corps B}
+\end{quote}
+
+\par Cette loi implique que la somme des forces s'exerçant sur A additionnée à la somme des forces 
+s'éxerçant sur B est égale à  \overrightarrow{0}.\\
+Par induction sur N corps on obtient que :
+\begin{quote}
+  \begin{center}
+    $\sum_{i,j}^{n} \overrightarrow{F_{i,j}}$ = \overrightarrow{0} avec i=0, j=1, $i\not=j$ et n=|N| 
+  \end{center}
+\end{quote}
+
+\par Il en découle un invariant pour notre programme de calcul d'interactions entre N corps.\\
+A un instant t, avant et apres que le calcul des interactions entre les corps ait été fais 
+on a :
+\begin{quote}
+  \begin{center}
+    $\sum \overrightarrow{F}$ = \overrightarrow{0}
+  \end{center}
+\end{quote}
+
+\par Cependant la précision que l'on peut obtenir avec une machine étant relative à 
+la taille en octet sur laquelle sont représenté les nombres, on a:
+\begin{quote}
+  \begin{center}
+    $\sum \overrightarrow{F} \simeq \overrightarrow{0} \pm \epsilon$
+  \end{center}
+\end{quote}
+Nous prendrons $\epsilon = 10^{-4}$.
 
 \section{Optimisations}
 \subsection{communication}
