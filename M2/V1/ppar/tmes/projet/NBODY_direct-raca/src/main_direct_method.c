@@ -233,12 +233,14 @@ int main(int argc, char **argv){
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   MPI_Comm_size(MPI_COMM_WORLD,&p);
   
-
+  
+    
+  /*************************** Options on command line: ********************************/
+  f_output = stdout; /* by default */
+  
   /* Si je suis le Root je charge les corps dans le tableau bodies */
   if (rank == ROOT){
     
-    /*************************** Options on command line: ********************************/
-    f_output = stdout; /* by default */
     parse_command(argc, argv, &data_file, &results_file);
     
     
@@ -272,6 +274,8 @@ int main(int argc, char **argv){
   } //  if (rank == ROOT) 
   
     
+  if (rank != ROOT) Direct_method_Init();
+  
 
   /********************************** Debut Partage des données: ******************************/
   /* Diffuser le nombre de corps local à tous le monde */

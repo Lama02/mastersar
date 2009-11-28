@@ -236,6 +236,8 @@ bodies_Compute_own_interaction(bodies_t *FMB_RESTRICT p_b){
   COORDINATES_T *FMB_RESTRICT p_fy2;
   COORDINATES_T *FMB_RESTRICT p_fz2;
   
+  COORDINATES_T fjx, fjy, fjz;
+
 
   /* 
    * Var utiles pour le premier tableau b.
@@ -252,7 +254,7 @@ bodies_Compute_own_interaction(bodies_t *FMB_RESTRICT p_b){
   COORDINATES_T *FMB_RESTRICT p_fy;
   COORDINATES_T *FMB_RESTRICT p_fz;
   COORDINATES_T fix, fiy, fiz;
-
+  
   REAL_T eps_soft_square = FMB_Info.eps_soft_square;
   
   /* on initialise les deux tableaux b2 et b_tmp 
@@ -333,55 +335,49 @@ bodies_Compute_own_interaction(bodies_t *FMB_RESTRICT p_b){
     p_fz2 = p_b2->p_fz;
     
     if (etape == 0){
-#ifdef _DEBUG_
-      printf("\t [DEBUG] +++++++++++ Proc %d \t Debut de la %deme iteration\n", rank, etape);
-#endif
-      /*------ Debut de la premiere iteration de calcul ------*/
-      /*
-       * Cette boucle n'est correcte que pour la première itération.
-       * En effet, le j par exemple dois commencer de 0 au lieu de i+1
-       */
+      p_px = p_b->p_pos_x;
+      p_py = p_b->p_pos_y;
+      p_pz = p_b->p_pos_z;
+
+      p_val = bodies_Get_p_value(p_b, 0);
+      p_fx = p_b->p_fx;
+      p_fy = p_b->p_fy;
+      p_fz = p_b->p_fz;
+
       for(i=0; i<n-1; i++){
 	pix = p_px[i];
 	piy = p_py[i];
 	piz = p_pz[i];
 	val_i = p_val[i];
-      
+
 	fix = p_fx[i];
 	fiy = p_fy[i];
 	fiz = p_fz[i];
-	
-    
+
+
 	for (j=i+1;	 j<n;	 j++){
-	  pjx = p_px2[j];
-	  pjy = p_py2[j];
-	  pjz = p_pz2[j];
-	  val_j = p_val2[j];
-      
+	  pjx = p_px[j];
+	  pjy = p_py[j];
+	  pjz = p_pz[j];
+	  val_j = p_val[j];
+
 	  CHECK_IF_POSITION_ARE_TOO_CLOSE(pix, piy, piz, pjx, pjy, pjz);       
 	  DIRECT_COMPUTATION_MUTUAL_SOFT(pix, piy, piz,
 					 pjx, pjy, pjz,
 					 val_i,
 					 val_j,
 					 fix, fiy, fiz,
-					 p_fx2[j], p_fy2[j], p_fz2[j],
-					 pot_i, /* pas utilise */
-					 p_pot[j], /* pas utilise */
+					 p_fx[j], p_fy[j], p_fz[j],
+					 pot_i,
+					 p_pot[j],
 					 eps_soft_square);
-	}//    for (j=i+1;	 j<n;	 j++){
-	
-	/* la macro s'occupe de calculer les nouvelles valeurs de fix, fiy, fiz 
-	 * puis stocke les nouveaux résultats dans les deux tableaux
-	 */    
-	p_fx[i] = fix; 
+	}
+
+	p_fx[i] = fix;    
 	p_fy[i] = fiy;
 	p_fz[i] = fiz;   
-      }//    for(i=0; i<n-1; i++){   
-      /*------ Fin de la premiere iteration de calcul ------*/  
+      }
 
-#ifdef _DEBUG_
-      printf("\t [DEBUG] +++++++++++ Proc %d \t Fin de la %deme iteration \n", rank, etape);
-#endif
 
     }else{// if (etape == 0)
 #ifdef _DEBUG_
@@ -402,14 +398,18 @@ bodies_Compute_own_interaction(bodies_t *FMB_RESTRICT p_b){
 	  pjy = p_py2[j];
 	  pjz = p_pz2[j];
 	  val_j = p_val2[j];
-      
+	  
+	  fjx = p_fx2[j];
+	  fjy = p_fy2[j];
+	  fjz = p_fz2[j];
+	
 	  CHECK_IF_POSITION_ARE_TOO_CLOSE(pix, piy, piz, pjx, pjy, pjz);       
 	  DIRECT_COMPUTATION_MUTUAL_SOFT(pix, piy, piz,
 					 pjx, pjy, pjz,
 					 val_i,
 					 val_j,
 					 fix, fiy, fiz,
-					 p_fx2[j], p_fy2[j], p_fz2[j],
+					 fjx, fjy, fjz,
 					 pot_i, /* pas utilise */
 					 p_pot[j], /* pas utilise */
 					 eps_soft_square);
