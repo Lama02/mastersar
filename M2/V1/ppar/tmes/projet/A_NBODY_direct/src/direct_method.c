@@ -1,5 +1,6 @@
 #include "direct_method.h"
 #include "IO.h" 
+#include "var_mpi.h"
 
 
 
@@ -142,6 +143,88 @@ void Direct_method_Data_bodies(bodies_t *p_b){
 
 }
 
+/*********************************************************************************************
+**********************************************************************************************
+
+   MPI_SEND_DATAS
+
+**********************************************************************************************
+*********************************************************************************************/
+void mpi_isend(bodies_t * out, int to, MPI_Request *req_send){
+
+  MPI_Isend(out->p_pos_x,
+	    out->nb_bodies,
+	    MPI_FLOAT,
+	    to,
+	    0,
+	    MPI_COMM_WORLD,
+	    &req_send[0]);
+  MPI_Isend(out->p_pos_y,
+	    out->nb_bodies,
+	    MPI_FLOAT,
+	    to,
+	    0,
+	    MPI_COMM_WORLD,
+	    &req_send[1]);
+  MPI_Isend(out->p_pos_z,
+	    out->nb_bodies,
+	    MPI_FLOAT,
+	    to,
+	    0,
+	    MPI_COMM_WORLD,
+	    &req_send[2]);
+  MPI_Isend(out->p_values,
+	    out->nb_bodies,
+	    MPI_FLOAT,
+	    to,
+	    0,
+	    MPI_COMM_WORLD,
+	    &req_send[3]);  
+}
+void mpi_irecv(bodies_t * in, int from, MPI_Request *reqr){
+  MPI_Irecv(in->p_pos_x,
+	    in->nb_bodies,
+	    MPI_FLOAT,
+	    from,
+	    0,
+	    MPI_COMM_WORLD,
+	    &reqr[0]);
+
+  MPI_Irecv(in->p_pos_y,
+	    in->nb_bodies,
+	    MPI_FLOAT,
+	    from,
+	    0,
+	    MPI_COMM_WORLD,
+	    &reqr[1]);
+
+  MPI_Irecv(in->p_pos_z,
+	    in->nb_bodies,
+	    MPI_FLOAT,
+	    from,
+	    0,
+	    MPI_COMM_WORLD,
+	    &reqr[2]);
+
+  MPI_Irecv(in->p_values,
+	    in->nb_bodies,
+	    MPI_FLOAT,
+	    from,
+	    0,
+	    MPI_COMM_WORLD,
+	    &reqr[3]);
+
+}
+void mpi_iwait(MPI_Request *req){
+  MPI_Status status;
+
+  MPI_Wait(&req[0], &status);
+  MPI_Wait(&req[1], &status);
+  MPI_Wait(&req[2], &status);
+  MPI_Wait(&req[3], &status);
+}
+
+
 
 
 
@@ -175,6 +258,49 @@ void Direct_method_Compute(){
 
 
 
+void  Direct_method_Compute_Par(bodies_t * current, bodies_t * next){
+  bodies_t * tmp;
+  int succ = (rank+1)%mpi_p;
+  int prev = (rank-1+mpi_p)%mpi_p;
+  int pas = 1;
+  MPI_Request req_send [4];
+  MPI_Request req_recv [4];
+  
+  /*pas = 0*/
+  mpi_isend(&bodies, succ, req_send);
+  mpi_irecv(next, prev, req_recv);
+  bodies_Compute_own_interaction(&bodies);
+  mpi_iwait(req_send);
+  mpi_iwait(req_recv);
+
+  /*on switch les tableaux*/
+  tmp = next;
+  next = current;
+  current = tmp;
+  
+  
+  while(pas < mpi_p){
+
+    mpi_isend(current, succ, req_send);
+    mpi_irecv(next, prev, req_recv);
+    bodies_Compute_own_interaction(&bodies); //a changer
+    mpi_iwait(req_send);
+    mpi_iwait(req_recv);
+    
+    /*on switch les tableaux*/
+    tmp = next;
+    next = current;
+    current = tmp;
+    
+    pas++;
+  }
+
+#ifdef _USE_CONSTANT_INTERACTION_FACTOR_
+    bodies_Scale_with_CONSTANT_INTERACTION_FACTOR(&bodies);
+#endif 
+
+
+}
 
 
 
