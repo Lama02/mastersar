@@ -197,7 +197,7 @@ bodies_Compute_own_interaction(bodies_t *FMB_RESTRICT p_b){
   
   int etape = 0;
   
-  int pred = (rank - 1) % p; /* mon predecessur */
+  int pred = (rank - 1 + p) % p; /* mon predecessur */
   int succ = (rank + 1) % p; /* mon successeur  */
   MPI_Request reqr; /* attente de la reception non bloquante */
   
@@ -295,6 +295,17 @@ bodies_Compute_own_interaction(bodies_t *FMB_RESTRICT p_b){
     printf("\t [DEBUG] +++++++++++ Proc %d \t Apres le Irecv \n", rank);
 #endif
     
+    /* on commence a envoyer les messages.*/
+#ifdef _DEBUG_
+    printf("\t [DEBUG] +++++++++++ Proc %d \t Avant le Send \n", rank);
+#endif
+    /* j'envoie le contenu de mon tableau b2 
+     * à mon successeur ((rank +1) mod p) 
+     */
+    mpi_send(p_b2, nb_bodies, succ);
+#ifdef _DEBUG_
+    printf("\t [DEBUG] +++++++++++ Proc %d \t Apres le Send \n", rank);
+#endif
 
 #ifdef _DEBUG_
     printf("\t [DEBUG] +++++++++++ Proc %d \t Debut des calculs \n", rank);
@@ -415,17 +426,6 @@ bodies_Compute_own_interaction(bodies_t *FMB_RESTRICT p_b){
     }// if (etape == 0)
     
     
-    /* on commence a envoyer les messages.*/
-#ifdef _DEBUG_
-    printf("\t [DEBUG] +++++++++++ Proc %d \t Avant le Send \n", rank);
-#endif
-    /* j'envoie le contenu de mon tableau b2 
-     * à mon successeur ((rank +1) mod p) 
-     */
-    mpi_send(p_b2, nb_bodies, succ);
-#ifdef _DEBUG_
-    printf("\t [DEBUG] +++++++++++ Proc %d \t Apres le Send \n", rank);
-#endif
     
 
     

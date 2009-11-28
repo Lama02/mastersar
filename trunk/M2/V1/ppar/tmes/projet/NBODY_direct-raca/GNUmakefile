@@ -8,9 +8,8 @@
 ################################### Execution options ###################################
 RUN = mpirun
 RUN_FLAGS = --hostfile $${MPI_HOSTFILE_PATH}
-NB_PROCESS = -c 4
-IN_FILE = ../data/baredisk_2048-plummer_2048.nemo
-#IN_FILE = ../data/baredisk_64-plummer_64.nemo
+NB_PROCESS = -c 1
+IN_FILE = ../data/baredisk_1024.nemo
 TEND = 10.0
 DT = 0.1
 SOFT = 0.01
