@@ -1,3 +1,37 @@
 #!/bin/sh
-mpirun --hostfile host-file -c 16 ./bin/NBODY_direct --in=../data/baredisk_2048-plummer_2048.nemo --tend=10.0 --dt=0.1 --soft=0.01  --sum $1
+mpirun --hostfile host-file -c 2 ./bin/NBODY_direct --in=../data/baredisk_2048-plummer_2048.nemo --tend=10.0 --dt=0.1 --soft=0.01  > logs/plumer2048bare2048_2proc_2machine
+mpirun --hostfile host-file -c 4 ./bin/NBODY_direct --in=../data/baredisk_2048-plummer_2048.nemo --tend=10.0 --dt=0.1 --soft=0.01  > logs/plumer2048bare2048_4proc_4machine
+mpirun --hostfile host-file -c 8 ./bin/NBODY_direct --in=../data/baredisk_2048-plummer_2048.nemo --tend=10.0 --dt=0.1 --soft=0.01  > logs/plumer2048bare2048_8proc_8machine
+mpirun --hostfile host-file -c 16 ./bin/NBODY_direct --in=../data/baredisk_2048-plummer_2048.nemo --tend=10.0 --dt=0.1 --soft=0.01  > logs/plumer2048bare2048_16proc_16machine
+
+mpirun --hostfile host-file1 -c 2 ./bin/NBODY_direct --in=../data/baredisk_2048-plummer_2048.nemo --tend=10.0 --dt=0.1 --soft=0.01  > logs/plumer2048bare2048_2proc_1machine
+mpirun --hostfile host-file2 -c 4 ./bin/NBODY_direct --in=../data/baredisk_2048-plummer_2048.nemo --tend=10.0 --dt=0.1 --soft=0.01  > logs/plumer2048bare2048_4proc_2machine
+mpirun --hostfile host-file3 -c 8 ./bin/NBODY_direct --in=../data/baredisk_2048-plummer_2048.nemo --tend=10.0 --dt=0.1 --soft=0.01  > logs/plumer2048bare2048_8proc_4machine
+mpirun --hostfile host-file4 -c 16 ./bin/NBODY_direct --in=../data/baredisk_2048-plummer_2048.nemo --tend=10.0 --dt=0.1 --soft=0.01  > logs/plumer2048bare2048_16proc_8machine
+
+mpirun --hostfile host-file -c 2 ./bin/NBODY_direct --in=../data/baredisk_4096-plummer_4096.nemo --tend=10.0 --dt=0.1 --soft=0.01  > logs/plumer4096bare4096_2proc_2machine
+mpirun --hostfile host-file -c 4 ./bin/NBODY_direct --in=../data/baredisk_4096-plummer_4096.nemo --tend=10.0 --dt=0.1 --soft=0.01  > logs/plumer4096bare4096_4proc_4machine
+mpirun --hostfile host-file -c 8 ./bin/NBODY_direct --in=../data/baredisk_4096-plummer_4096.nemo --tend=10.0 --dt=0.1 --soft=0.01  > logs/plumer4096bare4096_8proc_8machine
+mpirun --hostfile host-file -c 16 ./bin/NBODY_direct --in=../data/baredisk_4096-plummer_4096.nemo --tend=10.0 --dt=0.1 --soft=0.01  > logs/plumer4096bare4096_16proc_16machine
+
+mpirun --hostfile host-file1 -c 2 ./bin/NBODY_direct --in=../data/baredisk_4096-plummer_4096.nemo --tend=10.0 --dt=0.1 --soft=0.01  > logs/plumer4096bare4096_2proc_1machine
+mpirun --hostfile host-file2 -c 4 ./bin/NBODY_direct --in=../data/baredisk_4096-plummer_4096.nemo --tend=10.0 --dt=0.1 --soft=0.01  > logs/plumer4096bare4096_4proc_2machine
+mpirun --hostfile host-file3 -c 8 ./bin/NBODY_direct --in=../data/baredisk_4096-plummer_4096.nemo --tend=10.0 --dt=0.1 --soft=0.01  > logs/plumer4096bare4096_8proc_4machine
+mpirun --hostfile host-file4 -c 16 ./bin/NBODY_direct --in=../data/baredisk_4096-plummer_4096.nemo --tend=10.0 --dt=0.1 --soft=0.01  > logs/plumer4096bare4096_16proc_8machine
+
+
+mpirun --hostfile host-file -c 2 ./bin/NBODY_direct --in=../data/baredisk_16384-plummer_16384.nemo --tend=10.0 --dt=0.1 --soft=0.01  > logs/plumer16384bare16384_2proc_2machine
+mpirun --hostfile host-file -c 4 ./bin/NBODY_direct --in=../data/baredisk_16384-plummer_16384.nemo --tend=10.0 --dt=0.1 --soft=0.01  > logs/plumer16384bare16384_4proc_4machine
+mpirun --hostfile host-file -c 8 ./bin/NBODY_direct --in=../data/baredisk_16384-plummer_16384.nemo --tend=10.0 --dt=0.1 --soft=0.01  > logs/plumer16384bare16384_8proc_8machine
+mpirun --hostfile host-file -c 16 ./bin/NBODY_direct --in=../data/baredisk_16384-plummer_16384.nemo --tend=10.0 --dt=0.1 --soft=0.01  > logs/plumer16384bare16384_16proc_16machine
+
+mpirun --hostfile host-file1 -c 2 ./bin/NBODY_direct --in=../data/baredisk_16384-plummer_16384.nemo --tend=10.0 --dt=0.1 --soft=0.01  > logs/plumer16384bare16384_2proc_1machine
+mpirun --hostfile host-file2 -c 4 ./bin/NBODY_direct --in=../data/baredisk_16384-plummer_16384.nemo --tend=10.0 --dt=0.1 --soft=0.01  > logs/plumer16384bare16384_4proc_2machine
+mpirun --hostfile host-file3 -c 8 ./bin/NBODY_direct --in=../data/baredisk_16384-plummer_16384.nemo --tend=10.0 --dt=0.1 --soft=0.01  > logs/plumer16384bare16384_8proc_4machine
+mpirun --hostfile host-file4 -c 16 ./bin/NBODY_direct --in=../data/baredisk_16384-plummer_16384.nemo --tend=10.0 --dt=0.1 --soft=0.01  > logs/plumer16384bare16384_16proc_8machine
+
+
+
+
+
 #mpirun --hostfile host-file -c 16 ./bin/NBODY_direct --in=../data/baredisk_131072-plummer_131072.nemo --tend=10.0 --dt=0.1 --soft=0.01  --sum $1

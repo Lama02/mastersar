@@ -148,35 +148,35 @@ bodies_Compute_own_interaction_par(bodies_t *FMB_RESTRICT bodies, bodies_t *FMB_
  FMB_CONST COORDINATES_T *FMB_RESTRICT p2_pz;
  FMB_CONST VALUES_T *FMB_RESTRICT p2_val;
 
- COORDINATES_T dx;							
- COORDINATES_T dy;
- COORDINATES_T dz;
- 
- COORDINATES_T inv_square_distance;
- COORDINATES_T inv_distance;				
+ COORDINATES_T *FMB_RESTRICT p2_fx;
+ COORDINATES_T *FMB_RESTRICT p2_fy;
+ COORDINATES_T *FMB_RESTRICT p2_fz;
 
- COORDINATES_T fx, fy, fz;
 
  p1_px = bodies->p_pos_x;
  p1_py = bodies->p_pos_y;
  p1_pz = bodies->p_pos_z;
 
  p1_fx = bodies->p_fx;
- p1_fy = bodies->p_fx;
- p1_fz = bodies->p_fx;
+ p1_fy = bodies->p_fy;
+ p1_fz = bodies->p_fz;
 
- p2_val = bodies_Get_p_value(bodies, 0);
+ p1_val = bodies_Get_p_value(bodies, 0);
 
  p2_px = current->p_pos_x;
  p2_py = current->p_pos_y;
  p2_pz = current->p_pos_z;
 
+ p2_fx = current->p_fx;
+ p2_fy = current->p_fy;
+ p2_fz = current->p_fz;
+
  p2_val = bodies_Get_p_value(current, 0);
 
  for(i=0; i<n1; i=i+1){
    pix = p1_px[i];
-   piy = p1_px[i];
-   piz = p1_px[i];
+   piy = p1_py[i];
+   piz = p1_pz[i];
 
    val_i = p1_val[i];
 
@@ -192,20 +192,15 @@ bodies_Compute_own_interaction_par(bodies_t *FMB_RESTRICT bodies, bodies_t *FMB_
      val_j = p2_val[j];
      
      CHECK_IF_POSITION_ARE_TOO_CLOSE(pix, piy, piz, pjx, pjy, pjz);
-
-     dx = pjx-pix;
-     dy = pjy-piy;
-     dz = pjy-piy;
-     inv_square_distance = 1.0/ (dx*dx + dy*dy + dz*dz + eps_soft_square); 
-     inv_distance = FMB_SQRT(inv_square_distance);
-
-     fx = dx * inv_square_distance;
-     fy = dy * inv_square_distance; 
-     fz = dz * inv_square_distance;
-
-     fix += fx;
-     fiy += fy;
-     fiz += fz;     
+     DIRECT_COMPUTATION_MUTUAL_SOFT(pix, piy, piz,
+				    pjx, pjy, pjz,
+				    val_i,
+				    val_j,
+				    fix, fiy, fiz,
+				    p2_fx[j], p2_fy[j], p2_fz[j],
+				    pot_i,
+				    p_pot[j],
+				    eps_soft_square);
    }
    p1_fx[i] = fix;
    p1_fy[i] = fiy;
