@@ -72,7 +72,7 @@ HOST_TARGET=i686_32
 #---------------------------------------------------------------------------------------#
 # Compiler options:
 #---------------------------------------------------------------------------------------#
-CC=mpicc 
+CC=mpicc
 
 
 # For the compiler:
@@ -172,7 +172,7 @@ endif
 
 ### Debugging:
 ifeq ($(DEBUGGING), y)
- CFLAGS = -g -Wall -fno-inline -D_REENTRANT $(GNU_FLAGS) #-pg #-std=gnu99 	
+ CFLAGS = -g -Wall -fno-inline -D_REENTRANT $(GNU_FLAGS) -fopenmp #-pg #-std=gnu99 	
 # CFLAGS := -g $(CFLAGS) 	
 endif
 
@@ -264,7 +264,7 @@ MY_MAKEFILE_LIST:=$(MAKEFILE_LIST) # To avoid .depend (included below)
 #---------------------------------------------------------------------------------------#
 
 $(BIN)NBODY_direct: $(NBODY_DIRECT_SRC)main_direct_method.c $(OBJECTS)
-	$(CC) $(CFLAGS) $(CODE_FLAGS) $(INC_DIR) $(LIB_DIR)  -o $@ $+ $(LIBRARIES) 
+	$(CC) $(CFLAGS)  $(CODE_FLAGS) $(INC_DIR) $(LIB_DIR)  -o $@ $+ $(LIBRARIES) 
 
 
 
@@ -277,13 +277,13 @@ $(BIN)NBODY_direct: $(NBODY_DIRECT_SRC)main_direct_method.c $(OBJECTS)
 #---------------------------------------------------------------------------------------#
 
 $(OBJ)%.o: $(NBODY_DIRECT_SRC)%.c $(NBODY_DIRECT_INC)%.h
-	$(CC) -c $(CFLAGS) $(CODE_FLAGS) $(INC_DIR) -o $@ $<
+	$(CC) -c $(CFLAGS)  $(CODE_FLAGS) $(INC_DIR) -o $@ $<
 
 .depend: $(SRCS) 
 	rm -f .depend 
 	for i in $^ ; do \
 		OBJ=$$( echo $$i | sed 's?$(NBODY_DIRECT_SRC)?$(OBJ)?;s?.c$$?.o?' ) ; \
-		gcc  $(CFLAGS) $(CODE_FLAGS) $(INC_DIR) -MM -MT "$${OBJ}" $$i >> .depend 2>/dev/null ; \
+		gcc $(CFLAGS)  $(CODE_FLAGS) $(INC_DIR) -MM -MT "$${OBJ}" $$i >> .depend 2>/dev/null ; \
 	done 
 
 -include .depend
