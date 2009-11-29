@@ -116,7 +116,6 @@
     fx = dx * inv_square_distance;					\
     fy = dy * inv_square_distance;					\
     fz = dz * inv_square_distance;					\
-    printf(" %lf, %lf\n",fz,fzt);					\
     fxt += fx;								\
     fyt += fy;								\
     fzt += fz;								\
