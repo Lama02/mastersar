@@ -15,7 +15,7 @@
 
 /*** For timers: ***/
 #include <sys/time.h>
-
+#include <unistd.h>
 /*********************************************************************************************
 **********************************************************************************************/
 
@@ -28,7 +28,8 @@ bodies_t p_b1;       //dtructure qui servira de tampon pour les emission et les 
 bodies_t p_b2;       //structure qui servira de tampon pour les emission et les reception
 bodies_t *current_b; //pointeur vers les structures tampon
 bodies_t *next_b;    //pointeur vers les structures tampon
-REAL_T tstart ,tend , tnow, dt ; 
+REAL_T tstart ,tend , tnow, dt ;
+int sum = 0; 
 
 /*********************************************************************************************
 **********************************************************************************************/
@@ -160,6 +161,13 @@ void scatter_to_nodes(){
 	    0,
 	    MPI_COMM_WORLD);
   bodies.nb_bodies = nb_bodies_local;
+  sum = FMB_Info.dt;
+  MPI_Bcast(&sum,
+	    1,
+	    MPI_INT,
+	    0,
+	    MPI_COMM_WORLD);
+  
 }
 
 void gather_to_root(){
@@ -275,6 +283,97 @@ void get_forces(){
 	     MPI_COMM_WORLD);
 }
 
+void print_all(int rank){
+  long i=0;
+  if(rank == 0){
+    bodies.nb_bodies = nb_bodies_total;
+  }
+  MPI_Barrier(MPI_COMM_WORLD);
+  ////////////////
+  MPI_Barrier(MPI_COMM_WORLD);
+  for(i=0;i<(long)rank;i++){    
+    sleep(4);
+  }
+  printf("proc rank = %d, p_pos_x, nb_bodies = %ld, size_allocated = %ld, p_pos_x :\n",rank,bodies.nb_bodies,bodies.size_allocated);
+  for(i=0;i<bodies.nb_bodies-1;i++){        
+    printf("%lf, ", bodies.p_pos_x[i]);
+  }
+  printf("%lf\n ", bodies.p_pos_x[i]);
+
+
+  ////////////////////
+  MPI_Barrier(MPI_COMM_WORLD);
+  for(i=0;i<(long)rank;i++){    
+    sleep(4);
+  }
+  printf("proc rank = %d, p_pos_x, nb_bodies = %ld, size_allocated = %ld, p_pos_y\n",rank,bodies.nb_bodies,bodies.size_allocated);
+  for(i=0;i<bodies.nb_bodies-1;i++){        
+    printf("%lf, ", bodies.p_pos_y[i]);
+  }
+  printf("%lf\n ", bodies.p_pos_y[i]);
+
+  ///////////////////
+  MPI_Barrier(MPI_COMM_WORLD);
+  for(i=0;i<(long)rank;i++){    
+    sleep(4);
+  }
+  printf("proc rank = %d, p_pos_x, nb_bodies = %ld, size_allocated = %ld, p_pos_z :\n",rank,bodies.nb_bodies,bodies.size_allocated);
+  for(i=0;i<bodies.nb_bodies-1;i++){        
+    printf("%lf, ", bodies.p_pos_z[i]);
+  }
+  printf("%lf\n ", bodies.p_pos_z[i]);
+  ///////////////////
+
+  MPI_Barrier(MPI_COMM_WORLD);
+  for(i=0;i<(long)rank;i++){    
+    sleep(4);
+  }
+  printf("proc rank = %d, p_pos_x, nb_bodies = %ld, size_allocated = %ld, p_fx :\n",rank,bodies.nb_bodies,bodies.size_allocated);
+  for(i=0;i<bodies.nb_bodies-1;i++){        
+    printf("%lf, ", bodies.p_fx[i]);
+  }
+  printf("%lf\n ", bodies.p_fx[i]);
+  ///////////////////
+
+  MPI_Barrier(MPI_COMM_WORLD);
+  for(i=0;i<(long)rank;i++){    
+    sleep(4);
+  }
+  printf("proc rank = %d, p_pos_x, nb_bodies = %ld, size_allocated = %ld, p_fy :\n",rank,bodies.nb_bodies,bodies.size_allocated);
+  for(i=0;i<bodies.nb_bodies-1;i++){        
+    printf("%lf, ", bodies.p_fy[i]);
+  }
+  printf("%lf\n ", bodies.p_fy[i]);
+  ///////////////////
+
+  MPI_Barrier(MPI_COMM_WORLD);
+  for(i=0;i<(long)rank;i++){    
+    sleep(4);
+  }
+  printf("proc rank = %d, p_pos_x, nb_bodies = %ld, size_allocated = %ld, p_fz :\n",rank,bodies.nb_bodies,bodies.size_allocated);
+  for(i=0;i<bodies.nb_bodies-1;i++){        
+    printf("%lf, ", bodies.p_fz[i]);
+  }
+  printf("%lf\n ", bodies.p_fz[i]);
+
+  ///////////////////
+
+  MPI_Barrier(MPI_COMM_WORLD);
+  for(i=0;i<(long)rank;i++){    
+    sleep(4);
+  }
+  printf("proc rank = %d, p_pos_x, nb_bodies = %ld, size_allocated = %ld, p_values :\n",rank,bodies.nb_bodies,bodies.size_allocated);
+  for(i=0;i<bodies.nb_bodies-1;i++){        
+    printf("%lf, ", bodies.p_values[i]);
+  }
+  printf("%lf\n ", bodies.p_values[i]);
+  
+  if(rank == 0){
+    bodies.nb_bodies = nb_bodies_local;
+  }
+
+}
+
 /*********************************************************************************************
 **********************************************************************************************/
 
@@ -316,7 +415,13 @@ int main(int argc, char **argv){
 
   /* Timers: */
   double t_start = 0.0, t_end = 0.0;
-
+  long i = 0;
+  long double sumx = 0;
+  long double sumy = 0;
+  long double sumz = 0;
+  long double t_sumx = 0;
+  long double t_sumy = 0;
+  long double t_sumz = 0;
 
   /********************************* Options on command line: ***************************************/
   f_output = stdout; /* by default */
@@ -357,11 +462,7 @@ int main(int argc, char **argv){
   initialize_node();
   scatter_to_nodes();
   
-  
-  
-  
-
-
+  //print_all(rank);
 
   /******************************************************************************************/
   /********************************** Start of the simulation: ******************************/
@@ -373,7 +474,7 @@ int main(int argc, char **argv){
     /*********************Direct metho Move : K-D-K **************************************/ 
     if(tnow!=0) {
 
-      KnD_Direct_method_Move(FMB_Info.dt ); 
+      KnD_Direct_method_Move(dt ); 
       
     
       /***** Clear the forces and the potential of the bodies for the next time step: ********/
@@ -389,9 +490,9 @@ int main(int argc, char **argv){
     /* End timer: */
     t_end = my_gettimeofday();
 
-    if (tnow !=0)K_Direct_method_Move(FMB_Info.dt);
+    if (tnow !=0)K_Direct_method_Move(dt);
 
-
+    // print_all(rank);
 
 
     /****************** Save & display the total time used for this step: *******************/
@@ -461,18 +562,55 @@ int main(int argc, char **argv){
     }
 
     /************************** Sum of forces and potential: ***************************/
+
     if (FMB_Info.sum){
       //on verifie si l'option save n'est pas deja active
-      if(!FMB_Info.save){
+      /*if(!FMB_Info.save){
 	get_forces();
+	}*/
+      sumx = 0;
+      sumy = 0;
+      sumz = 0;
+      for(i=0;i<bodies.nb_bodies;i++){
+	sumx+=bodies.p_fx[i];
+	sumy+=bodies.p_fy[i];
+	sumz+=bodies.p_fz[i];
       }
+      t_sumx = 0;
+      t_sumy = 0;
+      t_sumz = 0;
+      MPI_Reduce(&sumx,
+		 &t_sumx,
+		 1,
+		 MPI_LONG_DOUBLE,
+		 MPI_SUM,
+		 0,
+		 MPI_COMM_WORLD);
+      MPI_Reduce(&sumy,
+		 &t_sumy,
+		 1,
+		 MPI_LONG_DOUBLE,
+		 MPI_SUM,
+		 0,
+		 MPI_COMM_WORLD);
+      MPI_Reduce(&sumz,
+		 &t_sumz,
+		 1,
+		 MPI_LONG_DOUBLE,
+		 MPI_SUM,
+		 0,
+		 MPI_COMM_WORLD);
 
       if(rank == 0){
+	printf("sum (Fx, Fy, Fz) = (");
+	printf(HIGH_PRECISION_DOUBLE_FPRINTF,(double)t_sumx);printf(",\t");
+	printf(HIGH_PRECISION_DOUBLE_FPRINTF,(double)t_sumy);printf(",\t");
+	printf(HIGH_PRECISION_DOUBLE_FPRINTF,(double)t_sumz);printf(")\n");
 	//on met le nombre de corps à n
-	bodies.nb_bodies = nb_bodies_total;
-	Direct_method_Sum(NULL, nb_steps, &bodies, total_potential_energy);     
+	//bodies.nb_bodies = nb_bodies_total;
+	//Direct_method_Sum(NULL, nb_steps, &bodies, total_potential_energy);     
 	//on remet le nombre de corps à n/p
-	bodies.nb_bodies = nb_bodies_local;
+	//bodies.nb_bodies = nb_bodies_local;
       }            
 
 
