@@ -96,7 +96,6 @@
 					   v_target,			\
 					   v_src,			\
 					   fxt, fyt, fzt,		\
-					   fxs, fys, fzs,		\
 					   unused1,			\
 					   unused2,			\
 					   eps_soft_square){		\
@@ -107,7 +106,7 @@
     COORDINATES_T inv_distance;						\
     COORDINATES_T fx, fy, fz;						\
     									\
-									\
+    									\
     inv_square_distance = 1.0/ (dx*dx + dy*dy + dz*dz + eps_soft_square); \
     inv_distance = FMB_SQRT(inv_square_distance);			\
     									\
@@ -117,9 +116,11 @@
     fx = dx * inv_square_distance;					\
     fy = dy * inv_square_distance;					\
     fz = dz * inv_square_distance;					\
+    printf(" %lf, %lf\n",fz,fzt);					\
     fxt += fx;								\
     fyt += fy;								\
     fzt += fz;								\
+									\
     									\
   }
 
