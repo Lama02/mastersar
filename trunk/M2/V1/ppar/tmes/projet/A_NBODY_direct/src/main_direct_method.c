@@ -396,18 +396,14 @@ int main(int argc, char **argv){
 
     /****************** Save & display the total time used for this step: *******************/
 
-    if (INFO_DISPLAY(1)){
+    if (INFO_DISPLAY(1) ){
       unsigned long long nb_int = NB_OWN_INT(bodies_Nb_bodies(&bodies));
-       
-      fprintf(f_output, "\n#######################################################################\n");
-      fprintf(f_output, "Time now ( Step number) : %lf (%ld) , process %d\n",tnow,nb_steps,rank );
-      fprintf(f_output, "Computation time = %f seconds\n", t_end - t_start);
-
-      fprintf(f_output, "Interactions computed: %llu\n", nb_int);
-      fprintf(f_output, "  Nb interactions / second: %.3f\n", ((double) nb_int) / (t_end - t_start));
-
-      fprintf(f_output, "  Gflop/s = %.3f (11.5 flop with mutual) \n",
-	      ((((double) nb_int) / (t_end - t_start)) * 11.5 /* 23 flops divided by 2 since mutual */) / (1000000000.0));
+           
+      fprintf(f_output, " process : %d, Step_number : %ld ,Computation_time : %f, \
+ Interactions_computed : %llu, Nb interactions/second : %.3f, Gflop/s : %.3f\n",
+	      rank,nb_steps,t_end - t_start,nb_int,
+	      ((double) nb_int) / (t_end - t_start),
+	      ((((double) nb_int) / (t_end - t_start)) * 11.5) / (1000000000.0));
 
       
     }
@@ -487,22 +483,13 @@ int main(int argc, char **argv){
     nb_steps ++ ; 
 
   }  /* while ( tnow-FMB_Info.dt <= tend )  */
-
-  
-  MPI_Barrier(MPI_COMM_WORLD);
-  fprintf(f_output, "*#*#1 process %d sort du while\n",rank);
-   
   /******************************************************************************************/
   /********************************** End of the simulation: ********************************/
   /******************************************************************************************/
-
-  MPI_Barrier(MPI_COMM_WORLD);
   Direct_method_Terminate();
-  fprintf(f_output, "*#*#2 process %d direct terminate\n",rank);
+  bodies_Free(current_b);
+  bodies_Free(next_b);
 
-
-  MPI_Barrier(MPI_COMM_WORLD);
-  fprintf(f_output, "*#*#3 process %d se termine correctement\n",rank);    
   MPI_Finalize();
   /********************** Close FILE* and free memory before exiting: ***********************/
   if (argc == 3)
@@ -510,7 +497,7 @@ int main(int argc, char **argv){
       perror("fclose(f_output)");
   
   FMB_free(data_file);
-  fprintf(f_output, "*#*#4 le programme se termine corectement; %d\n",rank);    
+
   /****************************************** EXIT ******************************************/
   exit(EXIT_SUCCESS);
 }
