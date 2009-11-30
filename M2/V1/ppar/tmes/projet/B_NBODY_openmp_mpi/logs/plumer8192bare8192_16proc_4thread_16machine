@@ -1,8 +1,6 @@
 *** Compute own interactions of the box defined in "../data/baredisk_8192-plummer_8192.nemo" ***.
 Softening parameter: 1.0e-02
 *** Compute own interactions of the box defined in "../data/baredisk_8192-plummer_8192.nemo" ***.
-*** Compute own interactions of the box defined in "../data/baredisk_8192-plummer_8192.nemo" ***.
-Softening parameter: 1.0e-02
 Softening parameter: 1.0e-02
 *** Compute own interactions of the box defined in "../data/baredisk_8192-plummer_8192.nemo" ***.
 Softening parameter: 1.0e-02
@@ -23,13 +21,15 @@ Softening parameter: 1.0e-02
 *** Compute own interactions of the box defined in "../data/baredisk_8192-plummer_8192.nemo" ***.
 Softening parameter: 1.0e-02
 *** Compute own interactions of the box defined in "../data/baredisk_8192-plummer_8192.nemo" ***.
+*** Compute own interactions of the box defined in "../data/baredisk_8192-plummer_8192.nemo" ***.
+Softening parameter: 1.0e-02
+*** Compute own interactions of the box defined in "../data/baredisk_8192-plummer_8192.nemo" ***.
+Softening parameter: 1.0e-02
 Softening parameter: 1.0e-02
 *** Compute own interactions of the box defined in "../data/baredisk_8192-plummer_8192.nemo" ***.
 Softening parameter: 1.0e-02
 *** Compute own interactions of the box defined in "../data/baredisk_8192-plummer_8192.nemo" ***.
 Softening parameter: 1.0e-02
-*** Compute own interactions of the box defined in "../data/baredisk_8192-plummer_8192.nemo" ***.
-Softening parameter: 1.0e-02
 Bodies number: 16384
 Bodies number: 16384
 Bodies number: 16384
@@ -69,8 +69,6 @@ Number of steps: 19
 Start Time : 0.000000 	 End Time : 2.000000 	 dt : 0.100000 
 Number of steps: 19
 Start Time : 0.000000 	 End Time : 2.000000 	 dt : 0.100000 
-Start Time : 0.000000 	 End Time : 2.000000 	 dt : 0.100000 
-Number of steps: 19
 Number of steps: 19
 Start Time : 0.000000 	 End Time : 2.000000 	 dt : 0.100000 
 Number of steps: 19
@@ -78,6 +76,8 @@ Start Time : 0.000000 	 End Time : 2.000000 	 dt : 0.100000
 Number of steps: 19
 Start Time : 0.000000 	 End Time : 2.000000 	 dt : 0.100000 
 Number of steps: 19
+Start Time : 0.000000 	 End Time : 2.000000 	 dt : 0.100000 
+Number of steps: 19
 Softening parameter: 1.0e-02
 Softening parameter: 1.0e-02
 Softening parameter: 1.0e-02
@@ -93,339 +93,19 @@ Softening parameter: 1.0e-02
 Softening parameter: 1.0e-02
 Softening parameter: 1.0e-02
 Softening parameter: 1.0e-02
- process : 5, Step_number : 0 ,Computation_time : 0.752165,  Interactions_computed : 1047552, Nb interactions/second : 1392715.694, Gflop/s : 0.016
- process : 15, Step_number : 0 ,Computation_time : 0.746252,  Interactions_computed : 1047552, Nb interactions/second : 1403751.012, Gflop/s : 0.016
- process : 8, Step_number : 0 ,Computation_time : 0.758753,  Interactions_computed : 1047552, Nb interactions/second : 1380623.207, Gflop/s : 0.016
- process : 12, Step_number : 0 ,Computation_time : 0.754788,  Interactions_computed : 1047552, Nb interactions/second : 1387875.801, Gflop/s : 0.016
- process : 3, Step_number : 0 ,Computation_time : 0.765559,  Interactions_computed : 1047552, Nb interactions/second : 1368349.141, Gflop/s : 0.016
- process : 1, Step_number : 0 ,Computation_time : 0.773037,  Interactions_computed : 1047552, Nb interactions/second : 1355112.369, Gflop/s : 0.016
- process : 14, Step_number : 0 ,Computation_time : 0.760046,  Interactions_computed : 1047552, Nb interactions/second : 1378274.473, Gflop/s : 0.016
- process : 7, Step_number : 0 ,Computation_time : 0.770565,  Interactions_computed : 1047552, Nb interactions/second : 1359459.617, Gflop/s : 0.016
- process : 4, Step_number : 0 ,Computation_time : 0.781008,  Interactions_computed : 1047552, Nb interactions/second : 1341282.036, Gflop/s : 0.015
- process : 10, Step_number : 0 ,Computation_time : 0.783534,  Interactions_computed : 1047552, Nb interactions/second : 1336957.937, Gflop/s : 0.015
- process : 9, Step_number : 0 ,Computation_time : 0.787528,  Interactions_computed : 1047552, Nb interactions/second : 1330177.467, Gflop/s : 0.015
- process : 2, Step_number : 0 ,Computation_time : 0.796362,  Interactions_computed : 1047552, Nb interactions/second : 1315421.881, Gflop/s : 0.015
- process : 0, Step_number : 0 ,Computation_time : 0.833222,  Interactions_computed : 1047552, Nb interactions/second : 1257230.366, Gflop/s : 0.014
- process : 6, Step_number : 0 ,Computation_time : 0.808653,  Interactions_computed : 1047552, Nb interactions/second : 1295428.323, Gflop/s : 0.015
- process : 11, Step_number : 0 ,Computation_time : 0.804536,  Interactions_computed : 1047552, Nb interactions/second : 1302057.335, Gflop/s : 0.015
- process : 13, Step_number : 0 ,Computation_time : 0.806769,  Interactions_computed : 1047552, Nb interactions/second : 1298453.461, Gflop/s : 0.015
- process : 5, Step_number : 1 ,Computation_time : 0.749502,  Interactions_computed : 1047552, Nb interactions/second : 1397664.049, Gflop/s : 0.016
- process : 8, Step_number : 1 ,Computation_time : 0.753907,  Interactions_computed : 1047552, Nb interactions/second : 1389497.643, Gflop/s : 0.016
- process : 4, Step_number : 1 ,Computation_time : 0.743458,  Interactions_computed : 1047552, Nb interactions/second : 1409026.468, Gflop/s : 0.016
- process : 15, Step_number : 1 ,Computation_time : 0.772328,  Interactions_computed : 1047552, Nb interactions/second : 1356356.367, Gflop/s : 0.016
- process : 3, Step_number : 1 ,Computation_time : 0.783523,  Interactions_computed : 1047552, Nb interactions/second : 1336976.707, Gflop/s : 0.015
- process : 1, Step_number : 1 ,Computation_time : 0.778950,  Interactions_computed : 1047552, Nb interactions/second : 1344825.727, Gflop/s : 0.015
- process : 2, Step_number : 1 ,Computation_time : 0.763054,  Interactions_computed : 1047552, Nb interactions/second : 1372841.241, Gflop/s : 0.016
- process : 12, Step_number : 1 ,Computation_time : 0.805234,  Interactions_computed : 1047552, Nb interactions/second : 1300928.674, Gflop/s : 0.015
- process : 7, Step_number : 1 ,Computation_time : 0.795658,  Interactions_computed : 1047552, Nb interactions/second : 1316585.769, Gflop/s : 0.015
- process : 9, Step_number : 1 ,Computation_time : 0.779179,  Interactions_computed : 1047552, Nb interactions/second : 1344430.484, Gflop/s : 0.015
- process : 14, Step_number : 1 ,Computation_time : 0.805469,  Interactions_computed : 1047552, Nb interactions/second : 1300549.121, Gflop/s : 0.015
- process : 10, Step_number : 1 ,Computation_time : 0.811682,  Interactions_computed : 1047552, Nb interactions/second : 1290594.100, Gflop/s : 0.015
- process : 0, Step_number : 1 ,Computation_time : 0.806082,  Interactions_computed : 1047552, Nb interactions/second : 1299560.094, Gflop/s : 0.015
- process : 6, Step_number : 1 ,Computation_time : 0.805139,  Interactions_computed : 1047552, Nb interactions/second : 1301082.173, Gflop/s : 0.015
- process : 11, Step_number : 1 ,Computation_time : 0.807940,  Interactions_computed : 1047552, Nb interactions/second : 1296571.528, Gflop/s : 0.015
- process : 13, Step_number : 1 ,Computation_time : 0.812403,  Interactions_computed : 1047552, Nb interactions/second : 1289448.710, Gflop/s : 0.015
- process : 5, Step_number : 2 ,Computation_time : 0.746863,  Interactions_computed : 1047552, Nb interactions/second : 1402602.619, Gflop/s : 0.016
- process : 4, Step_number : 2 ,Computation_time : 0.745336,  Interactions_computed : 1047552, Nb interactions/second : 1405476.188, Gflop/s : 0.016
- process : 3, Step_number : 2 ,Computation_time : 0.750859,  Interactions_computed : 1047552, Nb interactions/second : 1395138.102, Gflop/s : 0.016
- process : 2, Step_number : 2 ,Computation_time : 0.752149,  Interactions_computed : 1047552, Nb interactions/second : 1392745.320, Gflop/s : 0.016
- process : 8, Step_number : 2 ,Computation_time : 0.805282,  Interactions_computed : 1047552, Nb interactions/second : 1300851.130, Gflop/s : 0.015
- process : 15, Step_number : 2 ,Computation_time : 0.800734,  Interactions_computed : 1047552, Nb interactions/second : 1308239.690, Gflop/s : 0.015
- process : 9, Step_number : 2 ,Computation_time : 0.771455,  Interactions_computed : 1047552, Nb interactions/second : 1357891.257, Gflop/s : 0.016
- process : 1, Step_number : 2 ,Computation_time : 0.807704,  Interactions_computed : 1047552, Nb interactions/second : 1296950.368, Gflop/s : 0.015
- process : 12, Step_number : 2 ,Computation_time : 0.805220,  Interactions_computed : 1047552, Nb interactions/second : 1300951.293, Gflop/s : 0.015
- process : 7, Step_number : 2 ,Computation_time : 0.805436,  Interactions_computed : 1047552, Nb interactions/second : 1300602.407, Gflop/s : 0.015
- process : 14, Step_number : 2 ,Computation_time : 0.805438,  Interactions_computed : 1047552, Nb interactions/second : 1300599.177, Gflop/s : 0.015
- process : 0, Step_number : 2 ,Computation_time : 0.801247,  Interactions_computed : 1047552, Nb interactions/second : 1307402.087, Gflop/s : 0.015
- process : 10, Step_number : 2 ,Computation_time : 0.804753,  Interactions_computed : 1047552, Nb interactions/second : 1301706.238, Gflop/s : 0.015
- process : 11, Step_number : 2 ,Computation_time : 0.799903,  Interactions_computed : 1047552, Nb interactions/second : 1309598.789, Gflop/s : 0.015
- process : 6, Step_number : 2 ,Computation_time : 0.805339,  Interactions_computed : 1047552, Nb interactions/second : 1300759.059, Gflop/s : 0.015
- process : 13, Step_number : 2 ,Computation_time : 0.805442,  Interactions_computed : 1047552, Nb interactions/second : 1300592.718, Gflop/s : 0.015
- process : 5, Step_number : 3 ,Computation_time : 0.742778,  Interactions_computed : 1047552, Nb interactions/second : 1410316.407, Gflop/s : 0.016
- process : 4, Step_number : 3 ,Computation_time : 0.750969,  Interactions_computed : 1047552, Nb interactions/second : 1394933.746, Gflop/s : 0.016
- process : 3, Step_number : 3 ,Computation_time : 0.751016,  Interactions_computed : 1047552, Nb interactions/second : 1394846.448, Gflop/s : 0.016
- process : 2, Step_number : 3 ,Computation_time : 0.777316,  Interactions_computed : 1047552, Nb interactions/second : 1347652.692, Gflop/s : 0.015
- process : 9, Step_number : 3 ,Computation_time : 0.759762,  Interactions_computed : 1047552, Nb interactions/second : 1378789.673, Gflop/s : 0.016
- process : 8, Step_number : 3 ,Computation_time : 0.807784,  Interactions_computed : 1047552, Nb interactions/second : 1296821.923, Gflop/s : 0.015
- process : 1, Step_number : 3 ,Computation_time : 0.780427,  Interactions_computed : 1047552, Nb interactions/second : 1342280.572, Gflop/s : 0.015
- process : 10, Step_number : 3 ,Computation_time : 0.750202,  Interactions_computed : 1047552, Nb interactions/second : 1396359.914, Gflop/s : 0.016
- process : 15, Step_number : 3 ,Computation_time : 0.833388,  Interactions_computed : 1047552, Nb interactions/second : 1256979.942, Gflop/s : 0.014
- process : 7, Step_number : 3 ,Computation_time : 0.801941,  Interactions_computed : 1047552, Nb interactions/second : 1306270.661, Gflop/s : 0.015
- process : 12, Step_number : 3 ,Computation_time : 0.806590,  Interactions_computed : 1047552, Nb interactions/second : 1298741.616, Gflop/s : 0.015
- process : 14, Step_number : 3 ,Computation_time : 0.799723,  Interactions_computed : 1047552, Nb interactions/second : 1309893.551, Gflop/s : 0.015
- process : 0, Step_number : 3 ,Computation_time : 0.780062,  Interactions_computed : 1047552, Nb interactions/second : 1342908.641, Gflop/s : 0.015
- process : 6, Step_number : 3 ,Computation_time : 0.807573,  Interactions_computed : 1047552, Nb interactions/second : 1297160.752, Gflop/s : 0.015
- process : 11, Step_number : 3 ,Computation_time : 0.813246,  Interactions_computed : 1047552, Nb interactions/second : 1288112.084, Gflop/s : 0.015
- process : 13, Step_number : 3 ,Computation_time : 0.799648,  Interactions_computed : 1047552, Nb interactions/second : 1310016.407, Gflop/s : 0.015
- process : 5, Step_number : 4 ,Computation_time : 0.748638,  Interactions_computed : 1047552, Nb interactions/second : 1399277.087, Gflop/s : 0.016
- process : 4, Step_number : 4 ,Computation_time : 0.771913,  Interactions_computed : 1047552, Nb interactions/second : 1357085.578, Gflop/s : 0.016
- process : 3, Step_number : 4 ,Computation_time : 0.788757,  Interactions_computed : 1047552, Nb interactions/second : 1328104.854, Gflop/s : 0.015
- process : 2, Step_number : 4 ,Computation_time : 0.785659,  Interactions_computed : 1047552, Nb interactions/second : 1333341.819, Gflop/s : 0.015
- process : 9, Step_number : 4 ,Computation_time : 0.787780,  Interactions_computed : 1047552, Nb interactions/second : 1329751.961, Gflop/s : 0.015
- process : 10, Step_number : 4 ,Computation_time : 0.743326,  Interactions_computed : 1047552, Nb interactions/second : 1409276.683, Gflop/s : 0.016
- process : 1, Step_number : 4 ,Computation_time : 0.782015,  Interactions_computed : 1047552, Nb interactions/second : 1339554.868, Gflop/s : 0.015
- process : 8, Step_number : 4 ,Computation_time : 0.807285,  Interactions_computed : 1047552, Nb interactions/second : 1297623.516, Gflop/s : 0.015
- process : 15, Step_number : 4 ,Computation_time : 0.786054,  Interactions_computed : 1047552, Nb interactions/second : 1332671.801, Gflop/s : 0.015
- process : 0, Step_number : 4 ,Computation_time : 0.786518,  Interactions_computed : 1047552, Nb interactions/second : 1331885.602, Gflop/s : 0.015
- process : 7, Step_number : 4 ,Computation_time : 0.812927,  Interactions_computed : 1047552, Nb interactions/second : 1288617.551, Gflop/s : 0.015
- process : 14, Step_number : 4 ,Computation_time : 0.815209,  Interactions_computed : 1047552, Nb interactions/second : 1285010.347, Gflop/s : 0.015
- process : 12, Step_number : 4 ,Computation_time : 0.840929,  Interactions_computed : 1047552, Nb interactions/second : 1245708.021, Gflop/s : 0.014
- process : 11, Step_number : 4 ,Computation_time : 0.801544,  Interactions_computed : 1047552, Nb interactions/second : 1306917.649, Gflop/s : 0.015
- process : 6, Step_number : 4 ,Computation_time : 0.810060,  Interactions_computed : 1047552, Nb interactions/second : 1293178.283, Gflop/s : 0.015
- process : 13, Step_number : 4 ,Computation_time : 0.808310,  Interactions_computed : 1047552, Nb interactions/second : 1295978.028, Gflop/s : 0.015
- process : 5, Step_number : 5 ,Computation_time : 0.803460,  Interactions_computed : 1047552, Nb interactions/second : 1303801.060, Gflop/s : 0.015
- process : 4, Step_number : 5 ,Computation_time : 0.798793,  Interactions_computed : 1047552, Nb interactions/second : 1311418.603, Gflop/s : 0.015
- process : 3, Step_number : 5 ,Computation_time : 0.783104,  Interactions_computed : 1047552, Nb interactions/second : 1337692.056, Gflop/s : 0.015
- process : 2, Step_number : 5 ,Computation_time : 0.777589,  Interactions_computed : 1047552, Nb interactions/second : 1347179.551, Gflop/s : 0.015
- process : 10, Step_number : 5 ,Computation_time : 0.757399,  Interactions_computed : 1047552, Nb interactions/second : 1383091.343, Gflop/s : 0.016
- process : 1, Step_number : 5 ,Computation_time : 0.778134,  Interactions_computed : 1047552, Nb interactions/second : 1346235.995, Gflop/s : 0.015
- process : 9, Step_number : 5 ,Computation_time : 0.812609,  Interactions_computed : 1047552, Nb interactions/second : 1289121.829, Gflop/s : 0.015
- process : 15, Step_number : 5 ,Computation_time : 0.768525,  Interactions_computed : 1047552, Nb interactions/second : 1363068.215, Gflop/s : 0.016
- process : 0, Step_number : 5 ,Computation_time : 0.773503,  Interactions_computed : 1047552, Nb interactions/second : 1354295.976, Gflop/s : 0.016
- process : 8, Step_number : 5 ,Computation_time : 0.812910,  Interactions_computed : 1047552, Nb interactions/second : 1288644.499, Gflop/s : 0.015
- process : 14, Step_number : 5 ,Computation_time : 0.767054,  Interactions_computed : 1047552, Nb interactions/second : 1365682.207, Gflop/s : 0.016
- process : 7, Step_number : 5 ,Computation_time : 0.799184,  Interactions_computed : 1047552, Nb interactions/second : 1310776.993, Gflop/s : 0.015
- process : 13, Step_number : 5 ,Computation_time : 0.750314,  Interactions_computed : 1047552, Nb interactions/second : 1396151.478, Gflop/s : 0.016
- process : 11, Step_number : 5 ,Computation_time : 0.784702,  Interactions_computed : 1047552, Nb interactions/second : 1334967.924, Gflop/s : 0.015
- process : 12, Step_number : 5 ,Computation_time : 0.807140,  Interactions_computed : 1047552, Nb interactions/second : 1297856.630, Gflop/s : 0.015
- process : 6, Step_number : 5 ,Computation_time : 0.803120,  Interactions_computed : 1047552, Nb interactions/second : 1304353.023, Gflop/s : 0.015
- process : 5, Step_number : 6 ,Computation_time : 0.808209,  Interactions_computed : 1047552, Nb interactions/second : 1296139.984, Gflop/s : 0.015
- process : 3, Step_number : 6 ,Computation_time : 0.773997,  Interactions_computed : 1047552, Nb interactions/second : 1353431.603, Gflop/s : 0.016
- process : 4, Step_number : 6 ,Computation_time : 0.814554,  Interactions_computed : 1047552, Nb interactions/second : 1286043.651, Gflop/s : 0.015
- process : 2, Step_number : 6 ,Computation_time : 0.773582,  Interactions_computed : 1047552, Nb interactions/second : 1354157.672, Gflop/s : 0.016
- process : 10, Step_number : 6 ,Computation_time : 0.796729,  Interactions_computed : 1047552, Nb interactions/second : 1314815.954, Gflop/s : 0.015
- process : 1, Step_number : 6 ,Computation_time : 0.769940,  Interactions_computed : 1047552, Nb interactions/second : 1360563.161, Gflop/s : 0.016
- process : 15, Step_number : 6 ,Computation_time : 0.770988,  Interactions_computed : 1047552, Nb interactions/second : 1358713.754, Gflop/s : 0.016
- process : 9, Step_number : 6 ,Computation_time : 0.796659,  Interactions_computed : 1047552, Nb interactions/second : 1314931.483, Gflop/s : 0.015
- process : 0, Step_number : 6 ,Computation_time : 0.758887,  Interactions_computed : 1047552, Nb interactions/second : 1380379.424, Gflop/s : 0.016
- process : 8, Step_number : 6 ,Computation_time : 0.782865,  Interactions_computed : 1047552, Nb interactions/second : 1338100.439, Gflop/s : 0.015
- process : 14, Step_number : 6 ,Computation_time : 0.773171,  Interactions_computed : 1047552, Nb interactions/second : 1354877.511, Gflop/s : 0.016
- process : 7, Step_number : 6 ,Computation_time : 0.794501,  Interactions_computed : 1047552, Nb interactions/second : 1318503.060, Gflop/s : 0.015
- process : 13, Step_number : 6 ,Computation_time : 0.796235,  Interactions_computed : 1047552, Nb interactions/second : 1315631.692, Gflop/s : 0.015
- process : 11, Step_number : 6 ,Computation_time : 0.778080,  Interactions_computed : 1047552, Nb interactions/second : 1346329.426, Gflop/s : 0.015
- process : 6, Step_number : 6 ,Computation_time : 0.778167,  Interactions_computed : 1047552, Nb interactions/second : 1346178.905, Gflop/s : 0.015
- process : 12, Step_number : 6 ,Computation_time : 0.808610,  Interactions_computed : 1047552, Nb interactions/second : 1295497.211, Gflop/s : 0.015
- process : 5, Step_number : 7 ,Computation_time : 0.798467,  Interactions_computed : 1047552, Nb interactions/second : 1311954.032, Gflop/s : 0.015
- process : 3, Step_number : 7 ,Computation_time : 0.767361,  Interactions_computed : 1047552, Nb interactions/second : 1365135.836, Gflop/s : 0.016
- process : 2, Step_number : 7 ,Computation_time : 0.768323,  Interactions_computed : 1047552, Nb interactions/second : 1363426.580, Gflop/s : 0.016
- process : 4, Step_number : 7 ,Computation_time : 0.794116,  Interactions_computed : 1047552, Nb interactions/second : 1319142.292, Gflop/s : 0.015
- process : 10, Step_number : 7 ,Computation_time : 0.768737,  Interactions_computed : 1047552, Nb interactions/second : 1362692.312, Gflop/s : 0.016
- process : 1, Step_number : 7 ,Computation_time : 0.758872,  Interactions_computed : 1047552, Nb interactions/second : 1380406.709, Gflop/s : 0.016
- process : 0, Step_number : 7 ,Computation_time : 0.765496,  Interactions_computed : 1047552, Nb interactions/second : 1368461.756, Gflop/s : 0.016
- process : 9, Step_number : 7 ,Computation_time : 0.768742,  Interactions_computed : 1047552, Nb interactions/second : 1362683.449, Gflop/s : 0.016
- process : 15, Step_number : 7 ,Computation_time : 0.794743,  Interactions_computed : 1047552, Nb interactions/second : 1318101.575, Gflop/s : 0.015
- process : 8, Step_number : 7 ,Computation_time : 0.774828,  Interactions_computed : 1047552, Nb interactions/second : 1351980.052, Gflop/s : 0.016
- process : 14, Step_number : 7 ,Computation_time : 0.793979,  Interactions_computed : 1047552, Nb interactions/second : 1319369.908, Gflop/s : 0.015
- process : 7, Step_number : 7 ,Computation_time : 0.769676,  Interactions_computed : 1047552, Nb interactions/second : 1361029.836, Gflop/s : 0.016
- process : 11, Step_number : 7 ,Computation_time : 0.778889,  Interactions_computed : 1047552, Nb interactions/second : 1344931.049, Gflop/s : 0.015
- process : 13, Step_number : 7 ,Computation_time : 0.793977,  Interactions_computed : 1047552, Nb interactions/second : 1319373.231, Gflop/s : 0.015
- process : 6, Step_number : 7 ,Computation_time : 0.785993,  Interactions_computed : 1047552, Nb interactions/second : 1332775.228, Gflop/s : 0.015
- process : 12, Step_number : 7 ,Computation_time : 0.793197,  Interactions_computed : 1047552, Nb interactions/second : 1320670.653, Gflop/s : 0.015
- process : 5, Step_number : 8 ,Computation_time : 0.796463,  Interactions_computed : 1047552, Nb interactions/second : 1315255.071, Gflop/s : 0.015
- process : 2, Step_number : 8 ,Computation_time : 0.758851,  Interactions_computed : 1047552, Nb interactions/second : 1380444.909, Gflop/s : 0.016
- process : 3, Step_number : 8 ,Computation_time : 0.792888,  Interactions_computed : 1047552, Nb interactions/second : 1321185.338, Gflop/s : 0.015
- process : 1, Step_number : 8 ,Computation_time : 0.765745,  Interactions_computed : 1047552, Nb interactions/second : 1368016.768, Gflop/s : 0.016
- process : 10, Step_number : 8 ,Computation_time : 0.773747,  Interactions_computed : 1047552, Nb interactions/second : 1353868.900, Gflop/s : 0.016
- process : 4, Step_number : 8 ,Computation_time : 0.796377,  Interactions_computed : 1047552, Nb interactions/second : 1315397.105, Gflop/s : 0.015
- process : 0, Step_number : 8 ,Computation_time : 0.759205,  Interactions_computed : 1047552, Nb interactions/second : 1379801.239, Gflop/s : 0.016
- process : 9, Step_number : 8 ,Computation_time : 0.774434,  Interactions_computed : 1047552, Nb interactions/second : 1352667.884, Gflop/s : 0.016
- process : 15, Step_number : 8 ,Computation_time : 0.782498,  Interactions_computed : 1047552, Nb interactions/second : 1338728.022, Gflop/s : 0.015
- process : 8, Step_number : 8 ,Computation_time : 0.782350,  Interactions_computed : 1047552, Nb interactions/second : 1338981.274, Gflop/s : 0.015
- process : 14, Step_number : 8 ,Computation_time : 0.786233,  Interactions_computed : 1047552, Nb interactions/second : 1332368.395, Gflop/s : 0.015
- process : 7, Step_number : 8 ,Computation_time : 0.779182,  Interactions_computed : 1047552, Nb interactions/second : 1344425.307, Gflop/s : 0.015
- process : 11, Step_number : 8 ,Computation_time : 0.779420,  Interactions_computed : 1047552, Nb interactions/second : 1344014.780, Gflop/s : 0.015
- process : 13, Step_number : 8 ,Computation_time : 0.781015,  Interactions_computed : 1047552, Nb interactions/second : 1341270.014, Gflop/s : 0.015
- process : 6, Step_number : 8 ,Computation_time : 0.772576,  Interactions_computed : 1047552, Nb interactions/second : 1355920.971, Gflop/s : 0.016
- process : 12, Step_number : 8 ,Computation_time : 0.779654,  Interactions_computed : 1047552, Nb interactions/second : 1343611.397, Gflop/s : 0.015
- process : 2, Step_number : 9 ,Computation_time : 0.768768,  Interactions_computed : 1047552, Nb interactions/second : 1362637.363, Gflop/s : 0.016
- process : 5, Step_number : 9 ,Computation_time : 0.787471,  Interactions_computed : 1047552, Nb interactions/second : 1330273.750, Gflop/s : 0.015
- process : 3, Step_number : 9 ,Computation_time : 0.798858,  Interactions_computed : 1047552, Nb interactions/second : 1311311.898, Gflop/s : 0.015
- process : 1, Step_number : 9 ,Computation_time : 0.775286,  Interactions_computed : 1047552, Nb interactions/second : 1351181.371, Gflop/s : 0.016
- process : 4, Step_number : 9 ,Computation_time : 0.789730,  Interactions_computed : 1047552, Nb interactions/second : 1326468.540, Gflop/s : 0.015
- process : 10, Step_number : 9 ,Computation_time : 0.793735,  Interactions_computed : 1047552, Nb interactions/second : 1319775.492, Gflop/s : 0.015
- process : 0, Step_number : 9 ,Computation_time : 0.786277,  Interactions_computed : 1047552, Nb interactions/second : 1332293.835, Gflop/s : 0.015
- process : 9, Step_number : 9 ,Computation_time : 0.792981,  Interactions_computed : 1047552, Nb interactions/second : 1321030.390, Gflop/s : 0.015
- process : 15, Step_number : 9 ,Computation_time : 0.786499,  Interactions_computed : 1047552, Nb interactions/second : 1331917.777, Gflop/s : 0.015
- process : 8, Step_number : 9 ,Computation_time : 0.791222,  Interactions_computed : 1047552, Nb interactions/second : 1323967.230, Gflop/s : 0.015
- process : 14, Step_number : 9 ,Computation_time : 0.783731,  Interactions_computed : 1047552, Nb interactions/second : 1336621.877, Gflop/s : 0.015
- process : 11, Step_number : 9 ,Computation_time : 0.758105,  Interactions_computed : 1047552, Nb interactions/second : 1381803.312, Gflop/s : 0.016
- process : 7, Step_number : 9 ,Computation_time : 0.788859,  Interactions_computed : 1047552, Nb interactions/second : 1327933.129, Gflop/s : 0.015
- process : 6, Step_number : 9 ,Computation_time : 0.758316,  Interactions_computed : 1047552, Nb interactions/second : 1381418.828, Gflop/s : 0.016
- process : 13, Step_number : 9 ,Computation_time : 0.783398,  Interactions_computed : 1047552, Nb interactions/second : 1337190.036, Gflop/s : 0.015
- process : 12, Step_number : 9 ,Computation_time : 0.776186,  Interactions_computed : 1047552, Nb interactions/second : 1349614.654, Gflop/s : 0.016
- process : 2, Step_number : 10 ,Computation_time : 0.778439,  Interactions_computed : 1047552, Nb interactions/second : 1345708.527, Gflop/s : 0.015
- process : 5, Step_number : 10 ,Computation_time : 0.778225,  Interactions_computed : 1047552, Nb interactions/second : 1346078.576, Gflop/s : 0.015
- process : 3, Step_number : 10 ,Computation_time : 0.778975,  Interactions_computed : 1047552, Nb interactions/second : 1344782.567, Gflop/s : 0.015
- process : 1, Step_number : 10 ,Computation_time : 0.777436,  Interactions_computed : 1047552, Nb interactions/second : 1347444.677, Gflop/s : 0.015
- process : 4, Step_number : 10 ,Computation_time : 0.773429,  Interactions_computed : 1047552, Nb interactions/second : 1354425.552, Gflop/s : 0.016
- process : 10, Step_number : 10 ,Computation_time : 0.789457,  Interactions_computed : 1047552, Nb interactions/second : 1326927.242, Gflop/s : 0.015
- process : 0, Step_number : 10 ,Computation_time : 0.777125,  Interactions_computed : 1047552, Nb interactions/second : 1347983.915, Gflop/s : 0.016
- process : 15, Step_number : 10 ,Computation_time : 0.772260,  Interactions_computed : 1047552, Nb interactions/second : 1356475.798, Gflop/s : 0.016
- process : 9, Step_number : 10 ,Computation_time : 0.792283,  Interactions_computed : 1047552, Nb interactions/second : 1322194.216, Gflop/s : 0.015
- process : 14, Step_number : 10 ,Computation_time : 0.767846,  Interactions_computed : 1047552, Nb interactions/second : 1364273.565, Gflop/s : 0.016
- process : 8, Step_number : 10 ,Computation_time : 0.794992,  Interactions_computed : 1047552, Nb interactions/second : 1317688.731, Gflop/s : 0.015
- process : 11, Step_number : 10 ,Computation_time : 0.765618,  Interactions_computed : 1047552, Nb interactions/second : 1368243.693, Gflop/s : 0.016
- process : 7, Step_number : 10 ,Computation_time : 0.779450,  Interactions_computed : 1047552, Nb interactions/second : 1343963.051, Gflop/s : 0.015
- process : 6, Step_number : 10 ,Computation_time : 0.764507,  Interactions_computed : 1047552, Nb interactions/second : 1370232.058, Gflop/s : 0.016
- process : 13, Step_number : 10 ,Computation_time : 0.764774,  Interactions_computed : 1047552, Nb interactions/second : 1369753.679, Gflop/s : 0.016
- process : 12, Step_number : 10 ,Computation_time : 0.772991,  Interactions_computed : 1047552, Nb interactions/second : 1355193.010, Gflop/s : 0.016
- process : 2, Step_number : 11 ,Computation_time : 0.771468,  Interactions_computed : 1047552, Nb interactions/second : 1357868.376, Gflop/s : 0.016
- process : 5, Step_number : 11 ,Computation_time : 0.771482,  Interactions_computed : 1047552, Nb interactions/second : 1357843.735, Gflop/s : 0.016
- process : 1, Step_number : 11 ,Computation_time : 0.769697,  Interactions_computed : 1047552, Nb interactions/second : 1360992.702, Gflop/s : 0.016
- process : 3, Step_number : 11 ,Computation_time : 0.791885,  Interactions_computed : 1047552, Nb interactions/second : 1322858.748, Gflop/s : 0.015
- process : 4, Step_number : 11 ,Computation_time : 0.771481,  Interactions_computed : 1047552, Nb interactions/second : 1357845.495, Gflop/s : 0.016
- process : 0, Step_number : 11 ,Computation_time : 0.757307,  Interactions_computed : 1047552, Nb interactions/second : 1383259.365, Gflop/s : 0.016
- process : 10, Step_number : 11 ,Computation_time : 0.799724,  Interactions_computed : 1047552, Nb interactions/second : 1309891.913, Gflop/s : 0.015
- process : 15, Step_number : 11 ,Computation_time : 0.770505,  Interactions_computed : 1047552, Nb interactions/second : 1359565.480, Gflop/s : 0.016
- process : 8, Step_number : 11 ,Computation_time : 0.747671,  Interactions_computed : 1047552, Nb interactions/second : 1401086.842, Gflop/s : 0.016
- process : 9, Step_number : 11 ,Computation_time : 0.799318,  Interactions_computed : 1047552, Nb interactions/second : 1310557.250, Gflop/s : 0.015
- process : 11, Step_number : 11 ,Computation_time : 0.759559,  Interactions_computed : 1047552, Nb interactions/second : 1379158.169, Gflop/s : 0.016
- process : 14, Step_number : 11 ,Computation_time : 0.775130,  Interactions_computed : 1047552, Nb interactions/second : 1351453.304, Gflop/s : 0.016
- process : 7, Step_number : 11 ,Computation_time : 0.765398,  Interactions_computed : 1047552, Nb interactions/second : 1368636.971, Gflop/s : 0.016
- process : 6, Step_number : 11 ,Computation_time : 0.772478,  Interactions_computed : 1047552, Nb interactions/second : 1356092.989, Gflop/s : 0.016
- process : 13, Step_number : 11 ,Computation_time : 0.779167,  Interactions_computed : 1047552, Nb interactions/second : 1344451.189, Gflop/s : 0.015
- process : 12, Step_number : 11 ,Computation_time : 0.778608,  Interactions_computed : 1047552, Nb interactions/second : 1345416.435, Gflop/s : 0.015
- process : 2, Step_number : 12 ,Computation_time : 0.779634,  Interactions_computed : 1047552, Nb interactions/second : 1343645.865, Gflop/s : 0.015
- process : 5, Step_number : 12 ,Computation_time : 0.771225,  Interactions_computed : 1047552, Nb interactions/second : 1358296.217, Gflop/s : 0.016
- process : 1, Step_number : 12 ,Computation_time : 0.781406,  Interactions_computed : 1047552, Nb interactions/second : 1340598.869, Gflop/s : 0.015
- process : 4, Step_number : 12 ,Computation_time : 0.771308,  Interactions_computed : 1047552, Nb interactions/second : 1358150.052, Gflop/s : 0.016
- process : 3, Step_number : 12 ,Computation_time : 0.778098,  Interactions_computed : 1047552, Nb interactions/second : 1346298.281, Gflop/s : 0.015
- process : 0, Step_number : 12 ,Computation_time : 0.793712,  Interactions_computed : 1047552, Nb interactions/second : 1319813.736, Gflop/s : 0.015
- process : 10, Step_number : 12 ,Computation_time : 0.783666,  Interactions_computed : 1047552, Nb interactions/second : 1336732.741, Gflop/s : 0.015
- process : 15, Step_number : 12 ,Computation_time : 0.784492,  Interactions_computed : 1047552, Nb interactions/second : 1335325.281, Gflop/s : 0.015
- process : 9, Step_number : 12 ,Computation_time : 0.755001,  Interactions_computed : 1047552, Nb interactions/second : 1387484.255, Gflop/s : 0.016
- process : 11, Step_number : 12 ,Computation_time : 0.744273,  Interactions_computed : 1047552, Nb interactions/second : 1407483.544, Gflop/s : 0.016
- process : 8, Step_number : 12 ,Computation_time : 0.786295,  Interactions_computed : 1047552, Nb interactions/second : 1332263.336, Gflop/s : 0.015
- process : 7, Step_number : 12 ,Computation_time : 0.744287,  Interactions_computed : 1047552, Nb interactions/second : 1407457.070, Gflop/s : 0.016
- process : 6, Step_number : 12 ,Computation_time : 0.744242,  Interactions_computed : 1047552, Nb interactions/second : 1407542.170, Gflop/s : 0.016
- process : 14, Step_number : 12 ,Computation_time : 0.783980,  Interactions_computed : 1047552, Nb interactions/second : 1336197.352, Gflop/s : 0.015
- process : 13, Step_number : 12 ,Computation_time : 0.783027,  Interactions_computed : 1047552, Nb interactions/second : 1337823.600, Gflop/s : 0.015
- process : 12, Step_number : 12 ,Computation_time : 0.752678,  Interactions_computed : 1047552, Nb interactions/second : 1391766.466, Gflop/s : 0.016
- process : 5, Step_number : 13 ,Computation_time : 0.768182,  Interactions_computed : 1047552, Nb interactions/second : 1363676.837, Gflop/s : 0.016
- process : 2, Step_number : 13 ,Computation_time : 0.777678,  Interactions_computed : 1047552, Nb interactions/second : 1347025.376, Gflop/s : 0.015
- process : 4, Step_number : 13 ,Computation_time : 0.765162,  Interactions_computed : 1047552, Nb interactions/second : 1369059.101, Gflop/s : 0.016
- process : 3, Step_number : 13 ,Computation_time : 0.765575,  Interactions_computed : 1047552, Nb interactions/second : 1368320.543, Gflop/s : 0.016
- process : 1, Step_number : 13 ,Computation_time : 0.782774,  Interactions_computed : 1047552, Nb interactions/second : 1338255.997, Gflop/s : 0.015
- process : 10, Step_number : 13 ,Computation_time : 0.756938,  Interactions_computed : 1047552, Nb interactions/second : 1383933.691, Gflop/s : 0.016
- process : 0, Step_number : 13 ,Computation_time : 0.783023,  Interactions_computed : 1047552, Nb interactions/second : 1337830.434, Gflop/s : 0.015
- process : 9, Step_number : 13 ,Computation_time : 0.748250,  Interactions_computed : 1047552, Nb interactions/second : 1400002.673, Gflop/s : 0.016
- process : 15, Step_number : 13 ,Computation_time : 0.769148,  Interactions_computed : 1047552, Nb interactions/second : 1361964.147, Gflop/s : 0.016
- process : 11, Step_number : 13 ,Computation_time : 0.772264,  Interactions_computed : 1047552, Nb interactions/second : 1356468.772, Gflop/s : 0.016
- process : 7, Step_number : 13 ,Computation_time : 0.752154,  Interactions_computed : 1047552, Nb interactions/second : 1392736.062, Gflop/s : 0.016
- process : 8, Step_number : 13 ,Computation_time : 0.758742,  Interactions_computed : 1047552, Nb interactions/second : 1380643.223, Gflop/s : 0.016
- process : 6, Step_number : 13 ,Computation_time : 0.764501,  Interactions_computed : 1047552, Nb interactions/second : 1370242.812, Gflop/s : 0.016
- process : 14, Step_number : 13 ,Computation_time : 0.767960,  Interactions_computed : 1047552, Nb interactions/second : 1364071.045, Gflop/s : 0.016
- process : 13, Step_number : 13 ,Computation_time : 0.748935,  Interactions_computed : 1047552, Nb interactions/second : 1398722.185, Gflop/s : 0.016
- process : 12, Step_number : 13 ,Computation_time : 0.767209,  Interactions_computed : 1047552, Nb interactions/second : 1365406.297, Gflop/s : 0.016
- process : 5, Step_number : 14 ,Computation_time : 0.765603,  Interactions_computed : 1047552, Nb interactions/second : 1368270.501, Gflop/s : 0.016
- process : 2, Step_number : 14 ,Computation_time : 0.776445,  Interactions_computed : 1047552, Nb interactions/second : 1349164.461, Gflop/s : 0.016
- process : 3, Step_number : 14 ,Computation_time : 0.759054,  Interactions_computed : 1047552, Nb interactions/second : 1380075.726, Gflop/s : 0.016
- process : 4, Step_number : 14 ,Computation_time : 0.764694,  Interactions_computed : 1047552, Nb interactions/second : 1369896.978, Gflop/s : 0.016
- process : 1, Step_number : 14 ,Computation_time : 0.769929,  Interactions_computed : 1047552, Nb interactions/second : 1360582.599, Gflop/s : 0.016
- process : 10, Step_number : 14 ,Computation_time : 0.757128,  Interactions_computed : 1047552, Nb interactions/second : 1383586.395, Gflop/s : 0.016
- process : 0, Step_number : 14 ,Computation_time : 0.753654,  Interactions_computed : 1047552, Nb interactions/second : 1389964.095, Gflop/s : 0.016
- process : 9, Step_number : 14 ,Computation_time : 0.766035,  Interactions_computed : 1047552, Nb interactions/second : 1367498.874, Gflop/s : 0.016
- process : 11, Step_number : 14 ,Computation_time : 0.758113,  Interactions_computed : 1047552, Nb interactions/second : 1381788.731, Gflop/s : 0.016
- process : 15, Step_number : 14 ,Computation_time : 0.767188,  Interactions_computed : 1047552, Nb interactions/second : 1365443.672, Gflop/s : 0.016
- process : 8, Step_number : 14 ,Computation_time : 0.751385,  Interactions_computed : 1047552, Nb interactions/second : 1394161.449, Gflop/s : 0.016
- process : 7, Step_number : 14 ,Computation_time : 0.764692,  Interactions_computed : 1047552, Nb interactions/second : 1369900.561, Gflop/s : 0.016
- process : 6, Step_number : 14 ,Computation_time : 0.752160,  Interactions_computed : 1047552, Nb interactions/second : 1392724.952, Gflop/s : 0.016
- process : 14, Step_number : 14 ,Computation_time : 0.748801,  Interactions_computed : 1047552, Nb interactions/second : 1398972.491, Gflop/s : 0.016
- process : 13, Step_number : 14 ,Computation_time : 0.762067,  Interactions_computed : 1047552, Nb interactions/second : 1374619.292, Gflop/s : 0.016
- process : 12, Step_number : 14 ,Computation_time : 0.752666,  Interactions_computed : 1047552, Nb interactions/second : 1391788.655, Gflop/s : 0.016
- process : 5, Step_number : 15 ,Computation_time : 0.765497,  Interactions_computed : 1047552, Nb interactions/second : 1368459.968, Gflop/s : 0.016
- process : 2, Step_number : 15 ,Computation_time : 0.769798,  Interactions_computed : 1047552, Nb interactions/second : 1360814.136, Gflop/s : 0.016
- process : 4, Step_number : 15 ,Computation_time : 0.758671,  Interactions_computed : 1047552, Nb interactions/second : 1380772.430, Gflop/s : 0.016
- process : 3, Step_number : 15 ,Computation_time : 0.772340,  Interactions_computed : 1047552, Nb interactions/second : 1356335.293, Gflop/s : 0.016
- process : 1, Step_number : 15 ,Computation_time : 0.753514,  Interactions_computed : 1047552, Nb interactions/second : 1390222.345, Gflop/s : 0.016
- process : 10, Step_number : 15 ,Computation_time : 0.756929,  Interactions_computed : 1047552, Nb interactions/second : 1383950.146, Gflop/s : 0.016
- process : 0, Step_number : 15 ,Computation_time : 0.766821,  Interactions_computed : 1047552, Nb interactions/second : 1366097.173, Gflop/s : 0.016
- process : 9, Step_number : 15 ,Computation_time : 0.757500,  Interactions_computed : 1047552, Nb interactions/second : 1382906.931, Gflop/s : 0.016
- process : 8, Step_number : 15 ,Computation_time : 0.744393,  Interactions_computed : 1047552, Nb interactions/second : 1407256.651, Gflop/s : 0.016
- process : 11, Step_number : 15 ,Computation_time : 0.751095,  Interactions_computed : 1047552, Nb interactions/second : 1394699.738, Gflop/s : 0.016
- process : 7, Step_number : 15 ,Computation_time : 0.744174,  Interactions_computed : 1047552, Nb interactions/second : 1407670.786, Gflop/s : 0.016
- process : 15, Step_number : 15 ,Computation_time : 0.755729,  Interactions_computed : 1047552, Nb interactions/second : 1386147.680, Gflop/s : 0.016
- process : 6, Step_number : 15 ,Computation_time : 0.743696,  Interactions_computed : 1047552, Nb interactions/second : 1408575.547, Gflop/s : 0.016
- process : 14, Step_number : 15 ,Computation_time : 0.762042,  Interactions_computed : 1047552, Nb interactions/second : 1374664.388, Gflop/s : 0.016
- process : 13, Step_number : 15 ,Computation_time : 0.761687,  Interactions_computed : 1047552, Nb interactions/second : 1375305.080, Gflop/s : 0.016
- process : 12, Step_number : 15 ,Computation_time : 0.759772,  Interactions_computed : 1047552, Nb interactions/second : 1378771.526, Gflop/s : 0.016
- process : 5, Step_number : 16 ,Computation_time : 0.760293,  Interactions_computed : 1047552, Nb interactions/second : 1377826.706, Gflop/s : 0.016
- process : 2, Step_number : 16 ,Computation_time : 0.756187,  Interactions_computed : 1047552, Nb interactions/second : 1385308.131, Gflop/s : 0.016
- process : 4, Step_number : 16 ,Computation_time : 0.744265,  Interactions_computed : 1047552, Nb interactions/second : 1407498.673, Gflop/s : 0.016
- process : 1, Step_number : 16 ,Computation_time : 0.766817,  Interactions_computed : 1047552, Nb interactions/second : 1366104.299, Gflop/s : 0.016
- process : 3, Step_number : 16 ,Computation_time : 0.771723,  Interactions_computed : 1047552, Nb interactions/second : 1357419.696, Gflop/s : 0.016
- process : 10, Step_number : 16 ,Computation_time : 0.756889,  Interactions_computed : 1047552, Nb interactions/second : 1384023.285, Gflop/s : 0.016
- process : 0, Step_number : 16 ,Computation_time : 0.751830,  Interactions_computed : 1047552, Nb interactions/second : 1393336.260, Gflop/s : 0.016
- process : 8, Step_number : 16 ,Computation_time : 0.750973,  Interactions_computed : 1047552, Nb interactions/second : 1394926.316, Gflop/s : 0.016
- process : 9, Step_number : 16 ,Computation_time : 0.763084,  Interactions_computed : 1047552, Nb interactions/second : 1372787.269, Gflop/s : 0.016
- process : 11, Step_number : 16 ,Computation_time : 0.757885,  Interactions_computed : 1047552, Nb interactions/second : 1382204.424, Gflop/s : 0.016
- process : 6, Step_number : 16 ,Computation_time : 0.743603,  Interactions_computed : 1047552, Nb interactions/second : 1408751.713, Gflop/s : 0.016
- process : 15, Step_number : 16 ,Computation_time : 0.754869,  Interactions_computed : 1047552, Nb interactions/second : 1387726.877, Gflop/s : 0.016
- process : 7, Step_number : 16 ,Computation_time : 0.758357,  Interactions_computed : 1047552, Nb interactions/second : 1381344.143, Gflop/s : 0.016
- process : 14, Step_number : 16 ,Computation_time : 0.761711,  Interactions_computed : 1047552, Nb interactions/second : 1375261.746, Gflop/s : 0.016
- process : 13, Step_number : 16 ,Computation_time : 0.750953,  Interactions_computed : 1047552, Nb interactions/second : 1394963.467, Gflop/s : 0.016
- process : 12, Step_number : 16 ,Computation_time : 0.766026,  Interactions_computed : 1047552, Nb interactions/second : 1367514.941, Gflop/s : 0.016
- process : 5, Step_number : 17 ,Computation_time : 0.753645,  Interactions_computed : 1047552, Nb interactions/second : 1389980.694, Gflop/s : 0.016
- process : 2, Step_number : 17 ,Computation_time : 0.763890,  Interactions_computed : 1047552, Nb interactions/second : 1371338.805, Gflop/s : 0.016
- process : 4, Step_number : 17 ,Computation_time : 0.780289,  Interactions_computed : 1047552, Nb interactions/second : 1342517.964, Gflop/s : 0.015
- process : 1, Step_number : 17 ,Computation_time : 0.756829,  Interactions_computed : 1047552, Nb interactions/second : 1384133.007, Gflop/s : 0.016
- process : 3, Step_number : 17 ,Computation_time : 0.764693,  Interactions_computed : 1047552, Nb interactions/second : 1369898.770, Gflop/s : 0.016
- process : 10, Step_number : 17 ,Computation_time : 0.761721,  Interactions_computed : 1047552, Nb interactions/second : 1375243.692, Gflop/s : 0.016
- process : 6, Step_number : 17 ,Computation_time : 0.743769,  Interactions_computed : 1047552, Nb interactions/second : 1408437.297, Gflop/s : 0.016
- process : 9, Step_number : 17 ,Computation_time : 0.751089,  Interactions_computed : 1047552, Nb interactions/second : 1394710.880, Gflop/s : 0.016
- process : 0, Step_number : 17 ,Computation_time : 0.775109,  Interactions_computed : 1047552, Nb interactions/second : 1351489.919, Gflop/s : 0.016
- process : 11, Step_number : 17 ,Computation_time : 0.765230,  Interactions_computed : 1047552, Nb interactions/second : 1368937.444, Gflop/s : 0.016
- process : 15, Step_number : 17 ,Computation_time : 0.762077,  Interactions_computed : 1047552, Nb interactions/second : 1374601.254, Gflop/s : 0.016
- process : 8, Step_number : 17 ,Computation_time : 0.778738,  Interactions_computed : 1047552, Nb interactions/second : 1345191.836, Gflop/s : 0.015
- process : 7, Step_number : 17 ,Computation_time : 0.778379,  Interactions_computed : 1047552, Nb interactions/second : 1345812.259, Gflop/s : 0.015
- process : 14, Step_number : 17 ,Computation_time : 0.751073,  Interactions_computed : 1047552, Nb interactions/second : 1394740.591, Gflop/s : 0.016
- process : 13, Step_number : 17 ,Computation_time : 0.765391,  Interactions_computed : 1047552, Nb interactions/second : 1368649.488, Gflop/s : 0.016
- process : 12, Step_number : 17 ,Computation_time : 0.755458,  Interactions_computed : 1047552, Nb interactions/second : 1386644.923, Gflop/s : 0.016
- process : 5, Step_number : 18 ,Computation_time : 0.772831,  Interactions_computed : 1047552, Nb interactions/second : 1355473.577, Gflop/s : 0.016
- process : 2, Step_number : 18 ,Computation_time : 0.770158,  Interactions_computed : 1047552, Nb interactions/second : 1360178.041, Gflop/s : 0.016
- process : 4, Step_number : 18 ,Computation_time : 0.758185,  Interactions_computed : 1047552, Nb interactions/second : 1381657.511, Gflop/s : 0.016
- process : 3, Step_number : 18 ,Computation_time : 0.765184,  Interactions_computed : 1047552, Nb interactions/second : 1369019.739, Gflop/s : 0.016
- process : 1, Step_number : 18 ,Computation_time : 0.778335,  Interactions_computed : 1047552, Nb interactions/second : 1345888.339, Gflop/s : 0.015
- process : 10, Step_number : 18 ,Computation_time : 0.756468,  Interactions_computed : 1047552, Nb interactions/second : 1384793.540, Gflop/s : 0.016
- process : 6, Step_number : 18 ,Computation_time : 0.743664,  Interactions_computed : 1047552, Nb interactions/second : 1408636.158, Gflop/s : 0.016
- process : 9, Step_number : 18 ,Computation_time : 0.759724,  Interactions_computed : 1047552, Nb interactions/second : 1378858.638, Gflop/s : 0.016
- process : 15, Step_number : 18 ,Computation_time : 0.756705,  Interactions_computed : 1047552, Nb interactions/second : 1384359.823, Gflop/s : 0.016
- process : 11, Step_number : 18 ,Computation_time : 0.758270,  Interactions_computed : 1047552, Nb interactions/second : 1381502.631, Gflop/s : 0.016
- process : 8, Step_number : 18 ,Computation_time : 0.758333,  Interactions_computed : 1047552, Nb interactions/second : 1381387.860, Gflop/s : 0.016
- process : 0, Step_number : 18 ,Computation_time : 0.781171,  Interactions_computed : 1047552, Nb interactions/second : 1341002.162, Gflop/s : 0.015
- process : 7, Step_number : 18 ,Computation_time : 0.746029,  Interactions_computed : 1047552, Nb interactions/second : 1404170.615, Gflop/s : 0.016
- process : 14, Step_number : 18 ,Computation_time : 0.766390,  Interactions_computed : 1047552, Nb interactions/second : 1366865.434, Gflop/s : 0.016
- process : 13, Step_number : 18 ,Computation_time : 0.768395,  Interactions_computed : 1047552, Nb interactions/second : 1363298.824, Gflop/s : 0.016
- process : 12, Step_number : 18 ,Computation_time : 0.759032,  Interactions_computed : 1047552, Nb interactions/second : 1380115.726, Gflop/s : 0.016
- process : 5, Step_number : 19 ,Computation_time : 0.773809,  Interactions_computed : 1047552, Nb interactions/second : 1353760.424, Gflop/s : 0.016
- process : 4, Step_number : 19 ,Computation_time : 0.778452,  Interactions_computed : 1047552, Nb interactions/second : 1345686.054, Gflop/s : 0.015
- process : 6, Step_number : 19 ,Computation_time : 0.743584,  Interactions_computed : 1047552, Nb interactions/second : 1408787.709, Gflop/s : 0.016
- process : 10, Step_number : 19 ,Computation_time : 0.757065,  Interactions_computed : 1047552, Nb interactions/second : 1383701.532, Gflop/s : 0.016
- process : 3, Step_number : 19 ,Computation_time : 0.765586,  Interactions_computed : 1047552, Nb interactions/second : 1368300.883, Gflop/s : 0.016
- process : 2, Step_number : 19 ,Computation_time : 0.804036,  Interactions_computed : 1047552, Nb interactions/second : 1302867.036, Gflop/s : 0.015
- process : 11, Step_number : 19 ,Computation_time : 0.744302,  Interactions_computed : 1047552, Nb interactions/second : 1407428.705, Gflop/s : 0.016
- process : 1, Step_number : 19 ,Computation_time : 0.787086,  Interactions_computed : 1047552, Nb interactions/second : 1330924.448, Gflop/s : 0.015
- process : 9, Step_number : 19 ,Computation_time : 0.772018,  Interactions_computed : 1047552, Nb interactions/second : 1356901.005, Gflop/s : 0.016
- process : 15, Step_number : 19 ,Computation_time : 0.760968,  Interactions_computed : 1047552, Nb interactions/second : 1376604.535, Gflop/s : 0.016
- process : 7, Step_number : 19 ,Computation_time : 0.762922,  Interactions_computed : 1047552, Nb interactions/second : 1373078.768, Gflop/s : 0.016
- process : 8, Step_number : 19 ,Computation_time : 0.772233,  Interactions_computed : 1047552, Nb interactions/second : 1356523.225, Gflop/s : 0.016
- process : 0, Step_number : 19 ,Computation_time : 0.772690,  Interactions_computed : 1047552, Nb interactions/second : 1355720.923, Gflop/s : 0.016
- process : 14, Step_number : 19 ,Computation_time : 0.767307,  Interactions_computed : 1047552, Nb interactions/second : 1365231.908, Gflop/s : 0.016
- process : 13, Step_number : 19 ,Computation_time : 0.754271,  Interactions_computed : 1047552, Nb interactions/second : 1388827.093, Gflop/s : 0.016
- process : 12, Step_number : 19 ,Computation_time : 0.747663,  Interactions_computed : 1047552, Nb interactions/second : 1401101.833, Gflop/s : 0.016
- process : 5, Step_number : 20 ,Computation_time : 0.759962,  Interactions_computed : 1047552, Nb interactions/second : 1378426.816, Gflop/s : 0.016
- process : 6, Step_number : 20 ,Computation_time : 0.743526,  Interactions_computed : 1047552, Nb interactions/second : 1408897.604, Gflop/s : 0.016
- process : 4, Step_number : 20 ,Computation_time : 0.758359,  Interactions_computed : 1047552, Nb interactions/second : 1381340.500, Gflop/s : 0.016
- process : 3, Step_number : 20 ,Computation_time : 0.744136,  Interactions_computed : 1047552, Nb interactions/second : 1407742.671, Gflop/s : 0.016
- process : 10, Step_number : 20 ,Computation_time : 0.769623,  Interactions_computed : 1047552, Nb interactions/second : 1361123.563, Gflop/s : 0.016
- process : 11, Step_number : 20 ,Computation_time : 0.750944,  Interactions_computed : 1047552, Nb interactions/second : 1394980.185, Gflop/s : 0.016
- process : 2, Step_number : 20 ,Computation_time : 0.773275,  Interactions_computed : 1047552, Nb interactions/second : 1354695.289, Gflop/s : 0.016
- process : 9, Step_number : 20 ,Computation_time : 0.744922,  Interactions_computed : 1047552, Nb interactions/second : 1406257.299, Gflop/s : 0.016
- process : 1, Step_number : 20 ,Computation_time : 0.773130,  Interactions_computed : 1047552, Nb interactions/second : 1354949.362, Gflop/s : 0.016
- process : 7, Step_number : 20 ,Computation_time : 0.750862,  Interactions_computed : 1047552, Nb interactions/second : 1395132.528, Gflop/s : 0.016
- process : 15, Step_number : 20 ,Computation_time : 0.767140,  Interactions_computed : 1047552, Nb interactions/second : 1365529.108, Gflop/s : 0.016
- process : 8, Step_number : 20 ,Computation_time : 0.758282,  Interactions_computed : 1047552, Nb interactions/second : 1381480.768, Gflop/s : 0.016
- process : 0, Step_number : 20 ,Computation_time : 0.765974,  Interactions_computed : 1047552, Nb interactions/second : 1367607.778, Gflop/s : 0.016
- process : 14, Step_number : 20 ,Computation_time : 0.754291,  Interactions_computed : 1047552, Nb interactions/second : 1388790.268, Gflop/s : 0.016
- process : 13, Step_number : 20 ,Computation_time : 0.744500,  Interactions_computed : 1047552, Nb interactions/second : 1407054.399, Gflop/s : 0.016
- process : 12, Step_number : 20 ,Computation_time : 0.773727,  Interactions_computed : 1047552, Nb interactions/second : 1353903.896, Gflop/s : 0.016
+computation time18.729882 
+computation time18.771193 
+computation time18.815279 
+computation time18.934493 
+computation time19.075383 
+computation time19.125224 
+computation time19.173578 
+computation time19.227835 
+computation time19.279075 
+computation time19.330753 
+computation time19.395418 
+computation time19.719473 
+computation time19.769588 
+computation time19.822217 
+computation time19.895710 
+computation time19.940877 

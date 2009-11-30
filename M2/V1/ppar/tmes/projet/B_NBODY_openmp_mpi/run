@@ -4,30 +4,37 @@
 # avec 4 threads
 
 #!/bin/sh
-#export NUM_THREADS=4; mpirun --hostfile host-file-16 -c 16 ./bin/NBODY_direct --in=../data/baredisk_2048-plummer_2048.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer2048bare2048_16proc_4thread_16machine
-#export NUM_THREADS=4; mpirun --hostfile host-file-16 -c 16 ./bin/NBODY_direct --in=../data/baredisk_4096-plummer_4096.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer4096bare4096_16proc_4thread_16machine
-export NUM_THREADS=4; mpirun --hostfile host-file-16 -c 16 ./bin/NBODY_direct --in=../data/baredisk_8192-plummer_8192.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer8192bare8192_16proc_4thread_16machine
-#export NUM_THREADS=4; mpirun --hostfile host-file-16 -c 16 ./bin/NBODY_direct --in=../data/baredisk_16384-plummer_16384.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer16384bare16384_16proc_4thread_16machine
+echo "go"
 
 
-#export NUM_THREADS=4; mpirun --hostfile host-file-8 -c 8 ./bin/NBODY_direct --in=../data/baredisk_2048-plummer_2048.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer2048bare2048_8proc_4thread_8machine
-#export NUM_THREADS=4; mpirun --hostfile host-file-8 -c 8 ./bin/NBODY_direct --in=../data/baredisk_4096-plummer_4096.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer4096bare4096_8proc_4thread_8machine
-export NUM_THREADS=4; mpirun --hostfile host-file-8 -c 8 ./bin/NBODY_direct --in=../data/baredisk_8192-plummer_8192.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer8192bare8192_8proc_4thread_8machine
-#export NUM_THREADS=4; mpirun --hostfile host-file-8 -c 8 ./bin/NBODY_direct --in=../data/baredisk_16384-plummer_16384.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer16384bare16384_8proc_4thread_8machine
-
-#export NUM_THREADS=4; mpirun --hostfile host-file-4 -c 4 ./bin/NBODY_direct --in=../data/baredisk_2048-plummer_2048.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer2048bare2048_4proc_4thread_4machine
-#export NUM_THREADS=4; mpirun --hostfile host-file-4 -c 4 ./bin/NBODY_direct --in=../data/baredisk_4096-plummer_4096.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer4096bare4096_4proc_4thread_4machine
-export NUM_THREADS=4; mpirun --hostfile host-file-4 -c 4 ./bin/NBODY_direct --in=../data/baredisk_8192-plummer_8192.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer8192bare8192_4proc_4thread_4machine
-#export NUM_THREADS=4; mpirun --hostfile host-file-4 -c 4 ./bin/NBODY_direct --in=../data/baredisk_16384-plummer_16384.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer16384bare16384_4proc_4thread_4machine
-
-#export NUM_THREADS=4; mpirun --hostfile host-file-2 -c 2 ./bin/NBODY_direct --in=../data/baredisk_2048-plummer_2048.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer2048bare2048_2proc_4thread_2machine
-#export NUM_THREADS=4; mpirun --hostfile host-file-2 -c 2 ./bin/NBODY_direct --in=../data/baredisk_4096-plummer_4096.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer4096bare4096_2proc_4thread_2machine
-export NUM_THREADS=4; mpirun --hostfile host-file-2 -c 2 ./bin/NBODY_direct --in=../data/baredisk_8192-plummer_8192.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer8192bare8192_2proc_4thread_2machine
-#export NUM_THREADS=4; mpirun --hostfile host-file-2 -c 2 ./bin/NBODY_direct --in=../data/baredisk_16384-plummer_16384.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer16384bare16384_2proc_4thread_2machine
 
 
-#export NUM_THREADS=4; mpirun --hostfile host-file-1 -c 1 ./bin/NBODY_direct --in=../data/baredisk_2048-plummer_2048.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer2048bare2048_1proc_4thread_1machine
-#export NUM_THREADS=4; mpirun --hostfile host-file-1 -c 1 ./bin/NBODY_direct --in=../data/baredisk_4096-plummer_4096.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer4096bare4096_1proc_4thread_1machine
-export NUM_THREADS=4; mpirun --hostfile host-file-1 -c 1 ./bin/NBODY_direct --in=../data/baredisk_8192-plummer_8192.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer8192bare8192_1proc_4thread_1machine
-#export NUM_THREADS=4; mpirun --hostfile host-file-1 -c 1 ./bin/NBODY_direct --in=../data/baredisk_16384-plummer_16384.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer16384bare16384_1proc_4thread_1machine
+mpirun --hostfile host-file-1 -c 1 ./bin/NBODY_direct --in=../data/baredisk_2048-plummer_2048.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer2048bare2048_1proc_4thread_1machine
+mpirun --hostfile host-file-2 -c 2 ./bin/NBODY_direct --in=../data/baredisk_2048-plummer_2048.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer2048bare2048_2proc_4thread_2machine
+mpirun --hostfile host-file-4 -c 4 ./bin/NBODY_direct --in=../data/baredisk_2048-plummer_2048.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer2048bare2048_4proc_4thread_4machine
+mpirun --hostfile host-file-8 -c 8 ./bin/NBODY_direct --in=../data/baredisk_2048-plummer_2048.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer2048bare2048_8proc_4thread_8machine
+mpirun --hostfile host-file-16 -c 16 ./bin/NBODY_direct --in=../data/baredisk_2048-plummer_2048.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer2048bare2048_16proc_4thread_16machine
+# echo "go1"
+# mpirun --hostfile host-file-16 -c 16 ./bin/NBODY_direct --in=../data/baredisk_4096-plummer_4096.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer4096bare4096_16proc_4thread_16machine
+# mpirun --hostfile host-file-16 -c 16 ./bin/NBODY_direct --in=../data/baredisk_8192-plummer_8192.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer8192bare8192_16proc_4thread_16machine
+# mpirun --hostfile host-file-16 -c 16 ./bin/NBODY_direct --in=../data/baredisk_16384-plummer_16384.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer16384bare16384_16proc_4thread_16machine
 
+# mpirun --hostfile host-file-8 -c 8 ./bin/NBODY_direct --in=../data/baredisk_4096-plummer_4096.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer4096bare4096_8proc_4thread_8machine
+# mpirun --hostfile host-file-8 -c 8 ./bin/NBODY_direct --in=../data/baredisk_8192-plummer_8192.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer8192bare8192_8proc_4thread_8machine
+# mpirun --hostfile host-file-8 -c 8 ./bin/NBODY_direct --in=../data/baredisk_16384-plummer_16384.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer16384bare16384_8proc_4thread_8machine
+# echo "go2"
+
+# mpirun --hostfile host-file-4 -c 4 ./bin/NBODY_direct --in=../data/baredisk_4096-plummer_4096.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer4096bare4096_4proc_4thread_4machine
+# mpirun --hostfile host-file-4 -c 4 ./bin/NBODY_direct --in=../data/baredisk_8192-plummer_8192.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer8192bare8192_4proc_4thread_4machine
+# mpirun --hostfile host-file-4 -c 4 ./bin/NBODY_direct --in=../data/baredisk_16384-plummer_16384.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer16384bare16384_4proc_4thread_4machine
+# echo "go3"
+
+# mpirun --hostfile host-file-2 -c 2 ./bin/NBODY_direct --in=../data/baredisk_4096-plummer_4096.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer4096bare4096_2proc_4thread_2machine
+# mpirun --hostfile host-file-2 -c 2 ./bin/NBODY_direct --in=../data/baredisk_8192-plummer_8192.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer8192bare8192_2proc_4thread_2machine
+# mpirun --hostfile host-file-2 -c 2 ./bin/NBODY_direct --in=../data/baredisk_16384-plummer_16384.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer16384bare16384_2proc_4thread_2machine
+# echo "go4"
+
+# mpirun --hostfile host-file-1 -c 1 ./bin/NBODY_direct --in=../data/baredisk_4096-plummer_4096.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer4096bare4096_1proc_4thread_1machine
+# mpirun --hostfile host-file-1 -c 1 ./bin/NBODY_direct --in=../data/baredisk_8192-plummer_8192.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer8192bare8192_1proc_4thread_1machine
+# mpirun --hostfile host-file-1 -c 1 ./bin/NBODY_direct --in=../data/baredisk_16384-plummer_16384.nemo --tend=2 --dt=0.1 --soft=0.01  > logs/plumer16384bare16384_1proc_4thread_1machine
+# echo "go5"

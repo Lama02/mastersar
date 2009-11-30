@@ -277,13 +277,13 @@ void  Direct_method_Compute_Par(bodies_t * current, bodies_t * next){
   tmp = next;
   next = current;
   current = tmp;
+  //  printf("toto1 %d,%d\n",pas, mpi_p);
   
-  
-  while(pas < mpi_p){
-
+  while(pas < mpi_p-1){
+    //  printf("toto\n");
     mpi_isend(current, succ, req_send);
     mpi_irecv(next, prev, req_recv);
-    
+
     bodies_Compute_own_interaction_par(&bodies,current);
     mpi_iwait(req_send);
     mpi_iwait(req_recv);
@@ -295,6 +295,12 @@ void  Direct_method_Compute_Par(bodies_t * current, bodies_t * next){
     
     pas++;
   }
+
+  bodies_Compute_own_interaction_par(&bodies,current);
+
+  tmp = next;
+  next = current;
+  current = tmp;
 
 #ifdef _USE_CONSTANT_INTERACTION_FACTOR_
     bodies_Scale_with_CONSTANT_INTERACTION_FACTOR(&bodies);

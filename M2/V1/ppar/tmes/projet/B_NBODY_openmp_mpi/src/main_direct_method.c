@@ -408,6 +408,8 @@ int main(int argc, char **argv){
   tstart = 0 ; 
   tnow = tstart ; 
   tend = 0.001 ; 
+  double time_total = 0;
+
 
   char *data_file = NULL;
   char *results_file = NULL;
@@ -457,7 +459,7 @@ int main(int argc, char **argv){
   MPI_Comm_size(MPI_COMM_WORLD,&mpi_p);
   
   // initialisation openMP
-  omp_set_num_threads(4);
+  omp_set_num_threads(2);
 
   if(rank!=0)
     Direct_method_Init();
@@ -494,13 +496,14 @@ int main(int argc, char **argv){
     t_end = my_gettimeofday();
 
     if (tnow !=0)K_Direct_method_Move(dt);
-
+    
+    time_total += (t_end - t_start);
     // print_all(rank);
 
 
     /****************** Save & display the total time used for this step: *******************/
 
-    if (INFO_DISPLAY(1) ){
+    if (INFO_DISPLAY(1) && 0 ){
       unsigned long long nb_int = NB_OWN_INT(bodies_Nb_bodies(&bodies));
            
       fprintf(f_output, " process : %d, Step_number : %ld ,Computation_time : %f, \
@@ -508,7 +511,7 @@ int main(int argc, char **argv){
 	      rank,nb_steps,t_end - t_start,nb_int,
 	      ((double) nb_int) / (t_end - t_start),
 	      ((((double) nb_int) / (t_end - t_start)) * 11.5) / (1000000000.0));
-
+      
       
     }
 
@@ -631,6 +634,8 @@ int main(int argc, char **argv){
   bodies_Free(current_b);
   bodies_Free(next_b);
 
+  printf("computation time%f \n",time_total);
+
   MPI_Finalize();
   /********************** Close FILE* and free memory before exiting: ***********************/
   if (argc == 3)
@@ -638,7 +643,7 @@ int main(int argc, char **argv){
       perror("fclose(f_output)");
   
   FMB_free(data_file);
-
+  
   /****************************************** EXIT ******************************************/
   exit(EXIT_SUCCESS);
 }
