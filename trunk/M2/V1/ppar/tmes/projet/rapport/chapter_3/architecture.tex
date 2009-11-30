@@ -1,47 +1,48 @@
-\section{Parallèlisation}
+\section{Parallélisation}
 
-\par Dans un premier temps il est necessaire de trouver les points de parallèlisation 
-du programme séquentiel. Pour ce faire il est nécessaire de bien connaitre l'algorithme 
+\par Dans un premier temps il est nécessaire de trouver les points de parallélisation 
+du programme séquentiel. Pour se faire il est nécessaire de bien connaitre l'algorithme 
 utilisé.\\
 \par L'algorithme séquentiel consiste à stocker les corps dans un tableau de structures ou une structure 
-de tableaux (selon si la constante \_BODIES\_SPLIT\_DATA\_ est définies ou pas), à parcourir 
+de tableaux (selon si la constante \_BODIES\_SPLIT\_DATA\_ est définie ou pas), à parcourir 
 cette structure et à calculer une à une les interactions entre deux corps, puis à les déplacer.\\
 
-\par L'interet de la parallèlisation est de pouvoir répartir la structure de donnée sur tout les
+\par L'intérêt de la parallélisation est de pouvoir répartir la structure de données sur tous les
 noeuds du système afin d'alléger la mémoire utilisée par chaque noeud, et ainsi augmenter le 
-nombre de corps de la simulation.\\
+nombre de corps de la simulation. Elle permet aussi d'augmenter le nombre de calculs qu'on peut exécuter en 
+utilisant la puissance des processeurs des noeuds.\\
 
-\par Une fois ceci fait il faut que malgrés la séparation des données nous réussissions a calculer
-les interactions entre chaque corps. Nous pouvons décidé d'utiliser une architecture centralisée 
+\par Ceci étant, il faut que malgré la séparation des données nous réussissions à calculer
+les interactions entre chaque corps. Nous pouvons décider d'utiliser une architecture centralisée 
 ou distribuée, sachant que nous devons effectuer une sauvegarde à chaque pas de temps ($dt$) si l'option 
-d'éxécution --save est présente en entrée.\\
+d'exécution --save est présente en entrée.\\
 
 \subsection{Solution centralisée}
 \par L'avantage de la solution centralisée, c'est qu'un processus (maître) distribue le travail aux autres
-(les esclaves). Ainsi cela permet de distribuer plus de travail aux noeuds plus puissants et moins aux
-plus lents. Ce qui dans notre cas, ne nous concerne pas étant donné que les noeuds sont considérés homogènes
+(les esclaves). Ainsi, cela permet de distribuer plus de travail aux noeuds plus puissants et moins aux
+plus lents. Ce qui, dans notre cas, ne nous concerne pas étant donné que les noeuds sont considérés homogènes
 (ils sont tous de même puissance).\\
 
-\par L 'inconvénient est que cette solution fonctionne trés bien avec un petit nombre de noeuds 
-mais elle ne tient pas le passage à l'échelle (si on augmente le nombre de machine 
-de manière consécante).\\
+\par L'inconvénient est que cette solution fonctionne très bien avec un petit nombre de noeuds 
+mais elle ne tient pas le passage à l'échelle (si on augmente le nombre de machines 
+de manière conséquente).\\
 
-\par Cependant pour effectuer les sauvegardes de chaque pas de temps ($dt$) ce sera la solution a adoptée. 
+\par Cependant, pour effectuer les sauvegardes de chaque pas de temps ($dt$) ce sera la solution à adopter. 
 Toutes les valeurs calculées seront rapatriées vers le processus 0 qui se chargera d'effectuer 
-l'écriture  dans le fichier cible.\\
+l'écriture dans le fichier cible.\\
 
-\par De même pour verifierque la somme des forces est nulle on effectuera des sommes partielle
+\par De même, pour vérifier que la somme des forces est nulle on effectuera des sommes partielles
 sur chaque noeud, puis on fera leur somme sur le processus de rang 0.\\
 
 \subsection{Solution distribuée}
-\par La solution distribuée passe trés bien à l'échelle, mais il est difficile de
+\par La solution distribuée passe très bien à l'échelle, mais il est difficile de
 la rendre adaptable dynamiquement et s'utilise de préférence dans une architecture homogène
-( où les temps de calcule sont sensiblement les mêmes).\\
+( où les temps de calcul sont sensiblement les mêmes).\\
 
 \par C'est ainsi que fonctionnera le calcul des interactions des corps. Au temps $t=0$, chaque noeud 
 calcule les interactions entre les corps dont il dispose localement. Au temps $t=0+dt$ chaque
 processus envoie aux autres noeuds les données qu'il a calculé et reçoit les données d'un corps
-calculées d'un autre noeud. On réitère cette operation $p-2$ fois ainsi chaque processus a
+calculées d'un autre noeud. On réitère cette opération $p-2$ fois ainsi chaque processus a
 calculé les interactions avec tout les corps du système.\\
 
 \section{Structures}
@@ -53,28 +54,28 @@ dans une structure de tableaux, soit dans un tableau de structures.\\
 
 \subsection{Tableau de structures}
 
-\par Le fait d'utiliser un tableau de structure fera qu'à l'initisation, au lieu de faire huit 
-MPI\_scatter() (un pour chaque champs dans le cas de strucures de tableaux) on en fera qu'un seul.
-Cela implique qu'à chaque echange de message entre les processus, on envera trop de 
+\par Le fait d'utiliser un tableau de structure fera qu'à l'initialisation, au lieu de faire huit 
+MPI\_scatter() (un pour chaque champs dans le cas de structure de tableaux) on en fera qu'un seul.
+Cela implique qu'à chaque échange de message entre les processus, on enverra trop de 
 données c'est à dire les forces, et les vitesses.
-En effet seul les positions et les masses sont necéssaire dans notre cas.\\
+En effet, seul les positions et les masses sont nécessaire dans notre cas.\\
 
-\par Deplus en envoyant un ``gros'' message, on a plus de chance de faire passer les émissions
-et les receptions en mode synchrone (cf section recouvrement des communications). 
-On pourrait penser qu'avec un tableau de structures, comme les donnée sont contigues
-en mémoire on gagnera du temps par raport au defaut de page. Mais nous n'utilisons pas tout
+\par De plus, en envoyant un ``gros'' message, on a plus de chance de faire passer les émissions
+et les réceptions en mode synchrone (cf section recouvrement des communications). 
+On pourrait penser qu'avec un tableau de structures, comme les données sont contiguës
+en mémoire on gagnera du temps par rapport au défaut de page. Mais nous n'utilisons pas tous
  les champs pour effectuer les calculs.
 
 \subsection{Structure de tableaux }
 
 \par Un des avantages de la représentation des corps en structure de tableaux, est 
-que des données d'un même type seront contigues en mémoire. Typiquement tout les
- $p\_posx$ seront contigues. Même s'il y a plus de messages qui transitent, ils
+que les données d'un même type seront contiguës en mémoire. Typiquement, tous les
+ $p\_posx$ seront contiguës. Même s'il y a plus de messages qui transitent, ils
 seront de plus petites tailles ce qui d'augmenter le nombre de corps dans la simulation
-avant que les émissions et les réceptions bascule en mode synchrone.\\
+avant que les émissions et les réceptions basculent en mode synchrone.\\
 
-\par Cette structure permet également de selectionné les champs de données à transmettre.  
-O ne transmettra que les informations nécessaire aux calculs des intéractions, ce qui réduit 
+\par Cette structure permet également de sélectionner les champs de données à transmettre.  
+On ne transmettra que les informations nécessaires aux calculs des interactions, ce qui réduit 
 la quantité de données circulant sur le réseau.
 
 %% \par Pour faciliter les accès mémoire des fonctions MPI\_Gather() et MPI\_Scatter(), nous avons fait le 
@@ -84,9 +85,9 @@ la quantité de données circulant sur le réseau.
 
 \section{Topologie}
 
-\par Dans le paragraphe ``Parallèlisation'' nous avons développé la manière dont se déroulerait 
-le programme parallèlisé. Les machines à notre disposition sont reliées par un switch 
-réseau ce qui nous permet d'adopter n'importe quelle topologie pour éxécuter notre 
+\par Dans le paragraphe ``Parallélisation'' nous avons développé la manière dont se déroulerait 
+le programme parallélisé. Les machines à notre disposition sont reliées par un ``switch'' 
+réseau, ce qui nous permet d'adopter n'importe quelle topologie pour exécuter notre 
 programme. Il ne nous reste qu'à adopter la bonne.\\
 Quelles sont les topologies que nous pouvons mettre en place :
 \begin{enumerate}
@@ -94,10 +95,10 @@ Quelles sont les topologies que nous pouvons mettre en place :
 \item Anneau
 \item Thor 2D
 \item Thor 3D
-\item Hypercube (car nous avons 16 machines dans certaine salle)
+\item Hypercube (car nous avons 16 machines dans certaines salles)
 \end{enumerate}
 
-\par L'algorithme parallèlisé que nous avons choisi, fait qu'à chaque itération ($dt$) un 
+\par L'algorithme parallélisé que nous avons choisi, fait qu'à chaque itération ($dt$) un 
 noeud fait $p$ émission de messages (toujours au même processus), $p$ réceptions de messages
 (toujours du même processus également). Il y a donc une notion de précédence entre les
 noeuds du système.\\
@@ -105,10 +106,10 @@ noeuds du système.\\
 \par Le sujet nous propose de mettre en place une topologie en anneau.
  La solution d'une topologie en anneau se pésente donc naturellement.\\
 
-\par La topologie en étoile sera utilisé uniquement pour la répartition des données à 
+\par La topologie en étoile sera utilisés uniquement pour la répartition des données à 
 l'initialisation, la récupération des calculs pour la sauvegarde, et la vérification de
 l'invariant du système .\\ 
-L'utilisation des autres topologies seraient ``over-engeneering'' dans le cadre de cet
+L'utilisation des autres topologies serait ``over-engeneering'' dans le cadre de cet
 algorithme.
 
 \section{Vérifications}
@@ -121,23 +122,23 @@ une force d'intensité égale, de même direction mais de sens opposé, exercée
 \end{quote}
 
 \par Cette loi implique que la somme des forces s'exerçant sur $A$ additionnée à la somme des forces 
-s'éxerçant sur $B$ est égale à  \overrightarrow{0}.\\
+s'exerçant sur $B$ est égale à  \overrightarrow{0}.\\
 Par induction sur N corps on obtient que :
 \begin{quote}
   \begin{center}
-    $\sum_{i,j}^{n} \overrightarrow{F_{i,j}}$ = \overrightarrow{0} avec i=0, j=1, $i\not=j$ et n=|N| 
+    $\sum_{i}^{n} \overrightarrow{F_{i}}$ = \overrightarrow{0} avec i=0 et n=|N| 
   \end{center}
 \end{quote}
 
 \par On en déduit un invariant pour notre programme parallèle de calcul d'interactions entre N corps.\\
-A un instant $t$, avant et apres que le calcul des interactions entre les corps ait été fais on a :
+A un instant $t$, avant et après que le calcul des interactions entre les corps ait été fait on a :
 \begin{quote}
   \begin{center}
     $\sum \overrightarrow{F}$ = \overrightarrow{0}
   \end{center}
 \end{quote}
 
-\par Cependant la précision que l'on peut obtenir avec une machine étant relative à 
+\par Cependant, la précision que l'on peut obtenir avec une machine étant relative à 
 la taille en octet sur laquelle sont représentées les données, on a:
 \begin{quote}
   \begin{center}
@@ -150,20 +151,20 @@ Nous prendrons $\epsilon = 10^{-5}$.
 
 \par Dans un programme parallèle deux facteurs de gain de rapidité rentrent en compte : 
 \begin{enumerate}
-\item les temps de communication 
+\item les temps de communications
 \item les temps des accès mémoire
-\item supprimer les calculs redondant
+\item supprimer les calculs redondants
 \end{enumerate}
 
-\subsection{communication}
+\subsection{communications}
 
-\par Afin de gagner du temps on peut recouvrir les temps de communication par du calcul. De
-cette manière on réceptionne au temps $t$ les données qui nous servirons pour le
+\par Afin de gagner du temps, on peut recouvrir les temps de communication par du calcul. De
+cette manière on réceptionne au temps $t$ les données qui nous serviront pour le
 calcul au temps $t=t+1$. On envoie les données qui serviront au temps $=t+1$
-au successeur d'un noeud à l'instant $t$ ; et pendant ce temps là on effectue les calculs 
+au successeur d'un noeud à l'instant $t$ ; et pendant ce temps là, on effectue les calculs 
 de l'instant courant.\\
 
-\par MPI propose plusieur types d'échange de message :\\
+\par MPI propose plusieurs types d'échange de messages :\\
 \begin{enumerate}
 \item synchrone
 \item standard
@@ -172,18 +173,18 @@ de l'instant courant.\\
 
 \subsubsection{Synchrone}
 
-\par Les échanges synchrones fixe un rendez-vous entres les  processus souhaitant communiquer
+\par Les échanges synchrones fixe un rendez-vous entre les processus souhaitant communiquer,
 si l'un arrive avant l'autre le second l'attend afin de lui transmettre les données. 
-Ces communication on l'avantage de ne pas nécessiter de tampon intermédiare.
-Cette solution à cause du rendez-vous ne permet pas de recouvrir les temps communications.\\
+Ces communications ont l'avantage de ne pas nécessiter de tampon intérmédiare.
+Cette solution, à cause du rendez-vous, ne permet pas de recouvrir les temps de communications.\\
 
 \subsubsection{Standard}
 
-\par Les communications standard on l'avantage de se faire de manière asynchrone tant que 
-la taille du message à envoyer est inferieur à la taille du tampon intermédiaire. Ce qui 
+\par Les communications standards ont l'avantage de se faire de manière asynchrone tant que 
+la taille du message à envoyer est inférieur à la taille du tampon intermédiaire. Ce qui 
 fait bénéficier l'application d'``envoie immédiat'' et permet de poursuivre les calculs
-applicatifs. Si la taille du message à envoyer est superieur à la taille du tampon
-intermédiaire les communications bascule en mode synchrone, et empèche donc de 
+applicatifs. Si la taille du message à envoyer est supérieur à la taille du tampon
+intermédiaire, les communications basculent en mode synchrone, et empêchent donc de 
 recouvrir les temps de communication par du calcul.\\
 
 \par Pour pouvoir recouvrir les temps de communication par le calcul il faut que :
@@ -193,51 +194,51 @@ recouvrir les temps de communication par du calcul.\\
   \end{center}
 \end{quote}
 avec $n$ nombre de corps du système, $p$ nombre de processus, $t_{corps}$ taille en octet d'un corps,
-$MAX(t_{champ})$ taille en octet maximum d'une donnée pour un coprs,
+$MAX(t_{champ})$ taille en octet maximum d'une donnée pour un corps,
 et $T_{tampon\_mpi}$ taille en octet du tampon de l'API MPI,\\
 
-\par Sinon les communications deviennent synchrone et le recouvrement des temps de 
-communication pas le calcul devient impossible.\\
+\par Sinon, les communications deviennent synchrones et le recouvrement des temps de 
+communications par le calcul devient impossible.\\
 
 \subsubsection{Persistant}
 
 \par L'avantage des communications persistantes permettent de réduire les temps de
 communications en supprimant les temps de négociation à chaque échange, et de supprimer 
-le mecanisme de tampon intermédiaire static introduit par MPI.\\
-\par En effet avec les communications persistantes, lors de leur déclaration MPI alloue
-des structures internes nécessaire à leur gestion. De cette façon la taille d'un message 
+le mécanisme de tampon intermédiaire static introduit par MPI.\\
+\par En effet, avec les communications persistantes, lors de leur déclaration MPI allouent
+des structures internes nécessaires à leur gestion. De cette façon, la taille d'un message 
 ne dépasse pas la taille du tampon de réception.\\
 
-\par Celles-ci permettent donc un gain sur les communications en les recouvrant pas le calul.\\
+\par Celles-ci, permettent donc un gain sur les communications en les recouvrant pas le calcul.\\
 
 \subsection{Accès mémoire}
 
-\par Pour diminuer les accès mémoire et gagner en temps d'éxécution, nous avons décrit précédement
+\par Pour diminuer les accès mémoire et gagner en temps d'exécution, nous avons décrit précédemment
 comment utiliser le NFS de l'ARI pour optimiser le chargement en mémoire du fichier de test
 des interactions.\\
 
 \par Nous avons également fais un choix de représentation des données en mémoire, à savoir une structure 
 de tableaux.\\
 
-\par L'idéal serait de faire en sorte que lors de l'éxécution de notre programme que les données 
+\par L'idéal serait de faire en sorte que lors de l'exécution de notre programme que les données 
 et le code soient chargés en mémoire et y tiennent intégralement afin de limiter les accès disque.
 Il s'ensuit que si l'on effectue des sauvegardes à chaque $dt$ de l'état des particules, les 
-accès disque générés par celles-ci ralentissent considérablement l'éxécution du programme.\\
+accès disque générés par celles-ci ralentissent considérablement l'exécution du programme.\\
 
-\par Dans notre cas seuls les temps de calcul des interactions est comptabilisé. Mais lors des 
-transmissions des données on échange que les positions et les masses des particules. Or la structure
+\par Dans notre cas, seuls les temps de calcul des interactions sont comptabilisés. Mais lors des 
+transmissions des données on échange que les positions et les masses des particules. Or, la structure
 de tableaux qu'utilise le programme contient également les vecteurs vitesses et les forces s'appliquant 
-aux particules. Or on a besoin en mémoire de trois structure de tableaux ; une pour stocker 
-les particule gérer par le noeud, une pour les particules avec lesquelles on calcule les 
-interactions, et une dernière dans laquelle on réceptionne les prochaines dont on a besoin.\\
+aux particules. Or, on a besoin en mémoire de trois structures de tableaux ; une pour stocker 
+les particules gérées par le noeud, une pour les particules avec lesquelles on calcule les 
+interactions et une dernière dans laquelle on réceptionne les prochaines dont on a besoin.\\
 
-\par Ces deux dernière structure n'ont pas besoin de contenir ni les forces, ni les vitesse.
+\par Ces deux dernière structures n'ont pas besoin de contenir ni les forces, ni les vitesses.
 Pour optimiser la gestion mémoire il faudrait définir une nouvelle structure de tableaux 
 ne contenant que les positions et les masses des corps.
 
 \subsection{Calcul redondant}
 
-\par Enfin dans le cadre de ce problème il se trouve que calculer l'interaction de $A$
+\par Enfin, dans le cadre de ce problème il se trouve que calculer l'interaction de $A$
 vers $B$, c'est l'opposé de l'interaction de $B$ vers $A$.
 
 \begin{quote}
@@ -246,39 +247,39 @@ vers $B$, c'est l'opposé de l'interaction de $B$ vers $A$.
   \end{center}
 \end{quote}
 
-\par L'algorithme séquentiel en tient compte cependant comme les corps sont distribués
+\par L'algorithme séquentiel en tient compte, cependant, comme les corps sont distribués,
 cette optimisation n'est plus possible dans le cadre de notre algorithme.
 Mais on peut la conserver si au lieu d'effectuer un tour de l'anneau complet, on effectue
-un demi tour d'anneau, et qu'un fois se demi tour fait on envoie les données calculées 
-aux noeud qui n'ont pas la possibilité de le faire. Ainsi si les temps de communication
-sont infèrieurs aux temps de calcul il y a un accroissement des performances. Car 
+un demi tour d'anneau, et qu'une fois ce demi tour est fait, on envoie les données calculées 
+aux noeuds qui n'ont pas la possibilité de le faire. Ainsi, si les temps de communication
+sont inférieurs aux temps de calcul, il y a un accroissement des performances. Car 
 cet algorithme revient à remplacer une parties des temps de calcul par des temps de communication, 
-mais ont est également obligé de communiquer les forces ; cela augmente en conséquence 
+mais on est également obligé de communiquer les forces ; cela augmente en conséquence 
 les données gérées par chaque noeud.\\
 
 \section{Réalisation MPI}
 
-\par Pour parallèliser le programme séquentiel nous avons fais le choix de représenter
-en mémoire les donées sous forme de structure de tableaux, et d'une topologie en anneau avec
+\par Pour paralléliser le programme séquentiel nous avons fait le choix de représenter
+en mémoire les données sous forme de structure de tableaux, et d'une topologie en anneau avec
 solution distribuée.
-Cependant nous n'avons pas mis en place la structure de donnée ne contenant que les 
+Cependant, nous n'avons pas mis en place la structure de donnée ne contenant que les 
 positions et les masses des corps par manque de temps. Nous avons également opté pour un 
 choix de communication standard/non-bloquant avec recouvrement des temps de
 communication par le calcul.\\
 
-\par Le probleme à N-corps n'est pas trés bien adapté aus recouvrement des temps de 
+\par Le problème à N-corps n'est pas très bien adapté au recouvrement des temps de 
 communication pas le calcul. Car pour effectuer le calcul à un instant $t$, un noeud a 
-besoin que les données envoyées par son predécesseur lui soient totalement arrivées, 
+besoin que les données envoyées par son prédécesseur lui soient totalement arrivées, 
 et son successeur attend qu'il lui ait envoyé intégralement les données. Le but de ce programme 
-étant le calcul sur un grand nombre de corps plus le nombre de corps augmente plus les temps de 
-communication augmente. De plus l'avancement d'un noeud depend de son prédecésseur, car tant que 
-son prédécésseur n'a pas fini sa n-1 ème tache le noeud ne peut pas effectuer la tache n.
-Le fait de mettre des communication persistante ne changerai pas énormément les performances
-globale du programme, cependant également par manque de temps nous n'avons pas put effectuer 
+étant le calcul sur un grand nombre de corps, plus le nombre de corps augmente, plus les temps de 
+communication augmentent. De plus, l'avancement d'un noeud dépend de son prédécesseur, car tant que 
+son prédécesseur n'a pas finit sa n-1 ème tâche, le noeud ne peut pas effectuer la tâche n.
+Le fait de mettre des communications persistantes ne changerait pas énormément les performances
+globales du programme, cependant, également par manque de temps nous n'avons pas pu effectuer 
 ces tests.\\
 
-\par Concernant les calculs redondant nous avons fais le choix de ne pas utilisé la redondance 
-des calculs. La solution d'effectuer le tour de l'anneau nous a semblé plus adapté 
+\par Concernant les calculs redondants, nous avons fait le choix de ne pas utiliser la redondance 
+des calculs. La solution d'effectuer le tour de l'anneau nous a semblé plus adaptée 
 pour de grosse quantité de particule, mais nous n'avons pas eu le temps d'écrire le programme
 afin d'effectuer des tests probants et de comparer les deux solutions.\\
 
@@ -286,10 +287,10 @@ afin d'effectuer des tests probants et de comparer les deux solutions.\\
 
 \par Nous fournissons également une version hybride MPI/OPEN\_MP 
 du programme de simulation du problème à N-corps.
-\par Grace à l'API OPEN\_MP, nous allons parallèlisé à un grain plus fin 
-le programme. On a parallèlisé une des boucles de calcul d'interaction
+\par Grace à l'API OPEN\_MP, nous allons paralléliser à un grain plus fin 
+le programme. On a parallélisé une des boucles de calcul d'interaction
 des particules. Les performance attendues sont les gains des temps de communication
-des messages  car on fait moins d'échange et le gain des calcul redondant du 
+des messages  car on fait moins d'échanges, et le gain des calculs redondants dû 
 à la propriété :
 
 \begin{quote}
