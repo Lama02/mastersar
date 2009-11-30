@@ -7,14 +7,14 @@ de parallélisation MPI/C, que nous avons eu l'occasion de prendre
 en main dans le cadre du module PPAR. Cependant, il reste le choix de la 
 version MPI que nous utiliserons.\\
 
-\section{Environement}
+\section{Environnement}
 
-\par Il est un point important à clarifiées. Nous sommes dans un environnement particulier ; 
+\par L'environnement est un point important à clarifier. Nous sommes dans un environnement particulier ; 
 celui fournis par l'ARI ; où notre compte utilisateur est stocké sur un NFS, un système de fichier 
 distribué, qui nous garantie le fait de pouvoir se logger sur n'importe quelle machine du réseau 
 de l'ARI. En utilisant le fait que nous pouvons accéder à n'importe quel fichier présent sur 
 notre session et développer ainsi un programme parallèle à ``pseudo'' mémoire partagée.
-Ainsi lors de l'initialisation du système, chaque noeud  pourrait aller lire les données dans le fichier
+Ainsi, lors de l'initialisation du système, chaque noeud  pourrait aller lire les données dans le fichier
  dont l'on souhaite calculer les interactions et ainsi éviter les appels à la fonction 
 MPI\_Scatter() qui permet d'initialiser chaque noeud du système avec les corps qu'il va héberger.\\
 
@@ -23,14 +23,14 @@ donne que l'illusion d'un système de fichier local, donc il y aurait quand mêm
 transférer les données, et il faudrait en plus compter deux accès disque, l'un en écriture, l'autre en lecture.
 Ce qui est long par rapport à une émission et réception de message MPI.\\
 
-\par Cependant, ne connaissant pas l'environnement sur lequel les correcteurs exécuterons notre 
-programme nous avons fait le choix de fournir un code relativement portable. Ne dependant donc pas du système
-de fichier de l'environement d'éxécution.
-Même si pour gagner en preformance, on est obligé de jouer avec l'archictecture de l'environement d'éxécuion.\\
+\par Cependant, ne connaissant pas l'environnement sur lequel les correcteurs exécuteront notre 
+programme nous avons fait le choix de fournir un code relativement portable. Ne dépendant donc pas du système
+de fichier de l'environnement d'exécution.
+Même si pour gagner en performance, on est obligé de jouer avec l'architecture de l'environnement d'exécution.\\
 
 
 \section{API MPI}
-\par La version 1.3 (la version que nous avons utilisée dans nos tp)
+\par La version 1.3 (la version que nous avons utilisé dans nos travaux pratiques)
 nous fournissait une API permettant d'abstraire 
 l'architecture des noeuds et de communiquer entre eux sans se soucier du réseau. C'est
 celle-ci que nous avons utilisé durant les travaux pratiques.\\
