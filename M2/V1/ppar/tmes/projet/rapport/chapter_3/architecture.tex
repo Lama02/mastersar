@@ -256,7 +256,7 @@ cet algorithme revient à remplacer une parties des temps de calcul par des temp
 mais ont est également obligé de communiquer les forces ; cela augmente en conséquence 
 les données gérées par chaque noeud.\\
 
-\section{Réalisation}
+\section{Réalisation MPI}
 
 \par Pour parallèliser le programme séquentiel nous avons fais le choix de représenter
 en mémoire les donées sous forme de structure de tableaux, et d'une topologie en anneau avec
@@ -282,3 +282,18 @@ des calculs. La solution d'effectuer le tour de l'anneau nous a semblé plus ada
 pour de grosse quantité de particule, mais nous n'avons pas eu le temps d'écrire le programme
 afin d'effectuer des tests probants et de comparer les deux solutions.\\
 
+\section{Réalisation MPI+OPEN\_MP}
+
+\par Nous fournissons également une version hybride MPI/OPEN\_MP 
+du programme de simulation du problème à N-corps.
+\par Grace à l'API OPEN\_MP, nous allons parallèlisé à un grain plus fin 
+le programme. On a parallèlisé une des boucles de calcul d'interaction
+des particules. Les performance attendues sont les gains des temps de communication
+des messages  car on fait moins d'échange et le gain des calcul redondant du 
+à la propriété :
+
+\begin{quote}
+  \begin{center}
+    $ \overrightarrow{F_{AB}} = -\overrightarrow{F_{BA}} $
+  \end{center}
+\end{quote}
