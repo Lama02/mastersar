@@ -411,7 +411,7 @@ int main(int argc, char **argv){
 
   char *data_file = NULL;
   char *results_file = NULL;
-  VALUES_T total_potential_energy = 0.0;
+  //  VALUES_T total_potential_energy = 0.0;
 
   /* Timers: */
   double t_start = 0.0, t_end = 0.0;

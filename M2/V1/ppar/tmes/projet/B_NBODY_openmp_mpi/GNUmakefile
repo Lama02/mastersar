@@ -156,7 +156,8 @@ endif
 
 CFLAGS = $(WARNINGS) \
 	$(OPTIM_FLAGS) \
-	$(GNU_FLAGS) 
+	$(GNU_FLAGS) \
+	-fopenmp
 
 
 ### gprof:
