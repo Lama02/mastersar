@@ -2,10 +2,6 @@
 
 La courbe de la figure \ref{fig:perf_plumer2048bare2048_MPI} représente les résultats obtenus après l'exécution de notre programme sur les corps du fichier baredisk\_2048-plummer\_2048.nemo avec MPI seulement.
 
-\par D'après ce graphe, on constate que les calculs en utilisant un processus MPI par coeur sont un peu plus rapides. En effet, les machines utilisées pour effectuer les mesures sont équipées d'un processeur ``Quad Core''. Lancer 4 processus MPI sur une seule machine est équivalent à lancer un processus MPI sur chaque coeur de cette machine. Or, les communications sont relativement ``négligeables'' lorsque l'on travaille sur la même machine, ce qui explique le temps qu'on gagne (voir \ref{fig:perf_plumer2048bare2048_MPI}) tout au début de la mesure avec 4 processus MPI.
-
-\par Pour le reste des cas, les temps d'exécution des calculs avec les deux méthodes, d'un coté, celle utilisant un processus MPI par machine et de l'autre, celle utilisant un processus MPI par coeur, restent relativement identiques.
-
 \begin{figure}[htbp]
   \centering
   \includegraphics[angle=90]{perf_plumer2048bare2048_MPI.png}
@@ -13,12 +9,21 @@ La courbe de la figure \ref{fig:perf_plumer2048bare2048_MPI} représente les ré
   \label{fig:perf_plumer2048bare2048_MPI}
 \end{figure}
 
+
+\par D'après ce graphe, on constate que les calculs en utilisant un processus MPI par coeur sont un peu plus rapides. En effet, les machines utilisées pour effectuer les mesures sont équipées d'un processeur ``Quad Core''. Lancer 4 processus MPI sur une seule machine est équivalent à lancer un processus MPI sur chaque coeur de cette machine. Or, les communications sont relativement ``négligeables'' lorsque l'on travaille sur la même machine, ce qui explique le temps qu'on gagne (voir \ref{fig:perf_plumer2048bare2048_MPI}) tout au début de la mesure avec 4 processus MPI.
+
+\par Pour le reste des cas, les temps d'exécution des calculs avec les deux méthodes, d'un coté, celle utilisant un processus MPI par machine et de l'autre, celle utilisant un processus MPI par coeur, restent relativement identiques.
+
 \section{programme parallèle hybride MPI+OPEN\_MP}
-La courbe de la figure \ref{fig:perf_plumer2048bare2048} représente les résultats obtenus après l'exécution de notre programme sur les corps du fichier baredisk\_2048-plummer\_2048.nemo avec MPI-openMP.
+La courbe de la figure \ref{fig:perf_plumer2048bare2048_openMP} représente les résultats obtenus après l'exécution de notre programme sur les corps du fichier baredisk\_2048-plummer\_2048.nemo avec MPI-openMP.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[angle=90]{perf_plumer2048bare2048.png}
+  \includegraphics[angle=90]{perf_plumer2048bare2048_mpi_vs_openmp.png}
  \caption{Temps total de calcul avec MPI couplé avec openMP}
-\label{fig:perf_plumer2048bare2048}
+\label{fig:perf_plumer2048bare2048_openMP}
 \end{figure}
+
+
+Dans notre exemple, l'utilisation de openMP en hybride avec MPI accélère le calcul des interactions entre les corps. Le calcul lancé avec quatre processus MPI-openMP et quatre machines est plus rapide que l'utilisation de 4 processus purement MPI et 4 machines. En effet, dans le cas des processus MPI-openMP, sur chaque machine sont lancé 4 threads, ceci nous permet d'utiliser à 100\% les ressources de la machine. L'utilisation de openMP n'est pas toujours avantageuse. Effectivement, il existe des situations où l'utilisation de openMP devient vraiment inutile voir pénalisante (accès concurrents),
+
