@@ -284,7 +284,7 @@ void  Direct_method_Compute_Par(bodies_t * current, bodies_t * next){
     mpi_isend(current, succ, req_send);
     mpi_irecv(next, prev, req_recv);
     
-    bodies_Compute_own_interaction_par(&bodies,current,rank);
+    bodies_Compute_own_interaction_par(&bodies,current);
     mpi_iwait(req_send);
     mpi_iwait(req_recv);
     
