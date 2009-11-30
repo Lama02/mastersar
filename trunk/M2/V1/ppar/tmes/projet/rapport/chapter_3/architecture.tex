@@ -185,31 +185,29 @@ applicatifs. Si la taille du message à envoyer est superieur à la taille du ta
 intermédiaire les communications bascule en mode synchrone, et empèche donc de 
 recouvrir les temps de communication par du calcul.\\
 
-\par Pour bien 
-
-\subsubsection{Persistant}
-
-%% \par En utilisant la primitives MPI\_Isend() afin de faire un envoie asynchrone et la primitive
-%% MPI\_Recv() pour faire une reception non bloquante. Après le calcule on utilise la primitive 
-%% MPI\_Wait() pour s'assurer de la reception par le processus de rang \textit{rank+1} des données 
-%% que l'on lui a envoyé.\\
-
-\par Le problème avec les primitives d'emission et de reception de message MPI est que si le message 
-à envoyer ou à recevoir dépasse la taille du tampon de reception interne à l'API MPI,
-elles basculent en mode synchrone ce qui empèche de recouvrire les temps de communication
-par le calcul. (A l'ARI les tampon sont de taille 64 Ko environ).\\
-
-\par Donc si on a :
+\par Pour pouvoir recouvrir les temps de communication par le calcul il faut que :
 \begin{quote}
   \begin{center}
-    $\frac{n}{p}\cdot \frac{t_{corps}}{MAX(t_{champ})} \rangle T_{tampon\_mpi}$    
+    $\frac{n}{p}\cdot \frac{t_{corps}}{MAX(t_{champ})} \langle \frac{T_{tampon\_mpi}}{2}$    
   \end{center}
 \end{quote}
 avec $n$ nombre de corps du système, $p$ nombre de processus, $t_{corps}$ taille en octet d'un corps,
-$MAX(t_{champ})$ maximum en octet de la taille des champs de la structure représentant un corps,
+$MAX(t_{champ})$ taille en octet maximum d'une donnée pour un coprs,
 et $T_{tampon\_mpi}$ taille en octet du tampon de l'API MPI,\\
-alors les communication deviennent synchrone et le recouvrement des temps de communication pas le calcul devient 
-impossible.\\
+
+\par Sinon les communications deviennent synchrone et le recouvrement des temps de 
+communication pas le calcul devient impossible.\\
+
+\subsubsection{Persistant}
+
+\par L'avantage des communications persistantes permettent de réduire les temps de
+communications en supprimant les temps de négociation à chaque échange, et de supprimer 
+le mecanisme de tampon intermédiaire static introduit par MPI.\\
+\par En effet avec les communications persistantes, lors de leur déclaration MPI alloue
+des structures internes nécessaire à leur gestion. De cette façon la taille d'un message 
+ne dépasse pas la taille du tampon de réception.\\
+
+\par Celles-ci permettent donc un gain sur les communications en les recouvrant pas le calul.\\
 
 \subsection{Accès mémoire}
 
