@@ -86,7 +86,8 @@ bodies_Compute_own_interaction(bodies_t *FMB_RESTRICT p_b){
   p_fy = p_b->p_fy;
   p_fz = p_b->p_fz;
 
-#pragma omp parallel for private(j,pjx,pjy,pjz,val_j,val_i,pix,piy,piz,fix,fiy,fiz) shared(p_fx,p_fy,p_fz,p_px,p_py,p_pz,p_val) schedule(guided, n/4)
+#pragma omp parallel for private(j,pjx,pjy,pjz,val_j,val_i,pix,piy,piz,fix,fiy,fiz) shared(p_fx,p_fy,p_fz,p_px,p_py,p_pz,p_val) 
+  //schedule(guided, n/4)
   for(i=0; i<n-1; i++){
     pix = p_px[i];
     piy = p_py[i];
@@ -175,7 +176,8 @@ bodies_Compute_own_interaction_par(bodies_t *FMB_RESTRICT bodies, bodies_t *FMB_
 
  p2_val = bodies_Get_p_value(current, 0);
 
-#pragma omp parallel for private(j,pjx,pjy,pjz,val_j,val_i,pix,piy,piz,fix,fiy,fiz) shared(p1_fx,p1_fy,p1_fz,p1_px,p1_py,p1_pz,p1_val,p2_fx,p2_fy,p2_fz,p2_px,p2_py,p2_pz,p2_val) schedule(static, n1/4)
+#pragma omp parallel for private(j,pjx,pjy,pjz,val_j,val_i,pix,piy,piz,fix,fiy,fiz) shared(p1_fx,p1_fy,p1_fz,p1_px,p1_py,p1_pz,p1_val,p2_fx,p2_fy,p2_fz,p2_px,p2_py,p2_pz,p2_val) 
+ //schedule(static, n1/4)
  for(i=0; i<n1; i=i+1){
    pix = p1_px[i];
    piy = p1_py[i];
@@ -233,6 +235,7 @@ bodies_Compute_own_interaction(bodies_t *FMB_RESTRICT p_b){
   p_body_i = p_b->p_bodies;
 
   for(i=0; i<n-1; i++){
+
     pix = POSITION_GET_X(body_Get_p_position(p_body_i));
     piy = POSITION_GET_Y(body_Get_p_position(p_body_i));
     piz = POSITION_GET_Z(body_Get_p_position(p_body_i));

@@ -3,7 +3,7 @@
 /* #include <string.h> */
 #include <sys/stat.h>
 
-
+#include <omp.h>
 #include "direct_method.h"
 #include "IO.h" 
 #include "var_mpi.h"
@@ -456,6 +456,9 @@ int main(int argc, char **argv){
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   MPI_Comm_size(MPI_COMM_WORLD,&mpi_p);
   
+  // initialisation openMP
+  omp_set_num_threads(4);
+
   if(rank!=0)
     Direct_method_Init();
   
