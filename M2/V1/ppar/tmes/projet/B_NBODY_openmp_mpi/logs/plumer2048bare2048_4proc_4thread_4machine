@@ -1,0 +1,27 @@
+*** Compute own interactions of the box defined in "../data/baredisk_2048-plummer_2048.nemo" ***.
+Softening parameter: 1.0e-02
+*** Compute own interactions of the box defined in "../data/baredisk_2048-plummer_2048.nemo" ***.
+Softening parameter: 1.0e-02
+*** Compute own interactions of the box defined in "../data/baredisk_2048-plummer_2048.nemo" ***.
+Softening parameter: 1.0e-02
+*** Compute own interactions of the box defined in "../data/baredisk_2048-plummer_2048.nemo" ***.
+Softening parameter: 1.0e-02
+Bodies number: 4096
+Bodies number: 4096
+Bodies number: 4096
+Bodies number: 4096
+Start Time : 0.000000 	 End Time : 2.000000 	 dt : 0.100000 
+Number of steps: 19
+Start Time : 0.000000 	 End Time : 2.000000 	 dt : 0.100000 
+Number of steps: 19
+Start Time : 0.000000 	 End Time : 2.000000 	 dt : 0.100000 
+Number of steps: 19
+Start Time : 0.000000 	 End Time : 2.000000 	 dt : 0.100000 
+Number of steps: 19
+Softening parameter: 1.0e-02
+Softening parameter: 1.0e-02
+Softening parameter: 1.0e-02
+computation time2.191246 
+computation time2.219758 
+computation time2.219342 
+computation time2.254658 
