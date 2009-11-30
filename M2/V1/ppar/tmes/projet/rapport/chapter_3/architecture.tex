@@ -251,7 +251,34 @@ cette optimisation n'est plus possible dans le cadre de notre algorithme.
 Mais on peut la conserver si au lieu d'effectuer un tour de l'anneau complet, on effectue
 un demi tour d'anneau, et qu'un fois se demi tour fait on envoie les données calculées 
 aux noeud qui n'ont pas la possibilité de le faire. Ainsi si les temps de communication
-sont infèrieurs aux temps de calcul il y a un accroissement des performances.XS Car 
+sont infèrieurs aux temps de calcul il y a un accroissement des performances. Car 
 cet algorithme revient à remplacer une parties des temps de calcul par des temps de communication, 
 mais ont est également obligé de communiquer les forces ; cela augmente en conséquence 
 les données gérées par chaque noeud.\\
+
+\section{Réalisation}
+
+\par Pour parallèliser le programme séquentiel nous avons fais le choix de représenter
+en mémoire les donées sous forme de structure de tableaux, et d'une topologie en anneau avec
+solution distribuée.
+Cependant nous n'avons pas mis en place la structure de donnée ne contenant que les 
+positions et les masses des corps par manque de temps. Nous avons également opté pour un 
+choix de communication standard/non-bloquant avec recouvrement des temps de
+communication par le calcul.\\
+
+\par Le probleme à N-corps n'est pas trés bien adapté aus recouvrement des temps de 
+communication pas le calcul. Car pour effectuer le calcul à un instant $t$, un noeud a 
+besoin que les données envoyées par son predécesseur lui soient totalement arrivées, 
+et son successeur attend qu'il lui ait envoyé intégralement les données. Le but de ce programme 
+étant le calcul sur un grand nombre de corps plus le nombre de corps augmente plus les temps de 
+communication augmente. De plus l'avancement d'un noeud depend de son prédecésseur, car tant que 
+son prédécésseur n'a pas fini sa n-1 ème tache le noeud ne peut pas effectuer la tache n.
+Le fait de mettre des communication persistante ne changerai pas énormément les performances
+globale du programme, cependant également par manque de temps nous n'avons pas put effectuer 
+ces tests.\\
+
+\par Concernant les calculs redondant nous avons fais le choix de ne pas utilisé la redondance 
+des calculs. La solution d'effectuer le tour de l'anneau nous a semblé plus adapté 
+pour de grosse quantité de particule, mais nous n'avons pas eu le temps d'écrire le programme
+afin d'effectuer des tests probants et de comparer les deux solutions.\\
+
